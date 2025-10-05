@@ -1,0 +1,28 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npx create-expo-app:*)",
+      "Bash(npm init:*)",
+      "Bash(npm install:*)",
+      "Bash(git init:*)",
+      "Bash(npm start)",
+      "Bash(npx expo start:*)",
+      "Bash(mkdir:*)",
+      "Bash(curl:*)",
+      "Bash(node:*)",
+      "Bash(/c/Python312/python:*)",
+      "Bash(npx expo install:*)",
+      "Bash(npm run android:*)",
+      "Bash(netstat:*)",
+      "Bash(findstr:*)",
+      "Bash(taskkill:*)",
+      "Bash(tee:*)",
+      "Bash(eas build:*)",
+      "Bash(cat:*)",
+      "Bash(rm:*)",
+      "Bash(npx eas-cli build:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
