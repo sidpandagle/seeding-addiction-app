@@ -10,9 +10,12 @@ import {
   getAuthenticationMethodName,
 } from '../src/services/security';
 import { useRelapseStore } from '../src/stores/relapseStore';
+import { useThemeStore } from '../src/stores/themeStore';
+import { ThemeToggle } from '../src/components/ThemeToggle';
 
 export default function SettingsScreen() {
   const router = useRouter();
+  const colorScheme = useThemeStore((state) => state.colorScheme);
   const resetAllData = useRelapseStore((state) => state.resetAllData);
   const [appLockEnabled, setAppLockEnabledState] = useState(false);
   const [biometricAvailable, setBiometricAvailable] = useState(false);
@@ -101,34 +104,55 @@ export default function SettingsScreen() {
   };
 
   return (
-    <View className="flex-1 bg-gray-50">
-      <StatusBar style="dark" />
+    <View className="flex-1 bg-gray-50 dark:bg-gray-900">
+      <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'} />
 
       {/* Header */}
-      <View className="bg-white pt-16 pb-4 px-6 border-b border-gray-200">
+      <View className="bg-white dark:bg-gray-800 pt-16 pb-4 px-6 border-b border-gray-200 dark:border-gray-700">
         <View className="flex-row items-center justify-between">
           <Pressable onPress={() => router.back()}>
-            <Text className="text-blue-600 text-lg">← Back</Text>
+            <Text className="text-emerald-600 dark:text-emerald-400 text-lg font-medium">← Back</Text>
           </Pressable>
-          <Text className="text-2xl font-bold text-gray-900">Settings</Text>
+          <Text className="text-2xl font-bold text-gray-900 dark:text-white">Settings</Text>
           <View className="w-16" />
         </View>
       </View>
 
       <ScrollView className="flex-1">
+        {/* Appearance Section */}
+        <View className="mt-6 px-6">
+          <Text className="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-3">
+            Appearance
+          </Text>
+
+          <View className="bg-white dark:bg-gray-800 rounded-xl p-4 mb-4">
+            <View className="flex-row items-center justify-between">
+              <View className="flex-1">
+                <Text className="text-base font-semibold text-gray-900 dark:text-white">
+                  Theme
+                </Text>
+                <Text className="text-sm font-regular text-gray-500 dark:text-gray-400 mt-1">
+                  Switch between light and dark mode
+                </Text>
+              </View>
+              <ThemeToggle />
+            </View>
+          </View>
+        </View>
+
         {/* Security Section */}
         <View className="mt-6 px-6">
-          <Text className="text-sm text-gray-500 uppercase tracking-wide mb-3">
+          <Text className="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-3">
             Security
           </Text>
 
-          <View className="bg-white rounded-xl p-4 mb-3">
+          <View className="bg-white dark:bg-gray-800 rounded-xl p-4 mb-4">
             <View className="flex-row items-center justify-between">
               <View className="flex-1">
-                <Text className="text-base font-semibold text-gray-900">
+                <Text className="text-base font-semibold text-gray-900 dark:text-white">
                   App Lock
                 </Text>
-                <Text className="text-sm text-gray-500 mt-1">
+                <Text className="text-sm font-regular text-gray-500 dark:text-gray-400 mt-1">
                   {biometricAvailable
                     ? `Protect app with ${authMethodName}`
                     : 'Biometric authentication not available'}
@@ -138,7 +162,7 @@ export default function SettingsScreen() {
                 value={appLockEnabled}
                 onValueChange={handleAppLockToggle}
                 disabled={!biometricAvailable}
-                trackColor={{ false: '#d1d5db', true: '#3b82f6' }}
+                trackColor={{ false: '#d1d5db', true: '#10b981' }}
                 thumbColor={appLockEnabled ? '#ffffff' : '#f3f4f6'}
               />
             </View>
@@ -147,34 +171,34 @@ export default function SettingsScreen() {
 
         {/* Data Section */}
         <View className="mt-6 px-6">
-          <Text className="text-sm text-gray-500 uppercase tracking-wide mb-3">
+          <Text className="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-3">
             Data
           </Text>
 
           <Pressable
             onPress={handleResetData}
-            className="bg-white rounded-xl p-4 mb-3 active:opacity-70"
+            className="bg-white dark:bg-gray-800 rounded-xl p-4 mb-4 active:opacity-70"
           >
             <View className="flex-row items-center justify-between">
               <View className="flex-1">
-                <Text className="text-base font-semibold text-red-600">
+                <Text className="text-base font-semibold text-red-600 dark:text-red-400">
                   Reset All Data
                 </Text>
-                <Text className="text-sm text-gray-500 mt-1">
+                <Text className="text-sm font-regular text-gray-500 dark:text-gray-400 mt-1">
                   Permanently delete all records and start fresh
                 </Text>
               </View>
-              <Text className="text-red-600 text-lg">→</Text>
+              <Text className="text-red-600 dark:text-red-400 text-lg font-medium">→</Text>
             </View>
           </Pressable>
         </View>
 
         {/* App Info */}
-        <View className="px-6 pb-8">
-          <Text className="text-center text-sm text-gray-400">
+        <View className="px-6 pb-8 mt-6">
+          <Text className="text-center text-sm font-regular text-gray-400 dark:text-gray-500">
             Seeding v1.0.0
           </Text>
-          <Text className="text-center text-xs text-gray-400 mt-1">
+          <Text className="text-center text-xs font-regular text-gray-400 dark:text-gray-500 mt-1">
             Privacy-focused relapse tracking
           </Text>
         </View>

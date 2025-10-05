@@ -7,11 +7,13 @@ import { AppLock } from '../src/components/AppLock';
 import { initializeEncryptionKey } from '../src/services/security';
 import { initializeDatabase } from '../src/db/schema';
 import { useFonts, Poppins_400Regular, Poppins_500Medium, Poppins_600SemiBold, Poppins_700Bold } from '@expo-google-fonts/poppins';
+import { useColorScheme } from 'nativewind';
 import "../global.css";
 
 export default function RootLayout() {
   const loadRelapses = useRelapseStore((state) => state.loadRelapses);
   const colorScheme = useThemeStore((state) => state.colorScheme);
+  const { setColorScheme } = useColorScheme();
   const [isReady, setIsReady] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -22,24 +24,24 @@ export default function RootLayout() {
     Poppins_700Bold,
   });
 
+  // Sync theme with NativeWind
+  useEffect(() => {
+    setColorScheme(colorScheme);
+  }, [colorScheme, setColorScheme]);
+
   useEffect(() => {
     const initialize = async () => {
       try {
-        console.log('Initializing app...');
 
         // Initialize database
-        console.log('Initializing database...');
         await initializeDatabase();
 
         // Initialize encryption key for secure storage
-        console.log('Initializing encryption key...');
         await initializeEncryptionKey();
 
         // Load relapses from database
-        console.log('Loading relapses...');
         await loadRelapses();
 
-        console.log('Initialization complete');
         setIsReady(true);
       } catch (err) {
         console.error('Initialization error:', err);
@@ -54,18 +56,18 @@ export default function RootLayout() {
 
   if (!fontsLoaded || !isReady) {
     return (
-      <View className="flex-1 bg-white items-center justify-center">
+      <View className="items-center justify-center flex-1 bg-white dark:bg-gray-900">
         <ActivityIndicator size="large" color="#1B5E20" />
-        <Text className="mt-4 text-gray-600">Loading...</Text>
+        <Text className="mt-4 text-gray-600 font-regular dark:text-gray-300">Loading...</Text>
       </View>
     );
   }
 
   if (error) {
     return (
-      <View className="flex-1 bg-white items-center justify-center px-6">
-        <Text className="text-2xl font-bold text-red-600 mb-2">Error</Text>
-        <Text className="text-gray-600 text-center">{error}</Text>
+      <View className="items-center justify-center flex-1 px-6 bg-white dark:bg-gray-900">
+        <Text className="mb-2 text-2xl font-bold text-red-600 dark:text-red-400">Error</Text>
+        <Text className="text-center text-gray-600 font-regular dark:text-gray-300">{error}</Text>
       </View>
     );
   }

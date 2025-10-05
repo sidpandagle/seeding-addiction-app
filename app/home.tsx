@@ -1,8 +1,9 @@
-import { View, Text, Pressable, Modal } from 'react-native';
+import { View, Text, Pressable, Modal, ScrollView } from 'react-native';
 import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useState, useMemo, useEffect, useRef } from 'react';
 import { useRelapseStore } from '../src/stores/relapseStore';
+import { useThemeStore } from '../src/stores/themeStore';
 import RelapseModal from '../src/components/RelapseModal';
 import CircularProgress from '../src/components/CircularProgress';
 import { MotivationCard } from '../src/components/MotivationCard';
@@ -10,10 +11,12 @@ import { getJourneyStart } from '../src/db/helpers';
 import { getCheckpointProgress } from '../src/utils/checkpointHelpers';
 import { getGrowthStage, GrowthStage } from '../src/utils/growthStages';
 import GrowthIcon from '../src/components/GrowthIcon';
+import { calculateUserStats } from '../src/utils/statsHelpers';
 import * as Haptics from 'expo-haptics';
 
 export default function HomeScreen() {
   const router = useRouter();
+  const colorScheme = useThemeStore((state) => state.colorScheme);
   const [showModal, setShowModal] = useState(false);
   const [currentTime, setCurrentTime] = useState(Date.now());
   const [journeyStart, setJourneyStart] = useState<string | null>(null);
@@ -24,8 +27,7 @@ export default function HomeScreen() {
   useEffect(() => {
     const loadJourneyStart = async () => {
       const start = await getJourneyStart();
-      console.log(start);
-      setJourneyStart("2025-10-04T05:55:48.620Z");
+      setJourneyStart(start);
     };
     loadJourneyStart();
   }, [relapses]);
@@ -33,12 +35,16 @@ export default function HomeScreen() {
   // Update time every second for live countdown
   useEffect(() => {
     const interval = setInterval(() => {
-      // setCurrentTime(Date.now() + (1 * 24 * 60 * 60 * 1000)); // Adjusted for smoother seconds display
-      setCurrentTime(Date.now()); // Adjusted for smoother seconds display
-    }, 100);
+      setCurrentTime(Date.now() + 60 * 1000);
+    }, 1000); // Update every second instead of 100ms to reduce re-renders
 
     return () => clearInterval(interval);
   }, []);
+
+  // Memoize user stats separately - they only change when relapses/journeyStart change
+  const userStats = useMemo(() => {
+    return calculateUserStats(relapses, journeyStart);
+  }, [relapses, journeyStart]);
 
   const stats = useMemo(() => {
     let startTime: string | null = null;
@@ -65,6 +71,9 @@ export default function HomeScreen() {
         seconds: 0,
         timeDiff: 0,
         checkpointProgress: null,
+        growthStage: getGrowthStage(0), // Default to first stage
+        bestStreak: 0,
+        totalAttempts: 0,
       };
     }
 
@@ -92,8 +101,10 @@ export default function HomeScreen() {
       timeDiff,
       checkpointProgress,
       growthStage,
+      bestStreak: userStats.bestStreak,
+      totalAttempts: userStats.totalAttempts,
     };
-  }, [relapses, currentTime, journeyStart]);
+  }, [relapses, currentTime, journeyStart, userStats]);
 
   // Handle growth stage transitions with haptic feedback
   const handleStageChange = (newStage: GrowthStage) => {
@@ -104,16 +115,22 @@ export default function HomeScreen() {
     previousStageRef.current = newStage;
   };
 
+
+  const handleRelapsePress = () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    setShowModal(true);
+  };
+
   return (
-    <View className="flex-1 bg-white">
-      <StatusBar style="dark" />
+    <ScrollView className="flex-1 bg-white dark:bg-gray-900">
+      <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'} />
 
       {/* Header */}
-      <View className="px-6 pb-4 bg-white border-b border-gray-200 pt-14">
+      <View className="px-6 pt-16 pb-4 bg-white border-b border-gray-200 dark:bg-gray-900 dark:border-gray-700">
         <View className="flex-row items-start justify-between">
           <View className="flex-1">
-            <Text className="text-3xl font-normal tracking-widest text-gray-900">Seeding</Text>
-            <Text className="mt-0 text-sm tracking-wide text-gray-500">Track your progress</Text>
+            <Text className="text-3xl tracking-widest text-gray-900 dark:text-white font-regular">Seeding</Text>
+            <Text className="mt-1 text-sm tracking-wide text-gray-500 dark:text-gray-400 font-regular">Track your progress</Text>
           </View>
 
           {/* Header Actions */}
@@ -123,10 +140,10 @@ export default function HomeScreen() {
               onPress={() => router.push('/relapses')}
               className="items-center active:opacity-60"
             >
-              <View className="items-center justify-center w-10 h-10 bg-gray-100 rounded-full">
+              <View className="items-center justify-center w-10 h-10 bg-gray-100 rounded-full dark:bg-gray-800">
                 <Text className="text-xl">📊</Text>
               </View>
-              <Text className="mt-1 text-xs text-gray-500">History</Text>
+              <Text className="mt-1 text-xs text-gray-500 dark:text-gray-400 font-regular">History</Text>
             </Pressable>
 
             {/* Settings Button */}
@@ -134,10 +151,10 @@ export default function HomeScreen() {
               onPress={() => router.push('/settings')}
               className="items-center active:opacity-60"
             >
-              <View className="items-center justify-center w-10 h-10 bg-gray-100 rounded-full">
+              <View className="items-center justify-center w-10 h-10 bg-gray-100 rounded-full dark:bg-gray-800">
                 <Text className="text-xl">⚙️</Text>
               </View>
-              <Text className="mt-1 text-xs text-gray-500">Settings</Text>
+              <Text className="mt-1 text-xs text-gray-500 dark:text-gray-400 font-regular">Settings</Text>
             </Pressable>
           </View>
         </View>
@@ -146,8 +163,8 @@ export default function HomeScreen() {
       {/* Stats Cards */}
       <View className="">
         {/* <View className="items-center p-6 mb-4 bg-white shadow-sm rounded-2xl"> */}
-        <View className="items-center p-6 mb-4 rounded-2xl">
-          <Text className="mb-4 text-sm tracking-wide text-gray-500 uppercase">
+        <View className="items-center p-6 mb-6 rounded-2xl">
+          <Text className="mb-4 text-sm font-medium tracking-wide text-gray-500 uppercase dark:text-gray-400">
             Current Streak
           </Text>
 
@@ -180,30 +197,58 @@ export default function HomeScreen() {
 
               {/* Time Counter */}
               {stats.days > 0 ?
-                <Text className="mt-2 text-5xl text-gray-900">
-                  {stats.days}<Text className='text-[18px]'>d</Text>
+                <Text className="mt-2 text-5xl font-bold text-gray-900 dark:text-white">
+                  {stats.days}<Text className='text-lg font-medium'>d</Text>
                 </Text>
                 : null}
-              <Text className={` text-gray-900 ${stats.days > 0 ? 'mt-2 text-2xl' : 'mt-2 text-3xl'}`}>
-                {stats.hours > 0 ? <>{stats.hours.toString().padStart(2, '0')}<Text className='text-[16px]'>h</Text></> : null} {stats.minutes.toString().padStart(2, '0')}<Text className='text-[16px]'>m</Text> {stats.seconds.toString().padStart(2, '0')}<Text className='text-[16px]'>s</Text>
+              <Text className={`font-bold text-gray-900 dark:text-white ${stats.days > 0 ? 'mt-2 text-2xl' : 'mt-2 text-3xl'}`}>
+                {stats.hours > 0 ? <>{stats.hours.toString().padStart(2, '0')}<Text className='text-base font-medium'>h</Text></> : null} {stats.minutes.toString().padStart(2, '0')}<Text className='text-base font-medium'>m</Text> {stats.seconds.toString().padStart(2, '0')}<Text className='text-base font-medium'>s</Text>
               </Text>
             </View>
           </CircularProgress>
         </View>
       </View>
 
+      {/* Stats Summary Cards */}
+      <View className="px-6 mb-6">
+        <View className="flex-row gap-4">
+          {/* Total Attempts */}
+          <View className="flex-1 p-4 bg-emerald-50 dark:bg-emerald-950/30 rounded-2xl">
+            <Text className="mb-1 text-xs font-medium tracking-wide uppercase text-emerald-600 dark:text-emerald-400">
+              Total Attempts
+            </Text>
+            <Text className="text-3xl font-semibold text-emerald-900 dark:text-emerald-100">
+              {stats.totalAttempts}
+            </Text>
+          </View>
 
+          {/* Best Streak */}
+          <View className="flex-1 p-4 bg-amber-50 dark:bg-amber-950/30 rounded-2xl">
+            <Text className="mb-1 text-xs font-medium tracking-wide uppercase text-amber-600 dark:text-amber-400">
+              Best Streak
+            </Text>
+            <Text className="text-3xl font-semibold text-amber-900 dark:text-amber-100">
+              {stats.bestStreak}
+              <Text className="text-xs font-medium text-amber-600 dark:text-amber-400"> days</Text>
+            </Text>
+          </View>
+        </View>
+      </View>
+
+      {/* Record Relapse Button */}
+      <View className="px-6 mb-6">
+        <Pressable
+          onPress={handleRelapsePress}
+          className="w-full py-4 bg-emerald-600 dark:bg-emerald-700 rounded-2xl active:bg-emerald-700 dark:active:bg-emerald-800"
+        >
+          <Text className="text-lg font-semibold text-center text-white">
+            Record Relapse
+          </Text>
+        </Pressable>
+      </View>
 
       {/* Motivation Section */}
       <MotivationCard />
-
-      {/* Floating Add Button */}
-      <Pressable
-        onPress={() => setShowModal(true)}
-        className="absolute items-center justify-center w-16 h-16 bg-blue-600 rounded-full shadow-lg bottom-8 right-6 active:bg-blue-700"
-      >
-        <Text className="text-3xl font-light text-white">+</Text>
-      </Pressable>
 
       {/* Relapse Modal */}
       <Modal
@@ -214,6 +259,6 @@ export default function HomeScreen() {
       >
         <RelapseModal onClose={() => setShowModal(false)} />
       </Modal>
-    </View>
+    </ScrollView>
   );
 }

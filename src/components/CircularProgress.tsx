@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useMemo } from 'react';
 import { View, Text, Animated } from 'react-native';
 import Svg, { Circle, Defs, LinearGradient, Stop } from 'react-native-svg';
 
@@ -52,8 +52,8 @@ export default function CircularProgress({
     outputRange: [circumference, 0],
   });
 
-  // Generate gradient ID for unique instances
-  const gradientId = `gradient-${Math.random().toString(36).substr(2, 9)}`;
+  // Generate gradient ID once per component instance (memoized to prevent re-generation)
+  const gradientId = useMemo(() => `gradient-${Math.random().toString(36).substr(2, 9)}`, []);
 
   return (
     <View className="items-center justify-center">
@@ -111,7 +111,7 @@ export default function CircularProgress({
 
       {/* Checkpoint Label */}
       {showCheckpoint && checkpointLabel && (
-        <Text className="mt-3 text-xs tracking-wide text-gray-500 uppercase">
+        <Text className="mt-3 text-xs font-medium tracking-wide text-gray-500 dark:text-gray-400 uppercase">
           {checkpointLabel}
         </Text>
       )}

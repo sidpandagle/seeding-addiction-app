@@ -29,10 +29,10 @@
 ### Home Screen
 - [x] Design main layout with centered growth visual
 - [x] Implement "Days since last relapse" counter (live countdown with days/hours/min/sec)
-- [ ] Add glowing seed/plant icon that grows with streak
+- [x] Add glowing seed/plant icon that grows with streak (GrowthIcon component)
 - [x] Create motivational subtext component ("Track your progress")
-- [ ] Implement growth stage transitions (Seed → Sprout → Plant → Tree)
-- [ ] Add gradient growth indicators (green → gold)
+- [x] Implement growth stage transitions (Seed → Sprout → Plant → Tree)
+- [x] Add gradient growth indicators (green → gold)
 
 ### Onboarding Screen
 - [x] Design welcome screen with app intro
@@ -41,9 +41,8 @@
 
 ### Relapse Action
 - [x] Design reset confirmation dialog (`RelapseModal` component)
-- [ ] Create "plant withering to seed" animation
 - [x] Ensure supportive, non-guilt-inducing messaging
-- [ ] Add gentle haptic feedback on reset
+- [x] Add gentle haptic feedback on reset
 
 ### Progress Visualization (Relapses Screen)
 - [x] Show historical relapse data
@@ -58,10 +57,8 @@
 - [x] Display app version and info
 
 ### Motivation Section
-- [ ] Create quotes/affirmations json.
-- [ ] Implement fade-in animation for affirmations
-- [ ] Add nature-inspired transitions (leaf flutter)
-- [ ] Rotate motivational messages
+- [x] Create quotes/affirmations json
+- [x] Rotate motivational messages
 
 ### Achievements
 - [ ] Design achievement unlock screens
@@ -74,29 +71,12 @@
 
 ## ✨ Animations & Interactions
 
-### Core Animations
-- [ ] Install and configure `react-native-reanimated`
-- [ ] Install and configure `moti` for micro-animations
-- [ ] Create growth animation for plant icon
-- [ ] Build wither animation for relapse reset
-- [ ] Implement fade-in/out for affirmations
-- [ ] Add leaf flutter transition
-- [ ] Create celebration animation for milestones
-
 ### Haptic Feedback
-- [ ] Install `expo-haptics`
-- [ ] Implement haptic feedback for relapse reset
+- [x] Install `expo-haptics`
+- [x] Implement haptic feedback for relapse reset
 - [ ] Add haptic for milestone achievements
 - [ ] Include haptic for navigation actions
 
-## 🎯 Visual Style References
-
-### Design Inspiration
-- [ ] Review Stoic minimalism patterns
-- [ ] Study Headspace app design
-- [ ] Analyze Calm app UI/UX
-- [ ] Research Lofi-style mindfulness apps
-- [ ] Incorporate clean, minimal aesthetic
 
 ## 🌓 Dark Mode
 
@@ -104,11 +84,11 @@
 - [x] Design forest-dark color palette (Deep charcoal #1C1C1E)
 - [x] Setup theme store with persistence
 - [x] Create ThemeToggle component
-- [ ] Create glowing seed icons for dark mode
-- [ ] Adjust card shadows for dark mode
-- [ ] Update gradient colors for dark mode
-- [ ] Apply theme colors to all screens (currently using Tailwind defaults)
-- [ ] Ensure smooth theme transitions
+- [x] Create glowing seed icons for dark mode
+- [x] Adjust card shadows for dark mode
+- [x] Update gradient colors for dark mode
+- [x] Apply theme colors to all screens
+- [x] Ensure smooth theme transitions
 
 ## 🧩 Technical Setup
 
@@ -120,10 +100,8 @@
 - [x] Install expo-local-authentication for biometric lock
 - [x] Install @expo-google-fonts/poppins
 - [x] Install react-native-svg for circular progress
-- [ ] Install `react-native-reanimated`
-- [ ] Install `moti` for animations
 - [x] Install `expo-linear-gradient`
-- [ ] Install `expo-haptics`
+- [x] Install `expo-haptics`
 - [x] Configure theme system (colors.ts + typography.ts + themeStore)
 
 ### Database & Storage
@@ -141,8 +119,8 @@
 
 ### Gradients & Visual Effects
 - [x] Setup linear gradients for growth indicators
-- [ ] Create soft depth effects with gradients
-- [ ] Implement glow effects for seed icons
+- [x] Create soft depth effects with gradients
+- [x] Implement glow effects for seed icons
 
 ## 📝 Copy & Messaging
 
@@ -162,11 +140,11 @@
 ## 🌱 Growth Metaphor Implementation
 
 ### Visual Progression Stages
-- [ ] Design Seed stage (Day 0-7)
-- [ ] Design Sprout stage (Day 8-30)
-- [ ] Design Plant stage (Day 31-90)
-- [ ] Design Tree stage (Day 90+)
-- [ ] Create smooth transitions between stages
+- [x] Design Seed stage (Day 0-7)
+- [x] Design Sprout stage (Day 8-30)
+- [x] Design Plant stage (Day 31-90)
+- [x] Design Tree stage (Day 90+)
+- [x] Create smooth transitions between stages
 
 ### Progress Indicators
 - [x] Circular progress ring with gradient
@@ -197,26 +175,23 @@
 - **Database & Storage**: SQLite with encryption, journey tracking
 - **Authentication**: Biometric app lock (Face ID/Touch ID/Fingerprint)
 - **Screens**: Onboarding, Home, Relapses history, Settings
-- **Theme System**: Color palette, typography, theme toggle infrastructure
+- **Theme System**: Complete dark/light mode with color palette, typography
 - **State Management**: Zustand stores for relapses and theme
 - **UI Framework**: NativeWind + Tailwind CSS setup
+- **Growth Metaphor**: Animated seed → sprout → plant → tree progression with checkpoints
+- **Visual Effects**: Linear gradients, glowing icons, circular progress rings
+- **Haptic Feedback**: Tactile feedback for relapse tracking
+- **Statistics**: Growth stage tracking with milestone checkpoints
 
 ### 🎨 Pending Visual Enhancements
-- **Growth Metaphor**: Animated plant icon that grows with streak
-- **Animations**: Reanimated + Moti setup, growth/wither animations
-- **Gradients**: Linear gradients for progress indicators
-- **Haptic Feedback**: Tactile feedback for key interactions
-- **Dark Mode Integration**: Apply theme colors throughout UI
 - **Achievements System**: Milestone tracking and celebration
+- **Motivational Content**: Quotes/affirmations rotation
 
 ### 🌱 Next Priority Items
-1. Install and configure animation libraries (reanimated, moti)
-2. Design and implement growth stage visuals (Seed → Tree)
-3. Add expo-linear-gradient for progress rings
-4. Integrate expo-haptics for tactile feedback
-5. Apply theme system colors to replace Tailwind defaults
-6. Create circular progress visualization
-7. Build achievement/milestone system
+1. Create quotes/affirmations JSON file
+2. Implement motivational message rotation
+3. Build achievement/milestone system with celebration animations
+4. Add haptic feedback for achievements and navigation
 
 ---
 

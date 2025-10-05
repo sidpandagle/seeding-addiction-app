@@ -3,6 +3,7 @@ import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useState, useMemo, useEffect } from 'react';
 import { useRelapseStore } from '../src/stores/relapseStore';
+import { useThemeStore } from '../src/stores/themeStore';
 import CircularProgress from '../src/components/CircularProgress';
 import { getJourneyStart } from '../src/db/helpers';
 
@@ -10,6 +11,7 @@ const AVAILABLE_TAGS = ['Stress', 'Trigger', 'Social', 'Boredom', 'Craving', 'Ot
 
 export default function RelapsesScreen() {
   const router = useRouter();
+  const colorScheme = useThemeStore((state) => state.colorScheme);
   const { relapses } = useRelapseStore();
   const [selectedTag, setSelectedTag] = useState<string | null>(null);
   const [journeyStart, setJourneyStart] = useState<string | null>(null);
@@ -55,21 +57,21 @@ export default function RelapsesScreen() {
   }, [relapses]);
 
   return (
-    <View className="flex-1 bg-gray-50">
-      <StatusBar style="dark" />
+    <View className="flex-1 bg-gray-50 dark:bg-gray-900">
+      <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'} />
 
       {/* Header */}
-      <View className="px-6 pt-16 pb-4 bg-white border-b border-gray-200">
+      <View className="px-6 pt-16 pb-4 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
         <View className="flex-row items-center justify-between mb-4">
           <Pressable onPress={() => router.back()}>
-            <Text className="text-lg text-blue-600">← Back</Text>
+            <Text className="text-lg font-medium text-emerald-600 dark:text-emerald-400">← Back</Text>
           </Pressable>
-          <Text className="text-2xl font-bold text-gray-900">History</Text>
+          <Text className="text-2xl font-bold text-gray-900 dark:text-white">History</Text>
           <View className="w-16" />
         </View>
 
         {/* Summary Stats with Circular Progress */}
-        <View className="flex-row items-center gap-4 mb-4">
+        <View className="flex-row items-center gap-4 mb-6">
           <View className="items-center">
             <CircularProgress
               size={80}
@@ -81,29 +83,29 @@ export default function RelapsesScreen() {
               backgroundColor="#E8F5E9"
             >
               <View className="items-center">
-                <Text className="text-xl font-bold text-gray-900">{stats.streak}</Text>
-                <Text className="text-xs text-gray-500">days</Text>
+                <Text className="text-xl font-bold text-gray-900 dark:text-white">{stats.streak}</Text>
+                <Text className="text-xs font-regular text-gray-500 dark:text-gray-400">days</Text>
               </View>
             </CircularProgress>
           </View>
-          <View className="flex-1 p-3 bg-gray-100 rounded-lg">
-            <Text className="mb-1 text-xs text-gray-600">Total Relapses</Text>
-            <Text className="text-2xl font-bold text-gray-900">{stats.total}</Text>
+          <View className="flex-1 p-3 bg-gray-100 dark:bg-gray-800 rounded-lg">
+            <Text className="mb-1 text-xs font-medium text-gray-600 dark:text-gray-400">Total Relapses</Text>
+            <Text className="text-2xl font-bold text-gray-900 dark:text-white">{stats.total}</Text>
           </View>
         </View>
 
         {/* Tag Filters (only show in list view) */}
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} className="mb-2">
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} className="mb-3">
           <View className="flex-row gap-2">
             <Pressable
               onPress={() => setSelectedTag(null)}
               className={`px-3 py-2 rounded-full ${
-                selectedTag === null ? 'bg-blue-600' : 'bg-gray-200'
+                selectedTag === null ? 'bg-emerald-600 dark:bg-emerald-700' : 'bg-gray-200 dark:bg-gray-700'
               }`}
             >
               <Text
                 className={`text-sm font-medium ${
-                  selectedTag === null ? 'text-white' : 'text-gray-700'
+                  selectedTag === null ? 'text-white' : 'text-gray-700 dark:text-gray-300'
                 }`}
               >
                 All
@@ -114,12 +116,12 @@ export default function RelapsesScreen() {
                 key={tag}
                 onPress={() => setSelectedTag(tag)}
                 className={`px-3 py-2 rounded-full ${
-                  selectedTag === tag ? 'bg-blue-600' : 'bg-gray-200'
+                  selectedTag === tag ? 'bg-emerald-600 dark:bg-emerald-700' : 'bg-gray-200 dark:bg-gray-700'
                 }`}
               >
                 <Text
                   className={`text-sm font-medium ${
-                    selectedTag === tag ? 'text-white' : 'text-gray-700'
+                    selectedTag === tag ? 'text-white' : 'text-gray-700 dark:text-gray-300'
                   }`}
                 >
                   {tag}
@@ -138,23 +140,23 @@ export default function RelapsesScreen() {
           contentContainerClassName="px-6 py-4"
           ListEmptyComponent={
             <View className="items-center justify-center py-12">
-              <Text className="text-xl text-gray-400">No relapses recorded</Text>
-              <Text className="mt-2 text-sm text-gray-400">
+              <Text className="text-xl font-regular text-gray-400 dark:text-gray-500">No relapses recorded</Text>
+              <Text className="mt-2 text-sm font-regular text-gray-400 dark:text-gray-500">
                 {selectedTag ? 'Try a different filter' : 'Keep going strong!'}
               </Text>
             </View>
           }
           renderItem={({ item }) => (
-            <View className="p-4 mb-3 bg-white shadow-sm rounded-xl">
+            <View className="p-4 mb-4 bg-white dark:bg-gray-800 shadow-sm rounded-xl">
               <View className="mb-2">
-                <Text className="text-base font-semibold text-gray-900">
+                <Text className="text-base font-semibold text-gray-900 dark:text-white">
                   {new Date(item.timestamp).toLocaleDateString('en-US', {
                     month: 'short',
                     day: 'numeric',
                     year: 'numeric',
                   })}
                 </Text>
-                <Text className="text-sm text-gray-500">
+                <Text className="text-sm font-regular text-gray-500 dark:text-gray-400">
                   {new Date(item.timestamp).toLocaleTimeString('en-US', {
                     hour: 'numeric',
                     minute: '2-digit',
@@ -163,14 +165,14 @@ export default function RelapsesScreen() {
               </View>
 
               {item.note && (
-                <Text className="mb-2 text-sm text-gray-700">{item.note}</Text>
+                <Text className="mb-2 text-sm font-regular text-gray-700 dark:text-gray-300">{item.note}</Text>
               )}
 
               {item.tags && item.tags.length > 0 && (
                 <View className="flex-row flex-wrap gap-2 mt-2">
                   {item.tags.map((tag: string) => (
-                    <View key={tag} className="px-2 py-1 bg-gray-100 rounded">
-                      <Text className="text-xs text-gray-600">{tag}</Text>
+                    <View key={tag} className="px-2 py-1 bg-gray-100 dark:bg-gray-700 rounded">
+                      <Text className="text-xs font-regular text-gray-600 dark:text-gray-300">{tag}</Text>
                     </View>
                   ))}
                 </View>
