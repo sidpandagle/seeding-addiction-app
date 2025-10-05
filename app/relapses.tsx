@@ -1,8 +1,10 @@
 import { View, Text, FlatList, Pressable, ScrollView } from 'react-native';
 import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useRelapseStore } from '../src/stores/relapseStore';
+import CircularProgress from '../src/components/CircularProgress';
+import { getJourneyStart } from '../src/db/helpers';
 
 const AVAILABLE_TAGS = ['Stress', 'Trigger', 'Social', 'Boredom', 'Craving', 'Other'];
 
@@ -10,6 +12,16 @@ export default function RelapsesScreen() {
   const router = useRouter();
   const { relapses } = useRelapseStore();
   const [selectedTag, setSelectedTag] = useState<string | null>(null);
+  const [journeyStart, setJourneyStart] = useState<string | null>(null);
+
+  // Load journey start timestamp
+  useEffect(() => {
+    const loadJourneyStart = async () => {
+      const start = await getJourneyStart();
+      setJourneyStart(start);
+    };
+    loadJourneyStart();
+  }, []);
 
   const filteredRelapses = useMemo(() => {
     const sorted = [...relapses].sort(
@@ -47,28 +59,40 @@ export default function RelapsesScreen() {
       <StatusBar style="dark" />
 
       {/* Header */}
-      <View className="bg-white pt-16 pb-4 px-6 border-b border-gray-200">
+      <View className="px-6 pt-16 pb-4 bg-white border-b border-gray-200">
         <View className="flex-row items-center justify-between mb-4">
           <Pressable onPress={() => router.back()}>
-            <Text className="text-blue-600 text-lg">← Back</Text>
+            <Text className="text-lg text-blue-600">← Back</Text>
           </Pressable>
           <Text className="text-2xl font-bold text-gray-900">History</Text>
           <View className="w-16" />
         </View>
 
-        {/* Summary Stats */}
-        <View className="flex-row gap-4 mb-4">
-          <View className="flex-1 bg-blue-50 rounded-lg p-3">
-            <Text className="text-xs text-gray-600 mb-1">Current Streak</Text>
-            <Text className="text-2xl font-bold text-blue-600">{stats.streak}d</Text>
+        {/* Summary Stats with Circular Progress */}
+        <View className="flex-row items-center gap-4 mb-4">
+          <View className="items-center">
+            <CircularProgress
+              size={80}
+              strokeWidth={6}
+              useGradient={true}
+              gradientColors={['#1B5E20', '#FFD54F']}
+              progress={Math.min(stats.streak / 30, 1)} // 30 days = 100%
+              color="#1B5E20"
+              backgroundColor="#E8F5E9"
+            >
+              <View className="items-center">
+                <Text className="text-xl font-bold text-gray-900">{stats.streak}</Text>
+                <Text className="text-xs text-gray-500">days</Text>
+              </View>
+            </CircularProgress>
           </View>
-          <View className="flex-1 bg-gray-100 rounded-lg p-3">
-            <Text className="text-xs text-gray-600 mb-1">Total</Text>
+          <View className="flex-1 p-3 bg-gray-100 rounded-lg">
+            <Text className="mb-1 text-xs text-gray-600">Total Relapses</Text>
             <Text className="text-2xl font-bold text-gray-900">{stats.total}</Text>
           </View>
         </View>
 
-        {/* Tag Filters */}
+        {/* Tag Filters (only show in list view) */}
         <ScrollView horizontal showsHorizontalScrollIndicator={false} className="mb-2">
           <View className="flex-row gap-2">
             <Pressable
@@ -106,53 +130,54 @@ export default function RelapsesScreen() {
         </ScrollView>
       </View>
 
-      {/* Relapse List */}
-      <FlatList
-        data={filteredRelapses}
-        keyExtractor={(item) => item.id}
-        contentContainerClassName="px-6 py-4"
-        ListEmptyComponent={
-          <View className="items-center justify-center py-12">
-            <Text className="text-xl text-gray-400">No relapses recorded</Text>
-            <Text className="text-sm text-gray-400 mt-2">
-              {selectedTag ? 'Try a different filter' : 'Keep going strong!'}
-            </Text>
-          </View>
-        }
-        renderItem={({ item }) => (
-          <View className="bg-white rounded-xl p-4 mb-3 shadow-sm">
-            <View className="mb-2">
-              <Text className="text-base font-semibold text-gray-900">
-                {new Date(item.timestamp).toLocaleDateString('en-US', {
-                  month: 'short',
-                  day: 'numeric',
-                  year: 'numeric',
-                })}
-              </Text>
-              <Text className="text-sm text-gray-500">
-                {new Date(item.timestamp).toLocaleTimeString('en-US', {
-                  hour: 'numeric',
-                  minute: '2-digit',
-                })}
+      {/* Content Views */}
+      
+        <FlatList
+          data={filteredRelapses}
+          keyExtractor={(item) => item.id}
+          contentContainerClassName="px-6 py-4"
+          ListEmptyComponent={
+            <View className="items-center justify-center py-12">
+              <Text className="text-xl text-gray-400">No relapses recorded</Text>
+              <Text className="mt-2 text-sm text-gray-400">
+                {selectedTag ? 'Try a different filter' : 'Keep going strong!'}
               </Text>
             </View>
-
-            {item.note && (
-              <Text className="text-sm text-gray-700 mb-2">{item.note}</Text>
-            )}
-
-            {item.tags && item.tags.length > 0 && (
-              <View className="flex-row flex-wrap gap-2 mt-2">
-                {item.tags.map((tag: string) => (
-                  <View key={tag} className="px-2 py-1 bg-gray-100 rounded">
-                    <Text className="text-xs text-gray-600">{tag}</Text>
-                  </View>
-                ))}
+          }
+          renderItem={({ item }) => (
+            <View className="p-4 mb-3 bg-white shadow-sm rounded-xl">
+              <View className="mb-2">
+                <Text className="text-base font-semibold text-gray-900">
+                  {new Date(item.timestamp).toLocaleDateString('en-US', {
+                    month: 'short',
+                    day: 'numeric',
+                    year: 'numeric',
+                  })}
+                </Text>
+                <Text className="text-sm text-gray-500">
+                  {new Date(item.timestamp).toLocaleTimeString('en-US', {
+                    hour: 'numeric',
+                    minute: '2-digit',
+                  })}
+                </Text>
               </View>
-            )}
-          </View>
-        )}
-      />
+
+              {item.note && (
+                <Text className="mb-2 text-sm text-gray-700">{item.note}</Text>
+              )}
+
+              {item.tags && item.tags.length > 0 && (
+                <View className="flex-row flex-wrap gap-2 mt-2">
+                  {item.tags.map((tag: string) => (
+                    <View key={tag} className="px-2 py-1 bg-gray-100 rounded">
+                      <Text className="text-xs text-gray-600">{tag}</Text>
+                    </View>
+                  ))}
+                </View>
+              )}
+            </View>
+          )}
+        />
     </View>
   );
 }

@@ -2,15 +2,25 @@ import { Stack } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { View, Text, ActivityIndicator } from 'react-native';
 import { useRelapseStore } from '../src/stores/relapseStore';
+import { useThemeStore } from '../src/stores/themeStore';
 import { AppLock } from '../src/components/AppLock';
 import { initializeEncryptionKey } from '../src/services/security';
 import { initializeDatabase } from '../src/db/schema';
+import { useFonts, Poppins_400Regular, Poppins_500Medium, Poppins_600SemiBold, Poppins_700Bold } from '@expo-google-fonts/poppins';
 import "../global.css";
 
 export default function RootLayout() {
   const loadRelapses = useRelapseStore((state) => state.loadRelapses);
+  const colorScheme = useThemeStore((state) => state.colorScheme);
   const [isReady, setIsReady] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const [fontsLoaded] = useFonts({
+    Poppins_400Regular,
+    Poppins_500Medium,
+    Poppins_600SemiBold,
+    Poppins_700Bold,
+  });
 
   useEffect(() => {
     const initialize = async () => {
@@ -42,10 +52,10 @@ export default function RootLayout() {
     initialize();
   }, []);
 
-  if (!isReady) {
+  if (!fontsLoaded || !isReady) {
     return (
       <View className="flex-1 bg-white items-center justify-center">
-        <ActivityIndicator size="large" color="#3b82f6" />
+        <ActivityIndicator size="large" color="#1B5E20" />
         <Text className="mt-4 text-gray-600">Loading...</Text>
       </View>
     );
