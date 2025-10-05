@@ -1,6 +1,8 @@
 import { View, Text, TextInput, Pressable, ScrollView, KeyboardAvoidingView, Platform } from 'react-native';
 import { useState } from 'react';
+import { MotiView } from 'moti';
 import { useRelapseStore } from '../stores/relapseStore';
+import * as Haptics from 'expo-haptics';
 
 interface RelapseModalProps {
   onClose: () => void;
@@ -20,6 +22,7 @@ export default function RelapseModal({ onClose, existingRelapse }: RelapseModalP
   const [note, setNote] = useState(existingRelapse?.note || '');
   const [selectedTags, setSelectedTags] = useState<string[]>(existingRelapse?.tags || []);
   const [timestamp] = useState(existingRelapse?.timestamp);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const toggleTag = (tag: string) => {
     setSelectedTags((prev) =>
@@ -29,6 +32,11 @@ export default function RelapseModal({ onClose, existingRelapse }: RelapseModalP
 
   const handleSave = async () => {
     try {
+      setIsSubmitting(true);
+
+      // Gentle haptic feedback for relapse logging
+      await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+
       if (existingRelapse) {
         await updateRelapse(existingRelapse.id, {
           note: note.trim() || undefined,
@@ -41,9 +49,14 @@ export default function RelapseModal({ onClose, existingRelapse }: RelapseModalP
           tags: selectedTags.length > 0 ? selectedTags : undefined,
         });
       }
-      onClose();
+
+      // Brief delay for wither animation to be visible
+      setTimeout(() => {
+        onClose();
+      }, 300);
     } catch (error) {
       console.error('Failed to save relapse:', error);
+      setIsSubmitting(false);
     }
   };
 
@@ -53,12 +66,29 @@ export default function RelapseModal({ onClose, existingRelapse }: RelapseModalP
       className="flex-1 bg-white"
     >
       <ScrollView className="flex-1">
-        {/* Header */}
-        <View className="pt-16 pb-6 px-6 border-b border-gray-200">
-          <Text className="text-2xl font-bold text-gray-900">
-            {existingRelapse ? 'Edit Relapse' : 'Log Relapse'}
-          </Text>
-        </View>
+        {/* Header with wither animation */}
+        <MotiView
+          from={{ opacity: 1, scale: 1 }}
+          animate={{
+            opacity: isSubmitting && !existingRelapse ? 0.3 : 1,
+            scale: isSubmitting && !existingRelapse ? 0.9 : 1,
+          }}
+          transition={{
+            type: 'timing',
+            duration: 300,
+          }}
+        >
+          <View className="pt-16 pb-6 px-6 border-b border-gray-200">
+            <Text className="text-2xl font-bold text-gray-900">
+              {existingRelapse ? 'Edit Relapse' : 'Log Relapse'}
+            </Text>
+            {!existingRelapse && (
+              <Text className="mt-2 text-sm text-gray-500">
+                Remember: Every journey has setbacks. What matters is getting back up.
+              </Text>
+            )}
+          </View>
+        </MotiView>
 
         {/* Timestamp Display (only for editing existing relapse) */}
         {existingRelapse && (
@@ -121,18 +151,20 @@ export default function RelapseModal({ onClose, existingRelapse }: RelapseModalP
         <View className="px-6 mt-8 mb-8 gap-3">
           <Pressable
             onPress={handleSave}
-            className="bg-blue-600 rounded-lg py-4 active:bg-blue-700"
+            disabled={isSubmitting}
+            className={`rounded-lg py-4 ${isSubmitting ? 'bg-blue-400' : 'bg-blue-600 active:bg-blue-700'}`}
           >
             <Text className="text-white text-center font-semibold text-lg">
-              {existingRelapse ? 'Update' : 'Save'}
+              {isSubmitting ? 'Saving...' : existingRelapse ? 'Update' : 'Save'}
             </Text>
           </Pressable>
 
           <Pressable
             onPress={onClose}
-            className="bg-gray-200 rounded-lg py-4 active:bg-gray-300"
+            disabled={isSubmitting}
+            className={`rounded-lg py-4 ${isSubmitting ? 'bg-gray-100' : 'bg-gray-200 active:bg-gray-300'}`}
           >
-            <Text className="text-gray-700 text-center font-semibold text-lg">
+            <Text className={`text-center font-semibold text-lg ${isSubmitting ? 'text-gray-400' : 'text-gray-700'}`}>
               Cancel
             </Text>
           </Pressable>

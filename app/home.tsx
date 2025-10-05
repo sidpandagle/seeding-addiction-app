@@ -1,13 +1,16 @@
 import { View, Text, Pressable, Modal } from 'react-native';
 import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
 import { useRelapseStore } from '../src/stores/relapseStore';
 import RelapseModal from '../src/components/RelapseModal';
 import CircularProgress from '../src/components/CircularProgress';
 import { MotivationCard } from '../src/components/MotivationCard';
 import { getJourneyStart } from '../src/db/helpers';
 import { getCheckpointProgress } from '../src/utils/checkpointHelpers';
+import { getGrowthStage, GrowthStage } from '../src/utils/growthStages';
+import GrowthIcon from '../src/components/GrowthIcon';
+import * as Haptics from 'expo-haptics';
 
 export default function HomeScreen() {
   const router = useRouter();
@@ -15,12 +18,14 @@ export default function HomeScreen() {
   const [currentTime, setCurrentTime] = useState(Date.now());
   const [journeyStart, setJourneyStart] = useState<string | null>(null);
   const relapses = useRelapseStore((state) => state.relapses);
+  const previousStageRef = useRef<GrowthStage | null>(null);
 
   // Load journey start timestamp (reload when relapses change, e.g., after reset)
   useEffect(() => {
     const loadJourneyStart = async () => {
       const start = await getJourneyStart();
-      setJourneyStart(start);
+      console.log(start);
+      setJourneyStart("2025-10-04T05:55:48.620Z");
     };
     loadJourneyStart();
   }, [relapses]);
@@ -28,8 +33,9 @@ export default function HomeScreen() {
   // Update time every second for live countdown
   useEffect(() => {
     const interval = setInterval(() => {
-      setCurrentTime(Date.now());
-    }, 1000);
+      // setCurrentTime(Date.now() + (1 * 24 * 60 * 60 * 1000)); // Adjusted for smoother seconds display
+      setCurrentTime(Date.now()); // Adjusted for smoother seconds display
+    }, 100);
 
     return () => clearInterval(interval);
   }, []);
@@ -72,6 +78,9 @@ export default function HomeScreen() {
     // Calculate checkpoint progress
     const checkpointProgress = getCheckpointProgress(timeDiff);
 
+    // Calculate growth stage
+    const growthStage = getGrowthStage(timeDiff);
+
     return {
       streak: days,
       total: relapses.length,
@@ -82,31 +91,33 @@ export default function HomeScreen() {
       seconds,
       timeDiff,
       checkpointProgress,
+      growthStage,
     };
   }, [relapses, currentTime, journeyStart]);
 
+  // Handle growth stage transitions with haptic feedback
+  const handleStageChange = (newStage: GrowthStage) => {
+    if (previousStageRef.current && previousStageRef.current !== newStage) {
+      // Stage has changed - trigger haptic feedback
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    }
+    previousStageRef.current = newStage;
+  };
+
   return (
-    <View className="flex-1 bg-gray-50">
+    <View className="flex-1 bg-white">
       <StatusBar style="dark" />
 
       {/* Header */}
-      <View className="px-6 pt-16 pb-6 bg-white border-b border-gray-200">
+      <View className="px-6 pb-4 bg-white border-b border-gray-200 pt-14">
         <View className="flex-row items-start justify-between">
           <View className="flex-1">
-            <Text className="text-3xl font-bold text-gray-900">Seeding</Text>
-            <Text className="mt-1 text-sm text-gray-500">Track your progress</Text>
+            <Text className="text-3xl font-normal tracking-widest text-gray-900">Seeding</Text>
+            <Text className="mt-0 text-sm tracking-wide text-gray-500">Track your progress</Text>
           </View>
 
           {/* Header Actions */}
           <View className="flex-row gap-4">
-            {/* Total Relapses Badge */}
-            {/* <View className="items-center">
-              <View className="px-3 py-1 bg-gray-100 rounded-full">
-                <Text className="text-lg font-bold text-gray-900">{stats.total}</Text>
-              </View>
-              <Text className="mt-1 text-xs text-gray-500">relapses</Text>
-            </View> */}
-
             {/* View History Button */}
             <Pressable
               onPress={() => router.push('/relapses')}
@@ -133,16 +144,17 @@ export default function HomeScreen() {
       </View>
 
       {/* Stats Cards */}
-      <View className="px-6 mt-6">
-        <View className="items-center p-6 mb-4 bg-white shadow-sm rounded-2xl">
+      <View className="">
+        {/* <View className="items-center p-6 mb-4 bg-white shadow-sm rounded-2xl"> */}
+        <View className="items-center p-6 mb-4 rounded-2xl">
           <Text className="mb-4 text-sm tracking-wide text-gray-500 uppercase">
             Current Streak
           </Text>
 
           {/* Circular Progress */}
           <CircularProgress
-            size={180}
-            strokeWidth={12}
+            size={240}
+            strokeWidth={14}
             progress={stats.checkpointProgress?.progress ?? 0}
             useGradient={true}
             gradientColors={['#07b087', '#8ace19']}
@@ -152,53 +164,35 @@ export default function HomeScreen() {
               stats.checkpointProgress?.isCompleted
                 ? 'All milestones achieved! 🎉'
                 : stats.checkpointProgress?.nextCheckpoint
-                ? `Next: ${stats.checkpointProgress.nextCheckpoint.label}`
-                : 'Starting your journey...'
+                  ? `Next: ${stats.checkpointProgress.nextCheckpoint.label}`
+                  : 'Starting your journey...'
             }
           >
             <View className="items-center">
-              <Text className="text-5xl font-bold text-gray-900">
-                {stats.days}
-              </Text>
-              <Text className="mt-1 text-base text-gray-500">
-                {stats.days === 1 ? 'day' : 'days'}
+              {/* Growth Icon */}
+              <GrowthIcon
+                stage={stats.growthStage.id}
+                size={60}
+                animated={true}
+                glowing={true}
+                onStageChange={handleStageChange}
+              />
+
+              {/* Time Counter */}
+              {stats.days > 0 ?
+                <Text className="mt-2 text-5xl text-gray-900">
+                  {stats.days}<Text className='text-[18px]'>d</Text>
+                </Text>
+                : null}
+              <Text className={` text-gray-900 ${stats.days > 0 ? 'mt-2 text-2xl' : 'mt-2 text-3xl'}`}>
+                {stats.hours > 0 ? <>{stats.hours.toString().padStart(2, '0')}<Text className='text-[16px]'>h</Text></> : null} {stats.minutes.toString().padStart(2, '0')}<Text className='text-[16px]'>m</Text> {stats.seconds.toString().padStart(2, '0')}<Text className='text-[16px]'>s</Text>
               </Text>
             </View>
           </CircularProgress>
-
-          {/* Live countdown timer */}
-          <View className="w-full pt-4 mt-6 border-t border-gray-100">
-            <View className="flex-row justify-between">
-              <View className="items-center">
-                <Text className="text-2xl font-bold text-gray-900">
-                  {stats.days}
-                </Text>
-                <Text className="mt-1 text-xs text-gray-500">days</Text>
-              </View>
-              <View className="items-center">
-                <Text className="text-2xl font-bold text-gray-900">
-                  {stats.hours.toString().padStart(2, '0')}
-                </Text>
-                <Text className="mt-1 text-xs text-gray-500">hours</Text>
-              </View>
-              <View className="items-center">
-                <Text className="text-2xl font-bold text-gray-900">
-                  {stats.minutes.toString().padStart(2, '0')}
-                </Text>
-                <Text className="mt-1 text-xs text-gray-500">min</Text>
-              </View>
-              <View className="items-center">
-                <Text className="text-2xl font-bold text-gray-900">
-                  {stats.seconds.toString().padStart(2, '0')}
-                </Text>
-                <Text className="mt-1 text-xs text-gray-500">sec</Text>
-              </View>
-            </View>
-          </View>
         </View>
       </View>
 
-      
+
 
       {/* Motivation Section */}
       <MotivationCard />

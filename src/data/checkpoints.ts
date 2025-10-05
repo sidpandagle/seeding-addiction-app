@@ -6,6 +6,12 @@ export interface Checkpoint {
 }
 
 export const CHECKPOINTS: Checkpoint[] = [
+  { id: '5min', label: '5 minutes', shortLabel: '5 min', duration: 5 * 60 * 1000 },
+  { id: '15min', label: '15 minutes', shortLabel: '15 min', duration: 15 * 60 * 1000 },
+  { id: '30min', label: '30 minutes', shortLabel: '30 min', duration: 30 * 60 * 1000 },
+  { id: '1hr', label: '1 hour', shortLabel: '1 hr', duration: 1 * 60 * 60 * 1000 },
+  { id: '2hr', label: '2 hours', shortLabel: '2 hrs', duration: 2 * 60 * 60 * 1000 },
+  { id: '3hr', label: '3 hours', shortLabel: '3 hrs', duration: 3 * 60 * 60 * 1000 },
   { id: '6hr', label: '6 hours', shortLabel: '6 hrs', duration: 6 * 60 * 60 * 1000 },
   { id: '12hr', label: '12 hours', shortLabel: '12 hrs', duration: 12 * 60 * 60 * 1000 },
   { id: '1d', label: '1 day', shortLabel: '1 day', duration: 1 * 24 * 60 * 60 * 1000 },
