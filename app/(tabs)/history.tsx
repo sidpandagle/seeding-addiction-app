@@ -1,18 +1,14 @@
 import { View, Text, FlatList, Pressable, ScrollView } from 'react-native';
-import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useState, useMemo, useEffect } from 'react';
-import { useRelapseStore } from '../src/stores/relapseStore';
-import { useThemeStore } from '../src/stores/themeStore';
-import CircularProgress from '../src/components/CircularProgress';
-import AchievementsGrid from '../src/components/AchievementsGrid';
-import { getJourneyStart } from '../src/db/helpers';
-import { getAchievements } from '../src/data/achievements';
+import { useRelapseStore } from '../../src/stores/relapseStore';
+import { useThemeStore } from '../../src/stores/themeStore';
+import CircularProgress from '../../src/components/CircularProgress';
+import { getJourneyStart } from '../../src/db/helpers';
 
 const AVAILABLE_TAGS = ['Stress', 'Trigger', 'Social', 'Boredom', 'Craving', 'Other'];
 
-export default function RelapsesScreen() {
-  const router = useRouter();
+export default function HistoryScreen() {
   const colorScheme = useThemeStore((state) => state.colorScheme);
   const { relapses } = useRelapseStore();
   const [selectedTag, setSelectedTag] = useState<string | null>(null);
@@ -58,14 +54,8 @@ export default function RelapsesScreen() {
     return {
       streak: daysSinceLastRelapse,
       total: relapses.length,
-      elapsedTime,
     };
   }, [relapses, journeyStart]);
-
-  // Get achievements based on current elapsed time
-  const achievements = useMemo(() => {
-    return getAchievements(stats.elapsedTime);
-  }, [stats.elapsedTime]);
 
   return (
     <View className="flex-1 bg-gray-50 dark:bg-gray-900">
@@ -73,12 +63,8 @@ export default function RelapsesScreen() {
 
       {/* Header */}
       <View className="px-6 pt-16 pb-4 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
-        <View className="flex-row items-center justify-between mb-4">
-          <Pressable onPress={() => router.back()}>
-            <Text className="text-lg font-medium text-emerald-600 dark:text-emerald-400">← Back</Text>
-          </Pressable>
+        <View className="mb-4">
           <Text className="text-2xl font-bold text-gray-900 dark:text-white">History</Text>
-          <View className="w-16" />
         </View>
 
         {/* Summary Stats with Circular Progress */}
@@ -148,9 +134,6 @@ export default function RelapsesScreen() {
         data={filteredRelapses}
         keyExtractor={(item) => item.id}
         contentContainerClassName="px-6 py-4"
-        ListHeaderComponent={
-          <AchievementsGrid achievements={achievements} />
-        }
         ListEmptyComponent={
             <View className="items-center justify-center py-12">
               <Text className="text-xl font-regular text-gray-400 dark:text-gray-500">No relapses recorded</Text>

@@ -1,7 +1,6 @@
 import React from 'react';
 import { View, Text, ScrollView } from 'react-native';
 import AchievementBadge, { Achievement } from './AchievementBadge';
-import { useThemeStore } from '../stores/themeStore';
 
 interface AchievementsGridProps {
   achievements: Achievement[];
@@ -14,9 +13,6 @@ export default function AchievementsGrid({
   title = 'Achievements',
   columns = 4,
 }: AchievementsGridProps) {
-  const theme = useThemeStore((state) => state.theme);
-  const isDark = theme === 'dark';
-
   const unlockedCount = achievements.filter((a) => a.isUnlocked).length;
   const totalCount = achievements.length;
 
@@ -25,16 +21,10 @@ export default function AchievementsGrid({
       {/* Header */}
       <View className="flex-row items-center justify-between px-6 mb-4">
         <View>
-          <Text
-            className="text-lg font-semibold"
-            style={{ color: isDark ? '#FFFFFF' : '#212121' }}
-          >
+          <Text className="text-lg font-semibold text-gray-900 dark:text-white">
             {title}
           </Text>
-          <Text
-            className="mt-1 text-sm"
-            style={{ color: isDark ? '#ABABAB' : '#757575' }}
-          >
+          <Text className="mt-1 text-sm text-gray-600 dark:text-gray-400">
             {unlockedCount} of {totalCount} unlocked
           </Text>
         </View>
@@ -42,16 +32,18 @@ export default function AchievementsGrid({
         {/* Progress Indicator */}
         <View className="items-center">
           <View
-            className="w-16 h-16 items-center justify-center rounded-full"
-            style={{
-              backgroundColor: isDark ? '#2C2C2E' : '#F5F5F5',
-              borderWidth: 3,
-              borderColor: unlockedCount === totalCount ? '#FFD700' : isDark ? '#38383A' : '#E0E0E0',
-            }}
+            className={`items-center justify-center w-16 h-16 rounded-full border-3 ${
+              unlockedCount === totalCount
+                ? 'bg-gray-100 dark:bg-gray-800 border-yellow-500'
+                : 'bg-gray-100 dark:bg-gray-800 border-gray-300 dark:border-gray-700'
+            }`}
           >
             <Text
-              className="text-lg font-bold"
-              style={{ color: unlockedCount === totalCount ? '#FFD700' : isDark ? '#FFFFFF' : '#212121' }}
+              className={`text-lg font-bold ${
+                unlockedCount === totalCount
+                  ? 'text-yellow-500'
+                  : 'text-gray-900 dark:text-white'
+              }`}
             >
               {Math.round((unlockedCount / totalCount) * 100)}%
             </Text>
@@ -63,7 +55,7 @@ export default function AchievementsGrid({
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
-        contentContainerStyle={{ paddingHorizontal: 24 }}
+        contentContainerClassName="px-6"
         className="mb-2"
       >
         <View className="flex-row flex-wrap gap-4">

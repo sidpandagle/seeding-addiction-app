@@ -52,7 +52,7 @@ export default function AchievementBadge({
       gradient: ['#757575', '#9E9E9E'], // Gray for locked
       background: isDark ? '#2C2C2E' : '#F5F5F5',
       border: isDark ? '#38383A' : '#E0E0E0',
-      text: isDark ? '#6E6E73' : '#BDBDBD',
+      text: isDark ? '#ABABAB' : '#BDBDBD',
       opacity: 0.5,
     };
 
@@ -60,14 +60,12 @@ export default function AchievementBadge({
     <View className="items-center" style={{ width: config.container }}>
       {/* Badge Circle */}
       <View
-        className="items-center justify-center rounded-full"
-        style={{
-          width: config.badge,
-          height: config.badge,
-          backgroundColor: colors.background,
-          borderWidth: 3,
-          borderColor: colors.border,
-        }}
+        className={`items-center justify-center rounded-full border-3 ${
+          achievement.isUnlocked
+            ? 'bg-white dark:bg-gray-800 border-yellow-500'
+            : 'bg-gray-100 dark:bg-gray-800 border-gray-300 dark:border-gray-700'
+        }`}
+        style={{ width: config.badge, height: config.badge }}
       >
         {achievement.isUnlocked ? (
           // Unlocked: Show gradient glow effect
@@ -103,8 +101,11 @@ export default function AchievementBadge({
       {/* Badge Title (optional for small size) */}
       {size !== 'small' && (
         <Text
-          className="mt-2 text-xs font-medium text-center"
-          style={{ color: colors.text }}
+          className={`mt-2 text-xs font-medium text-center ${
+            achievement.isUnlocked
+              ? 'text-gray-900 dark:text-white'
+              : 'text-gray-400 dark:text-gray-500'
+          }`}
           numberOfLines={2}
         >
           {achievement.title}

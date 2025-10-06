@@ -20,7 +20,8 @@
       "Bash(eas build:*)",
       "Bash(cat:*)",
       "Bash(rm:*)",
-      "Bash(npx eas-cli build:*)"
+      "Bash(npx eas-cli build:*)",
+      "Bash(tasklist)"
     ],
     "deny": [],
     "ask": []

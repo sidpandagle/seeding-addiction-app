@@ -8,10 +8,10 @@ import {
   setAppLockEnabled,
   authenticateUser,
   getAuthenticationMethodName,
-} from '../src/services/security';
-import { useRelapseStore } from '../src/stores/relapseStore';
-import { useThemeStore } from '../src/stores/themeStore';
-import { ThemeToggle } from '../src/components/ThemeToggle';
+} from '../../src/services/security';
+import { useRelapseStore } from '../../src/stores/relapseStore';
+import { useThemeStore } from '../../src/stores/themeStore';
+import { ThemeToggle } from '../../src/components/ThemeToggle';
 
 export default function SettingsScreen() {
   const router = useRouter();
@@ -109,13 +109,7 @@ export default function SettingsScreen() {
 
       {/* Header */}
       <View className="bg-white dark:bg-gray-800 pt-16 pb-4 px-6 border-b border-gray-200 dark:border-gray-700">
-        <View className="flex-row items-center justify-between">
-          <Pressable onPress={() => router.back()}>
-            <Text className="text-emerald-600 dark:text-emerald-400 text-lg font-medium">← Back</Text>
-          </Pressable>
-          <Text className="text-2xl font-bold text-gray-900 dark:text-white">Settings</Text>
-          <View className="w-16" />
-        </View>
+        <Text className="text-2xl font-bold text-gray-900 dark:text-white">Settings</Text>
       </View>
 
       <ScrollView className="flex-1">

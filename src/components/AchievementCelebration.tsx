@@ -53,12 +53,7 @@ export default function AchievementCelebration({
           }}
           className="mx-6"
         >
-          <View
-            className="p-8 rounded-3xl"
-            style={{
-              backgroundColor: isDark ? '#2C2C2E' : '#FFFFFF',
-            }}
-          >
+          <View className="p-8 bg-white rounded-3xl dark:bg-gray-800">
             {/* Confetti Effect Background */}
             <View className="absolute inset-0 overflow-hidden rounded-3xl">
               <LinearGradient
@@ -77,10 +72,7 @@ export default function AchievementCelebration({
             {/* Content */}
             <View className="items-center">
               {/* Achievement Unlocked Label */}
-              <Text
-                className="mb-4 text-sm font-semibold tracking-widest uppercase"
-                style={{ color: '#FFD700' }}
-              >
+              <Text className="mb-4 text-sm font-semibold tracking-widest uppercase text-yellow-500">
                 🎉 Achievement Unlocked 🎉
               </Text>
 
@@ -110,14 +102,8 @@ export default function AchievementCelebration({
 
                   {/* Badge Circle */}
                   <View
-                    className="items-center justify-center rounded-full"
-                    style={{
-                      width: 120,
-                      height: 120,
-                      backgroundColor: isDark ? '#2C2C2E' : '#FFFFFF',
-                      borderWidth: 4,
-                      borderColor: '#FFD700',
-                    }}
+                    className="items-center justify-center bg-white rounded-full border-4 border-yellow-500 dark:bg-gray-800"
+                    style={{ width: 120, height: 120 }}
                   >
                     <Text style={{ fontSize: 56 }}>{achievement.emoji}</Text>
                   </View>
@@ -130,10 +116,7 @@ export default function AchievementCelebration({
                 animate={{ opacity: 1, translateY: 0 }}
                 transition={{ type: 'timing', duration: 400, delay: 400 }}
               >
-                <Text
-                  className="mt-6 text-2xl font-bold text-center"
-                  style={{ color: isDark ? '#FFFFFF' : '#212121' }}
-                >
+                <Text className="mt-6 text-2xl font-bold text-center text-gray-900 dark:text-white">
                   {achievement.title}
                 </Text>
               </MotiView>
@@ -144,10 +127,7 @@ export default function AchievementCelebration({
                 animate={{ opacity: 1, translateY: 0 }}
                 transition={{ type: 'timing', duration: 400, delay: 500 }}
               >
-                <Text
-                  className="mt-2 text-sm text-center"
-                  style={{ color: isDark ? '#ABABAB' : '#757575' }}
-                >
+                <Text className="mt-2 text-sm text-center text-gray-600 dark:text-gray-400">
                   {achievement.description}
                 </Text>
               </MotiView>
@@ -159,14 +139,8 @@ export default function AchievementCelebration({
                 transition={{ type: 'timing', duration: 400, delay: 600 }}
                 className="mt-6"
               >
-                <View
-                  className="px-6 py-3 rounded-full"
-                  style={{ backgroundColor: isDark ? '#1B5E20' : '#E8F5E9' }}
-                >
-                  <Text
-                    className="text-sm font-medium text-center"
-                    style={{ color: isDark ? '#A5D6A7' : '#2E7D32' }}
-                  >
+                <View className="px-6 py-3 rounded-full bg-emerald-50 dark:bg-emerald-900/30">
+                  <Text className="text-sm font-medium text-center text-emerald-700 dark:text-emerald-300">
                     Keep growing! 🌱
                   </Text>
                 </View>
@@ -181,8 +155,7 @@ export default function AchievementCelebration({
               >
                 <Pressable
                   onPress={onClose}
-                  className="py-4 rounded-2xl active:opacity-80"
-                  style={{ backgroundColor: '#FFD700' }}
+                  className="py-4 rounded-2xl active:opacity-80 bg-yellow-500"
                 >
                   <Text className="text-lg font-semibold text-center text-gray-900">
                     Continue

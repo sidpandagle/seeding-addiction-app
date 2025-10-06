@@ -18,12 +18,12 @@ export default function OnboardingScreen() {
         await setJourneyStart(new Date().toISOString());
       }
 
-      // Navigate to home
-      router.replace('/home');
+      // Navigate to dashboard
+      router.replace('/(tabs)/dashboard');
     } catch (error) {
       console.error('Failed to start journey:', error);
       // Still navigate even if there's an error
-      router.replace('/home');
+      router.replace('/(tabs)/dashboard');
     }
   };
 

@@ -76,9 +76,8 @@ export default function RootLayout() {
     <AppLock>
       <Stack screenOptions={{ headerShown: false }}>
         <Stack.Screen name="index" />
-        <Stack.Screen name="home" />
-        <Stack.Screen name="relapses" />
-        <Stack.Screen name="settings" />
+        <Stack.Screen name="onboarding" />
+        <Stack.Screen name="(tabs)" />
       </Stack>
     </AppLock>
   );
