@@ -7,11 +7,14 @@ import { useThemeStore } from '../src/stores/themeStore';
 import RelapseModal from '../src/components/RelapseModal';
 import CircularProgress from '../src/components/CircularProgress';
 import { MotivationCard } from '../src/components/MotivationCard';
+import AchievementCelebration from '../src/components/AchievementCelebration';
 import { getJourneyStart } from '../src/db/helpers';
-import { getCheckpointProgress } from '../src/utils/checkpointHelpers';
+import { getCheckpointProgress, formatTimeRemaining } from '../src/utils/checkpointHelpers';
 import { getGrowthStage, GrowthStage } from '../src/utils/growthStages';
 import GrowthIcon from '../src/components/GrowthIcon';
 import { calculateUserStats } from '../src/utils/statsHelpers';
+import { getNewlyUnlockedAchievements } from '../src/data/achievements';
+import { Achievement } from '../src/components/AchievementBadge';
 import * as Haptics from 'expo-haptics';
 
 export default function HomeScreen() {
@@ -22,6 +25,10 @@ export default function HomeScreen() {
   const [journeyStart, setJourneyStart] = useState<string | null>(null);
   const relapses = useRelapseStore((state) => state.relapses);
   const previousStageRef = useRef<GrowthStage | null>(null);
+  const [celebrationAchievement, setCelebrationAchievement] = useState<Achievement | null>(null);
+  const previousTimeRef = useRef<number>(0);
+  const lastShownAchievementIdRef = useRef<string | null>(null);
+  const achievementCheckInProgressRef = useRef<boolean>(false);
 
   // Load journey start timestamp (reload when relapses change, e.g., after reset)
   useEffect(() => {
@@ -30,12 +37,15 @@ export default function HomeScreen() {
       setJourneyStart(start);
     };
     loadJourneyStart();
+    // Reset achievement tracking when relapses change (new relapse recorded)
+    lastShownAchievementIdRef.current = null;
+    previousTimeRef.current = 0;
   }, [relapses]);
 
   // Update time every second for live countdown
   useEffect(() => {
     const interval = setInterval(() => {
-      setCurrentTime(Date.now() + 60 * 1000);
+      setCurrentTime(Date.now());
     }, 1000); // Update every second instead of 100ms to reduce re-renders
 
     return () => clearInterval(interval);
@@ -105,6 +115,37 @@ export default function HomeScreen() {
       totalAttempts: userStats.totalAttempts,
     };
   }, [relapses, currentTime, journeyStart, userStats]);
+
+  // Check for newly unlocked achievements (debounce to prevent duplicates)
+  useEffect(() => {
+    const currentElapsedTime = stats.timeDiff;
+
+    // Skip if check already in progress
+    if (achievementCheckInProgressRef.current) {
+      return;
+    }
+
+    if (previousTimeRef.current > 0 && currentElapsedTime > previousTimeRef.current) {
+      const newAchievements = getNewlyUnlockedAchievements(currentElapsedTime, previousTimeRef.current);
+      if (newAchievements.length > 0) {
+        const firstNewAchievement = newAchievements[0];
+        // Only show if we haven't already shown this specific achievement
+        if (lastShownAchievementIdRef.current !== firstNewAchievement.id) {
+          achievementCheckInProgressRef.current = true;
+          lastShownAchievementIdRef.current = firstNewAchievement.id;
+          setCelebrationAchievement(firstNewAchievement);
+        }
+      }
+    }
+    previousTimeRef.current = currentElapsedTime;
+  }, [stats.timeDiff]);
+
+  // Reset achievement check lock when celebration is closed
+  useEffect(() => {
+    if (!celebrationAchievement) {
+      achievementCheckInProgressRef.current = false;
+    }
+  }, [celebrationAchievement]);
 
   // Handle growth stage transitions with haptic feedback
   const handleStageChange = (newStage: GrowthStage) => {
@@ -181,7 +222,7 @@ export default function HomeScreen() {
               stats.checkpointProgress?.isCompleted
                 ? 'All milestones achieved! 🎉'
                 : stats.checkpointProgress?.nextCheckpoint
-                  ? `Next: ${stats.checkpointProgress.nextCheckpoint.label}`
+                  ? `Next: ${stats.checkpointProgress.nextCheckpoint.label} (${formatTimeRemaining(stats.checkpointProgress.nextCheckpoint.duration - stats.timeDiff)} left)`
                   : 'Starting your journey...'
             }
           >
@@ -259,6 +300,13 @@ export default function HomeScreen() {
       >
         <RelapseModal onClose={() => setShowModal(false)} />
       </Modal>
+
+      {/* Achievement Celebration Modal */}
+      <AchievementCelebration
+        achievement={celebrationAchievement}
+        visible={!!celebrationAchievement}
+        onClose={() => setCelebrationAchievement(null)}
+      />
     </ScrollView>
   );
 }

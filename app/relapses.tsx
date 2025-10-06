@@ -5,7 +5,9 @@ import { useState, useMemo, useEffect } from 'react';
 import { useRelapseStore } from '../src/stores/relapseStore';
 import { useThemeStore } from '../src/stores/themeStore';
 import CircularProgress from '../src/components/CircularProgress';
+import AchievementsGrid from '../src/components/AchievementsGrid';
 import { getJourneyStart } from '../src/db/helpers';
+import { getAchievements } from '../src/data/achievements';
 
 const AVAILABLE_TAGS = ['Stress', 'Trigger', 'Social', 'Boredom', 'Craving', 'Other'];
 
@@ -37,24 +39,33 @@ export default function RelapsesScreen() {
   }, [relapses, selectedTag]);
 
   const stats = useMemo(() => {
+    let startTime: string | null = null;
+
     if (relapses.length === 0) {
-      return { streak: 0, total: 0 };
+      // No relapses - use journey start time
+      startTime = journeyStart;
+    } else {
+      // Has relapses - use last relapse time
+      const sortedRelapses = [...relapses].sort(
+        (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+      );
+      startTime = sortedRelapses[0].timestamp;
     }
 
-    const sortedRelapses = [...relapses].sort(
-      (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
-    );
-
-    const lastRelapse = sortedRelapses[0];
-    const daysSinceLastRelapse = Math.floor(
-      (Date.now() - new Date(lastRelapse.timestamp).getTime()) / (1000 * 60 * 60 * 24)
-    );
+    const elapsedTime = startTime ? Math.max(0, Date.now() - new Date(startTime).getTime()) : 0;
+    const daysSinceLastRelapse = Math.floor(elapsedTime / (1000 * 60 * 60 * 24));
 
     return {
       streak: daysSinceLastRelapse,
       total: relapses.length,
+      elapsedTime,
     };
-  }, [relapses]);
+  }, [relapses, journeyStart]);
+
+  // Get achievements based on current elapsed time
+  const achievements = useMemo(() => {
+    return getAchievements(stats.elapsedTime);
+  }, [stats.elapsedTime]);
 
   return (
     <View className="flex-1 bg-gray-50 dark:bg-gray-900">
@@ -133,12 +144,14 @@ export default function RelapsesScreen() {
       </View>
 
       {/* Content Views */}
-      
-        <FlatList
-          data={filteredRelapses}
-          keyExtractor={(item) => item.id}
-          contentContainerClassName="px-6 py-4"
-          ListEmptyComponent={
+      <FlatList
+        data={filteredRelapses}
+        keyExtractor={(item) => item.id}
+        contentContainerClassName="px-6 py-4"
+        ListHeaderComponent={
+          <AchievementsGrid achievements={achievements} />
+        }
+        ListEmptyComponent={
             <View className="items-center justify-center py-12">
               <Text className="text-xl font-regular text-gray-400 dark:text-gray-500">No relapses recorded</Text>
               <Text className="mt-2 text-sm font-regular text-gray-400 dark:text-gray-500">

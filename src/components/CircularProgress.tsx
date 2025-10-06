@@ -111,7 +111,7 @@ export default function CircularProgress({
 
       {/* Checkpoint Label */}
       {showCheckpoint && checkpointLabel && (
-        <Text className="mt-3 text-xs font-medium tracking-wide text-gray-500 dark:text-gray-400 uppercase">
+        <Text className="mt-3 text-xs font-medium tracking-wide text-gray-500 uppercase dark:text-gray-400">
           {checkpointLabel}
         </Text>
       )}

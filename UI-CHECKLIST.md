@@ -22,7 +22,7 @@
 - [x] Create clean card components with soft shadows (implemented in Home screen)
 - [x] Implement circular progress bars
 - [x] Build gradient progress rings
-- [ ] Create achievement badge components
+- [x] Create achievement badge components
 
 ## 📱 Key Screens
 
@@ -48,7 +48,7 @@
 - [x] Show historical relapse data
 - [x] Display relapse list with timestamps and notes
 - [x] Build circular progress bar for current streak
-- [ ] Display milestones and achievements
+- [x] Display milestones and achievements
 
 ### Settings Screen
 - [x] Implement app lock with biometric authentication
@@ -61,20 +61,29 @@
 - [x] Rotate motivational messages
 
 ### Achievements
-- [ ] Design achievement unlock screens
-- [ ] Create visual stages:
-  - [ ] "Sapling Stage"
-  - [ ] "Branching Out"
-  - [ ] "Full Bloom"
-- [ ] Add celebration animations
-- [ ] Implement achievement notifications
+- [x] Design achievement unlock screens
+- [x] Create visual stages:
+  - [x] "First Steps" (5 min)
+  - [x] "One Hour Warrior" (1 hour)
+  - [x] "Daily Champion" (1 day)
+  - [x] "Three Day Hero" (3 days)
+  - [x] "Weekly Victor" (1 week)
+  - [x] "Fortnight Fighter" (2 weeks)
+  - [x] "Legendary Streak" (3 weeks)
+  - [x] "Monthly Master" (1 month)
+  - [x] "Two Month Titan" (2 months)
+  - [x] "Quarterly King" (3 months)
+  - [x] "Half Year Hero" (6 months)
+  - [x] "Annual Legend" (1 year)
+- [x] Add celebration animations
+- [x] Implement achievement notifications
 
 ## ✨ Animations & Interactions
 
 ### Haptic Feedback
 - [x] Install `expo-haptics`
 - [x] Implement haptic feedback for relapse reset
-- [ ] Add haptic for milestone achievements
+- [x] Add haptic for milestone achievements
 - [ ] Include haptic for navigation actions
 
 
@@ -148,7 +157,7 @@
 
 ### Progress Indicators
 - [x] Circular progress ring with gradient
-- [ ] Achievement badges
+- [x] Achievement badges
 
 ## ✅ Quality Assurance
 
