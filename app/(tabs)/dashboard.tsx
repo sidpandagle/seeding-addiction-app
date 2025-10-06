@@ -4,6 +4,7 @@ import { useState, useMemo, useEffect, useRef } from 'react';
 import { useRelapseStore } from '../../src/stores/relapseStore';
 import { useThemeStore } from '../../src/stores/themeStore';
 import RelapseModal from '../../src/components/RelapseModal';
+import { ThemeToggle } from '../../src/components/ThemeToggle';
 import CircularProgress from '../../src/components/CircularProgress';
 import { MotivationCard } from '../../src/components/MotivationCard';
 import AchievementCelebration from '../../src/components/AchievementCelebration';
@@ -166,8 +167,13 @@ export default function DashboardScreen() {
 
       {/* Header */}
       <View className="px-6 pt-16 pb-4 bg-white border-b border-gray-200 dark:bg-gray-800 dark:border-gray-700">
-        <Text className="text-2xl font-bold text-gray-900 dark:text-white">Seeding</Text>
-        <Text className="mt-1 text-sm tracking-wide text-gray-500 dark:text-gray-400 font-regular">Track your progress</Text>
+        <View className="flex-row items-center justify-between">
+          <View className="flex-1">
+            <Text className="text-2xl font-bold text-gray-900 dark:text-white">Seeding</Text>
+            <Text className="mt-1 text-sm tracking-wide text-gray-500 dark:text-gray-400 font-regular">Track your progress</Text>
+          </View>
+          <ThemeToggle />
+        </View>
       </View>
 
       <ScrollView className="flex-1">

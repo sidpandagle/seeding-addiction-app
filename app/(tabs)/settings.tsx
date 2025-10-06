@@ -11,7 +11,6 @@ import {
 } from '../../src/services/security';
 import { useRelapseStore } from '../../src/stores/relapseStore';
 import { useThemeStore } from '../../src/stores/themeStore';
-import { ThemeToggle } from '../../src/components/ThemeToggle';
 
 export default function SettingsScreen() {
   const router = useRouter();
@@ -113,27 +112,6 @@ export default function SettingsScreen() {
       </View>
 
       <ScrollView className="flex-1">
-        {/* Appearance Section */}
-        <View className="mt-6 px-6">
-          <Text className="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-3">
-            Appearance
-          </Text>
-
-          <View className="bg-white dark:bg-gray-800 rounded-xl p-4 mb-4">
-            <View className="flex-row items-center justify-between">
-              <View className="flex-1">
-                <Text className="text-base font-semibold text-gray-900 dark:text-white">
-                  Theme
-                </Text>
-                <Text className="text-sm font-regular text-gray-500 dark:text-gray-400 mt-1">
-                  Switch between light and dark mode
-                </Text>
-              </View>
-              <ThemeToggle />
-            </View>
-          </View>
-        </View>
-
         {/* Security Section */}
         <View className="mt-6 px-6">
           <Text className="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-3">
