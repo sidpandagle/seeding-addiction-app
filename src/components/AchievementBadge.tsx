@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text } from 'react-native';
-import { MotiView } from 'moti';
+import Animated, { FadeIn, ZoomInRotate } from 'react-native-reanimated';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useThemeStore } from '../stores/themeStore';
 
@@ -116,18 +116,9 @@ export default function AchievementBadge({
 
   if (animated && achievement.isUnlocked) {
     return (
-      <MotiView
-        from={{ scale: 0, rotate: '0deg' }}
-        animate={{ scale: 1, rotate: '360deg' }}
-        transition={{
-          type: 'spring',
-          damping: 12,
-          stiffness: 100,
-          mass: 0.8,
-        }}
-      >
+      <Animated.View entering={ZoomInRotate.springify().damping(12).stiffness(100).mass(0.8)}>
         {BadgeContent}
-      </MotiView>
+      </Animated.View>
     );
   }
 

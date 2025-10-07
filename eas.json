@@ -19,7 +19,12 @@
         "simulator": false
       },
       "android": {
-        "buildType": "apk"
+        "buildType": "apk",
+        "gradleCommand": ":app:assembleRelease",
+        "withoutCredentials": false
+      },
+      "env": {
+        "EXPO_USE_METRO_WORKSPACE_ROOT": "1"
       }
     },
     "production": {
@@ -28,7 +33,11 @@
         "simulator": false
       },
       "android": {
-        "buildType": "app-bundle"
+        "buildType": "app-bundle",
+        "enableProguardInReleaseBuilds": true
+      },
+      "env": {
+        "EXPO_USE_METRO_WORKSPACE_ROOT": "1"
       }
     }
   },

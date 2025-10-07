@@ -23,3 +23,6 @@ web-build/
 
 # TypeScript
 *.tsbuildinfo
+
+# Android
+android/

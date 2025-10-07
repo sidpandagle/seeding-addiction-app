@@ -1,7 +1,21 @@
 import { create } from 'zustand';
-import { persist, createJSONStorage } from 'zustand/middleware';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { persist, createJSONStorage, StateStorage } from 'zustand/middleware';
+import * as SecureStore from 'expo-secure-store';
 import { ColorScheme } from '../theme/colors';
+
+// Create a lightweight storage wrapper using expo-secure-store
+const secureStorage: StateStorage = {
+  getItem: async (name: string) => {
+    const value = await SecureStore.getItemAsync(name);
+    return value ?? null;
+  },
+  setItem: async (name: string, value: string) => {
+    await SecureStore.setItemAsync(name, value);
+  },
+  removeItem: async (name: string) => {
+    await SecureStore.deleteItemAsync(name);
+  },
+};
 
 interface ThemeState {
   colorScheme: ColorScheme;
@@ -25,7 +39,7 @@ export const useThemeStore = create<ThemeState>()(
     }),
     {
       name: 'theme-storage',
-      storage: createJSONStorage(() => AsyncStorage),
+      storage: createJSONStorage(() => secureStorage),
       onRehydrateStorage: () => (state) => {
         state?.setHasHydrated(true);
       },

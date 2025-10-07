@@ -209,7 +209,7 @@ export default function DashboardScreen() {
                   stage={stats.growthStage.id}
                   size={60}
                   animated={true}
-                  glowing={true}
+                  glowing={false}
                   onStageChange={handleStageChange}
                 />
 

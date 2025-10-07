@@ -1,9 +1,8 @@
 import React, { useEffect } from 'react';
 import { View, Text, Modal, Pressable } from 'react-native';
-import { MotiView } from 'moti';
+import Animated, { FadeIn, ZoomIn, ZoomOut, SlideInUp } from 'react-native-reanimated';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Achievement } from './AchievementBadge';
-import { useThemeStore } from '../stores/themeStore';
 import * as Haptics from 'expo-haptics';
 
 interface AchievementCelebrationProps {
@@ -17,8 +16,6 @@ export default function AchievementCelebration({
   visible,
   onClose,
 }: AchievementCelebrationProps) {
-  const theme = useThemeStore((state) => state.theme);
-  const isDark = theme === 'dark';
 
   // Trigger haptic feedback when achievement appears
   useEffect(() => {
@@ -42,15 +39,9 @@ export default function AchievementCelebration({
           onPress={onClose}
         />
 
-        <MotiView
-          from={{ scale: 0, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          exit={{ scale: 0.8, opacity: 0 }}
-          transition={{
-            type: 'spring',
-            damping: 15,
-            stiffness: 200,
-          }}
+        <Animated.View
+          entering={ZoomIn.springify().damping(15).stiffness(200)}
+          exiting={ZoomOut.duration(200)}
           className="mx-6"
         >
           <View className="p-8 bg-white rounded-3xl dark:bg-gray-800">
@@ -77,14 +68,8 @@ export default function AchievementCelebration({
               </Text>
 
               {/* Badge with Sparkle Animation */}
-              <MotiView
-                from={{ scale: 0, rotate: '0deg' }}
-                animate={{ scale: 1, rotate: '360deg' }}
-                transition={{
-                  type: 'spring',
-                  damping: 10,
-                  delay: 200,
-                }}
+              <Animated.View
+                entering={ZoomIn.delay(200).springify().damping(10)}
               >
                 <View className="relative items-center justify-center">
                   {/* Glow Effect */}
@@ -108,35 +93,25 @@ export default function AchievementCelebration({
                     <Text style={{ fontSize: 56 }}>{achievement.emoji}</Text>
                   </View>
                 </View>
-              </MotiView>
+              </Animated.View>
 
               {/* Achievement Title */}
-              <MotiView
-                from={{ opacity: 0, translateY: 20 }}
-                animate={{ opacity: 1, translateY: 0 }}
-                transition={{ type: 'timing', duration: 400, delay: 400 }}
-              >
+              <Animated.View entering={SlideInUp.delay(400).duration(400)}>
                 <Text className="mt-6 text-2xl font-bold text-center text-gray-900 dark:text-white">
                   {achievement.title}
                 </Text>
-              </MotiView>
+              </Animated.View>
 
               {/* Achievement Description */}
-              <MotiView
-                from={{ opacity: 0, translateY: 20 }}
-                animate={{ opacity: 1, translateY: 0 }}
-                transition={{ type: 'timing', duration: 400, delay: 500 }}
-              >
+              <Animated.View entering={SlideInUp.delay(500).duration(400)}>
                 <Text className="mt-2 text-sm text-center text-gray-600 dark:text-gray-400">
                   {achievement.description}
                 </Text>
-              </MotiView>
+              </Animated.View>
 
               {/* Motivational Message */}
-              <MotiView
-                from={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ type: 'timing', duration: 400, delay: 600 }}
+              <Animated.View
+                entering={ZoomIn.delay(600).duration(400)}
                 className="mt-6"
               >
                 <View className="px-6 py-3 rounded-full bg-emerald-50 dark:bg-emerald-900/30">
@@ -144,13 +119,11 @@ export default function AchievementCelebration({
                     Keep growing! 🌱
                   </Text>
                 </View>
-              </MotiView>
+              </Animated.View>
 
               {/* Close Button */}
-              <MotiView
-                from={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ type: 'timing', duration: 400, delay: 700 }}
+              <Animated.View
+                entering={FadeIn.delay(700).duration(400)}
                 className="w-full mt-8"
               >
                 <Pressable
@@ -161,10 +134,10 @@ export default function AchievementCelebration({
                     Continue
                   </Text>
                 </Pressable>
-              </MotiView>
+              </Animated.View>
             </View>
           </View>
-        </MotiView>
+        </Animated.View>
       </View>
     </Modal>
   );

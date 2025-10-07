@@ -1,6 +1,5 @@
 import { View, Text, TextInput, Pressable, ScrollView, KeyboardAvoidingView, Platform } from 'react-native';
 import { useState } from 'react';
-import { MotiView } from 'moti';
 import { useRelapseStore } from '../stores/relapseStore';
 import { useThemeStore } from '../stores/themeStore';
 import * as Haptics from 'expo-haptics';
@@ -69,35 +68,23 @@ export default function RelapseModal({ onClose, existingRelapse }: RelapseModalP
     >
       <ScrollView className="flex-1">
         {/* Header with wither animation */}
-        <MotiView
-          from={{ opacity: 1, scale: 1 }}
-          animate={{
-            opacity: isSubmitting && !existingRelapse ? 0.3 : 1,
-            scale: isSubmitting && !existingRelapse ? 0.9 : 1,
-          }}
-          transition={{
-            type: 'timing',
-            duration: 300,
-          }}
-        >
-          <View className="pt-16 pb-6 px-6 border-b border-gray-200 dark:border-gray-700">
-            <Text className="text-2xl font-bold text-gray-900 dark:text-white">
-              {existingRelapse ? 'Edit Relapse' : 'Log Relapse'}
+        <View className="px-6 pt-16 pb-6 border-b border-gray-200 dark:border-gray-700">
+          <Text className="text-2xl font-bold text-gray-900 dark:text-white">
+            {existingRelapse ? 'Edit Relapse' : 'Log Relapse'}
+          </Text>
+          {!existingRelapse && (
+            <Text className="mt-2 text-sm text-gray-500 font-regular dark:text-gray-400">
+              Remember: Every journey has setbacks. What matters is getting back up.
             </Text>
-            {!existingRelapse && (
-              <Text className="mt-2 text-sm font-regular text-gray-500 dark:text-gray-400">
-                Remember: Every journey has setbacks. What matters is getting back up.
-              </Text>
-            )}
-          </View>
-        </MotiView>
+          )}
+        </View>
 
         {/* Timestamp Display (only for editing existing relapse) */}
         {existingRelapse && (
           <View className="px-6 mt-6">
-            <Text className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">Timestamp</Text>
-            <View className="bg-gray-100 dark:bg-gray-800 rounded-lg p-4">
-              <Text className="text-base font-regular text-gray-900 dark:text-white">
+            <Text className="mb-2 text-sm font-medium text-gray-500 dark:text-gray-400">Timestamp</Text>
+            <View className="p-4 bg-gray-100 rounded-lg dark:bg-gray-800">
+              <Text className="text-base text-gray-900 font-regular dark:text-white">
                 {new Date(timestamp!).toLocaleString('en-US', {
                   dateStyle: 'medium',
                   timeStyle: 'short',
@@ -109,7 +96,7 @@ export default function RelapseModal({ onClose, existingRelapse }: RelapseModalP
 
         {/* Note Input */}
         <View className="px-6 mt-6">
-          <Text className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">Note (Optional)</Text>
+          <Text className="mb-2 text-sm font-medium text-gray-500 dark:text-gray-400">Note (Optional)</Text>
           <TextInput
             value={note}
             onChangeText={setNote}
@@ -124,24 +111,22 @@ export default function RelapseModal({ onClose, existingRelapse }: RelapseModalP
 
         {/* Tags */}
         <View className="px-6 mt-6">
-          <Text className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-3">Tags (Optional)</Text>
+          <Text className="mb-3 text-sm font-medium text-gray-500 dark:text-gray-400">Tags (Optional)</Text>
           <View className="flex-row flex-wrap gap-2">
             {AVAILABLE_TAGS.map((tag) => (
               <Pressable
                 key={tag}
                 onPress={() => toggleTag(tag)}
-                className={`px-4 py-2 rounded-full ${
-                  selectedTags.includes(tag)
+                className={`px-4 py-2 rounded-full ${selectedTags.includes(tag)
                     ? 'bg-emerald-600 dark:bg-emerald-700'
                     : 'bg-gray-200 dark:bg-gray-700'
-                }`}
+                  }`}
               >
                 <Text
-                  className={`text-sm font-medium ${
-                    selectedTags.includes(tag)
+                  className={`text-sm font-medium ${selectedTags.includes(tag)
                       ? 'text-white'
                       : 'text-gray-700 dark:text-gray-300'
-                  }`}
+                    }`}
                 >
                   {tag}
                 </Text>
@@ -151,13 +136,13 @@ export default function RelapseModal({ onClose, existingRelapse }: RelapseModalP
         </View>
 
         {/* Action Buttons */}
-        <View className="px-6 mt-8 mb-8 gap-4">
+        <View className="gap-4 px-6 mt-8 mb-8">
           <Pressable
             onPress={handleSave}
             disabled={isSubmitting}
             className={`rounded-lg py-4 ${isSubmitting ? 'bg-emerald-400 dark:bg-emerald-600' : 'bg-emerald-600 dark:bg-emerald-700 active:bg-emerald-700 dark:active:bg-emerald-800'}`}
           >
-            <Text className="text-white text-center font-semibold text-lg">
+            <Text className="text-lg font-semibold text-center text-white">
               {isSubmitting ? 'Saving...' : existingRelapse ? 'Update' : 'Save'}
             </Text>
           </Pressable>

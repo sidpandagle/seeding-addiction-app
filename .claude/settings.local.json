@@ -21,7 +21,9 @@
       "Bash(cat:*)",
       "Bash(rm:*)",
       "Bash(npx eas-cli build:*)",
-      "Bash(tasklist)"
+      "Bash(tasklist)",
+      "Bash(dir:*)",
+      "Bash(npx sharp-cli:*)"
     ],
     "deny": [],
     "ask": []
