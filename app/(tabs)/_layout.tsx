@@ -1,7 +1,8 @@
 import { Tabs } from 'expo-router';
-import { Text, View } from 'react-native';
+import { View } from 'react-native';
 import { useThemeStore } from '../../src/stores/themeStore';
 import { useEffect, useState } from 'react';
+import { Home, History, Trophy, Settings } from 'lucide-react-native';
 
 export default function TabsLayout() {
   const colorScheme = useThemeStore((state) => state.colorScheme);
@@ -41,8 +42,8 @@ export default function TabsLayout() {
         name="dashboard"
         options={{
           title: 'Dashboard',
-          tabBarIcon: ({ color }) => (
-            <TabIcon icon="🏠" color={color} />
+          tabBarIcon: ({ color, focused }) => (
+            <Home size={24} color={color} strokeWidth={focused ? 2.5 : 2} />
           ),
         }}
       />
@@ -50,8 +51,8 @@ export default function TabsLayout() {
         name="history"
         options={{
           title: 'History',
-          tabBarIcon: ({ color }) => (
-            <TabIcon icon="📊" color={color} />
+          tabBarIcon: ({ color, focused }) => (
+            <History size={24} color={color} strokeWidth={focused ? 2.5 : 2} />
           ),
         }}
       />
@@ -59,8 +60,8 @@ export default function TabsLayout() {
         name="achievements"
         options={{
           title: 'Achievements',
-          tabBarIcon: ({ color }) => (
-            <TabIcon icon="🏆" color={color} />
+          tabBarIcon: ({ color, focused }) => (
+            <Trophy size={24} color={color} strokeWidth={focused ? 2.5 : 2} />
           ),
         }}
       />
@@ -68,19 +69,11 @@ export default function TabsLayout() {
         name="settings"
         options={{
           title: 'Settings',
-          tabBarIcon: ({ color }) => (
-            <TabIcon icon="⚙️" color={color} />
+          tabBarIcon: ({ color, focused }) => (
+            <Settings size={24} color={color} strokeWidth={focused ? 2.5 : 2} />
           ),
         }}
       />
     </Tabs>
-  );
-}
-
-function TabIcon({ icon, color }: { icon: string; color: string }) {
-  return (
-    <Text style={{ fontSize: 20, opacity: color === '#10b981' ? 1 : 0.5, marginBottom: 4 }}>
-      {icon}
-    </Text>
   );
 }

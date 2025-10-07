@@ -23,7 +23,8 @@
       "Bash(npx eas-cli build:*)",
       "Bash(tasklist)",
       "Bash(dir:*)",
-      "Bash(npx sharp-cli:*)"
+      "Bash(npx sharp-cli:*)",
+      "Bash(npm ls:*)"
     ],
     "deny": [],
     "ask": []

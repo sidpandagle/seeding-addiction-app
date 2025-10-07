@@ -16,6 +16,7 @@ import { calculateUserStats } from '../../src/utils/statsHelpers';
 import { getNewlyUnlockedAchievements } from '../../src/data/achievements';
 import { Achievement } from '../../src/components/AchievementBadge';
 import * as Haptics from 'expo-haptics';
+import { Sparkles } from 'lucide-react-native';
 
 export default function DashboardScreen() {
   const colorScheme = useThemeStore((state) => state.colorScheme);
@@ -166,11 +167,16 @@ export default function DashboardScreen() {
       <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'} />
 
       {/* Header */}
-      <View className="px-6 pt-16 pb-4 bg-white border-b border-gray-200 dark:bg-gray-800 dark:border-gray-700">
+      <View className="px-6 pt-16 pb-6 border-b bg-emerald-50 dark:bg-gray-800 border-emerald-100 dark:border-gray-700">
         <View className="flex-row items-center justify-between">
-          <View className="flex-1">
-            <Text className="text-2xl font-bold text-gray-900 dark:text-white">Seeding</Text>
-            <Text className="mt-1 text-sm tracking-wide text-gray-500 dark:text-gray-400 font-regular">Track your progress</Text>
+          <View className="flex-row items-center flex-1 gap-3">
+            <View className="items-center justify-center w-12 h-12 rounded-2xl bg-emerald-100 dark:bg-emerald-900/30">
+              <Sparkles size={24} color="#059669" strokeWidth={2} />
+            </View>
+            <View className="flex-1">
+              <Text className="text-2xl font-bold text-gray-900 dark:text-white">Seeding</Text>
+              <Text className="text-sm text-emerald-600 dark:text-emerald-400">Track your progress</Text>
+            </View>
           </View>
           <ThemeToggle />
         </View>

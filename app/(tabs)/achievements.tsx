@@ -4,13 +4,16 @@ import { useState, useMemo, useEffect } from 'react';
 import { useRelapseStore } from '../../src/stores/relapseStore';
 import { useThemeStore } from '../../src/stores/themeStore';
 import AchievementsGrid from '../../src/components/AchievementsGrid';
+import AchievementDetailModal from '../../src/components/AchievementDetailModal';
 import { getJourneyStart } from '../../src/db/helpers';
 import { getAchievements } from '../../src/data/achievements';
+import { Achievement } from '../../src/components/AchievementBadge';
 
 export default function AchievementsScreen() {
   const colorScheme = useThemeStore((state) => state.colorScheme);
   const { relapses } = useRelapseStore();
   const [journeyStart, setJourneyStart] = useState<string | null>(null);
+  const [selectedAchievement, setSelectedAchievement] = useState<Achievement | null>(null);
 
   // Load journey start timestamp
   useEffect(() => {
@@ -55,7 +58,7 @@ export default function AchievementsScreen() {
       <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'} />
 
       {/* Header */}
-      <View className="px-6 pt-16 pb-4 bg-white border-b border-gray-200 dark:bg-gray-800 dark:border-gray-700">
+      <View className="px-6 pt-16 pb-4 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
         <Text className="text-2xl font-bold text-gray-900 dark:text-white">Achievements</Text>
         <Text className="mt-2 text-sm text-gray-600 dark:text-gray-400">
           Unlocked {unlockedCount} of {totalCount} achievements
@@ -94,8 +97,18 @@ export default function AchievementsScreen() {
         </View>
 
         {/* Achievements Grid */}
-        <AchievementsGrid achievements={achievements} />
+        <AchievementsGrid
+          achievements={achievements}
+          onAchievementPress={(achievement) => setSelectedAchievement(achievement)}
+        />
       </ScrollView>
+
+      {/* Achievement Detail Modal */}
+      <AchievementDetailModal
+        achievement={selectedAchievement}
+        visible={!!selectedAchievement}
+        onClose={() => setSelectedAchievement(null)}
+      />
     </View>
   );
 }
