@@ -32,16 +32,30 @@ export default function TabsLayout() {
           paddingBottom: 8,
           paddingTop: 8,
         },
+        tabBarItemStyle: {
+          flex: 1,
+          justifyContent: 'center',
+          alignItems: 'center',
+        },
         tabBarLabelStyle: {
           fontSize: 12,
           fontFamily: 'Poppins_500Medium',
+          marginTop: 4,
+        },
+        tabBarIconStyle: {
+          marginTop: 4,
+        },
+        tabBarIndicatorStyle: {
+          backgroundColor: '#10b981',
+          height: 3,
+          borderRadius: 2,
         },
       }}
     >
       <Tabs.Screen
-        name="dashboard"
+        name="home"
         options={{
-          title: 'Dashboard',
+          title: 'Home',
           tabBarIcon: ({ color, focused }) => (
             <Home size={24} color={color} strokeWidth={focused ? 2.5 : 2} />
           ),

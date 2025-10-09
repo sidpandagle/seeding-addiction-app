@@ -12,8 +12,8 @@ export default function Index() {
         const journeyStart = await getJourneyStart();
 
         if (journeyStart) {
-          // Journey already started - go to dashboard
-          router.replace('/(tabs)/dashboard');
+          // Journey already started - go to home
+          router.replace('/(tabs)/home');
         } else {
           // No journey yet - show onboarding
           router.replace('/onboarding');

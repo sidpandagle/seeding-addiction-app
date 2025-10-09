@@ -1,22 +1,31 @@
-import type { Relapse } from '../db/schema';
+import type { Relapse, Urge } from '../db/schema';
 
 export interface UserStats {
   currentStreak: number; // Days since last relapse
   bestStreak: number; // Longest streak ever achieved
   totalAttempts: number; // Number of relapses (fresh starts)
+  urgesResisted: number; // Total number of urges successfully resisted
+  resistanceRate: number; // Percentage of urges resisted (urges / (urges + relapses) * 100)
 }
 
 /**
- * Calculate user statistics from relapse data and journey start
+ * Calculate user statistics from relapse data, urge data, and journey start
  * @param relapses - Array of all relapse records
+ * @param urges - Array of all urge records
  * @param journeyStart - ISO string of when the journey began
- * @returns UserStats object with current streak, best streak, and total attempts
+ * @returns UserStats object with current streak, best streak, total attempts, urges resisted, and resistance rate
  */
 export function calculateUserStats(
   relapses: Relapse[],
-  journeyStart: string | null
+  journeyStart: string | null,
+  urges: Urge[] = []
 ): UserStats {
   const totalAttempts = relapses.length;
+  const urgesResisted = urges.length;
+
+  // Calculate resistance rate: urges / (urges + relapses) * 100
+  const totalEvents = urgesResisted + totalAttempts;
+  const resistanceRate = totalEvents > 0 ? Math.round((urgesResisted / totalEvents) * 100) : 0;
 
   // If no journey start, return zeros
   if (!journeyStart) {
@@ -24,6 +33,8 @@ export function calculateUserStats(
       currentStreak: 0,
       bestStreak: 0,
       totalAttempts: 0,
+      urgesResisted: 0,
+      resistanceRate: 0,
     };
   }
 
@@ -42,6 +53,8 @@ export function calculateUserStats(
     currentStreak,
     bestStreak,
     totalAttempts,
+    urgesResisted,
+    resistanceRate,
   };
 }
 

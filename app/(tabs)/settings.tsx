@@ -112,6 +112,53 @@ export default function SettingsScreen() {
       </View>
 
       <ScrollView className="flex-1">
+        {/* Appearance Section */}
+        <View className="mt-6 px-6">
+          <Text className="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-3">
+            Appearance
+          </Text>
+
+          <View className="bg-white dark:bg-gray-800 rounded-xl p-4 mb-4">
+            <Text className="text-base font-semibold text-gray-900 dark:text-white mb-3">
+              Theme
+            </Text>
+
+            {/* Light Theme Option */}
+            <Pressable
+              onPress={() => useThemeStore.getState().setColorScheme('light')}
+              className="flex-row items-center py-3 active:opacity-70"
+            >
+              <View className={`w-5 h-5 rounded-full border-2 mr-3 items-center justify-center ${
+                colorScheme === 'light' ? 'border-emerald-500' : 'border-gray-300 dark:border-gray-600'
+              }`}>
+                {colorScheme === 'light' && (
+                  <View className="w-3 h-3 rounded-full bg-emerald-500" />
+                )}
+              </View>
+              <Text className="text-base font-medium text-gray-900 dark:text-white">
+                Light
+              </Text>
+            </Pressable>
+
+            {/* Dark Theme Option */}
+            <Pressable
+              onPress={() => useThemeStore.getState().setColorScheme('dark')}
+              className="flex-row items-center py-3 active:opacity-70"
+            >
+              <View className={`w-5 h-5 rounded-full border-2 mr-3 items-center justify-center ${
+                colorScheme === 'dark' ? 'border-emerald-500' : 'border-gray-300 dark:border-gray-600'
+              }`}>
+                {colorScheme === 'dark' && (
+                  <View className="w-3 h-3 rounded-full bg-emerald-500" />
+                )}
+              </View>
+              <Text className="text-base font-medium text-gray-900 dark:text-white">
+                Dark
+              </Text>
+            </Pressable>
+          </View>
+        </View>
+
         {/* Security Section */}
         <View className="mt-6 px-6">
           <Text className="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-3">

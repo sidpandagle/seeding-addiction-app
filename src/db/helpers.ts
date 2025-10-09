@@ -1,5 +1,5 @@
 import { getDatabase } from './schema';
-import type { Relapse, RelapseInput } from './schema';
+import type { Relapse, RelapseInput, Urge, UrgeInput } from './schema';
 
 /**
  * Generate a UUID v4
@@ -142,5 +142,60 @@ export const resetDatabase = async (): Promise<void> => {
   const db = await getDatabase();
 
   await db.runAsync('DELETE FROM relapse');
+  await db.runAsync('DELETE FROM urge');
   await db.runAsync('DELETE FROM app_settings WHERE key = ?', ['journey_start']);
+};
+
+/**
+ * Add a new urge record
+ */
+export const addUrge = async (input: UrgeInput): Promise<Urge> => {
+  const db = await getDatabase();
+
+  const id = generateUUID();
+  const timestamp = input.timestamp || new Date().toISOString();
+  const note = input.note || null;
+  const context = input.context || null;
+
+  await db.runAsync(
+    'INSERT INTO urge (id, timestamp, note, context) VALUES (?, ?, ?, ?)',
+    [id, timestamp, note, context]
+  );
+
+  return {
+    id,
+    timestamp,
+    note: note || undefined,
+    context: context || undefined,
+  };
+};
+
+/**
+ * Get all urge records, ordered by timestamp (newest first)
+ */
+export const getUrges = async (): Promise<Urge[]> => {
+  const db = await getDatabase();
+
+  const rows = await db.getAllAsync<{
+    id: string;
+    timestamp: string;
+    note: string | null;
+    context: string | null;
+  }>('SELECT * FROM urge ORDER BY timestamp DESC');
+
+  return rows.map((row) => ({
+    id: row.id,
+    timestamp: row.timestamp,
+    note: row.note || undefined,
+    context: row.context || undefined,
+  }));
+};
+
+/**
+ * Delete an urge record by ID
+ */
+export const deleteUrge = async (id: string): Promise<void> => {
+  const db = await getDatabase();
+
+  await db.runAsync('DELETE FROM urge WHERE id = ?', [id]);
 };

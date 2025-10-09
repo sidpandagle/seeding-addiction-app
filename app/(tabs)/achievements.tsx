@@ -58,38 +58,23 @@ export default function AchievementsScreen() {
       <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'} />
 
       {/* Header */}
-      <View className="px-6 pt-16 pb-4 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
+      <View className="px-6 pt-16 pb-4 bg-white border-b border-gray-200 dark:bg-gray-800 dark:border-gray-700">
         <Text className="text-2xl font-bold text-gray-900 dark:text-white">Achievements</Text>
-        <Text className="mt-2 text-sm text-gray-600 dark:text-gray-400">
+        <Text className="mt-0.5 text-sm text-gray-600 dark:text-gray-400">
           Unlocked {unlockedCount} of {totalCount} achievements
         </Text>
       </View>
 
       {/* Content */}
-      <ScrollView className="flex-1" contentContainerClassName="px-6 py-6">
-        {/* Progress Overview */}
-        {/* <View className="p-4 mb-6 bg-white dark:bg-gray-800 rounded-xl">
-          <View className="flex-row items-center justify-between mb-3">
-            <Text className="text-base font-semibold text-gray-900 dark:text-white">
-              Your Progress
-            </Text>
-            <Text className="text-sm font-medium text-emerald-600 dark:text-emerald-400">
-              {Math.round((unlockedCount / totalCount) * 100)}%
-            </Text>
-          </View>
-          <View className="h-2 overflow-hidden bg-gray-200 rounded-full dark:bg-gray-700">
-            <View
-              className="h-full bg-emerald-600 dark:bg-emerald-500"
-              style={{ width: `${(unlockedCount / totalCount) * 100}%` }}
-            />
-          </View>
-        </View> */}
-
+      <ScrollView
+        className="flex-1"
+        contentContainerStyle={{ paddingHorizontal: 20, paddingVertical: 24 }}
+      >
         {/* Motivation Message */}
         <View className="p-4 mb-6 bg-emerald-50 dark:bg-emerald-950/30 rounded-xl">
           <Text className="text-sm text-emerald-900 dark:text-emerald-200">
             {unlockedCount === 0
-              ? '🌱 Start your journey to unlock achievements!'
+              ? '🌱 You don’t win this fight once — you win it every damn day!'
               : unlockedCount === totalCount
               ? '🏆 Congratulations! You\'ve unlocked all achievements!'
               : `🚀 Keep going! ${totalCount - unlockedCount} more to unlock.`}

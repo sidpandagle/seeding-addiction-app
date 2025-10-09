@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text } from 'react-native';
-import Animated, { FadeInRight, FadeOutLeft } from 'react-native-reanimated';
+import Animated, { FadeIn, FadeOut } from 'react-native-reanimated';
 import { useThemeStore } from '../stores/themeStore';
 import motivationalQuotes from '../data/motivationalQuotes.json';
 
@@ -28,8 +28,8 @@ export const MotivationCard: React.FC = () => {
       <View>
         <Animated.Text
           key={currentIndex}
-          entering={FadeInRight.duration(600).springify()}
-          exiting={FadeOutLeft.duration(600)}
+          entering={FadeIn.duration(800)}
+          exiting={FadeOut.duration(600)}
           className="text-base font-regular italic leading-6 text-gray-700 dark:text-gray-300"
         >
           "{motivationalQuotes[currentIndex].text}"

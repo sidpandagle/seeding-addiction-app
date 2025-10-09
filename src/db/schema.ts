@@ -19,6 +19,13 @@ const initDB = async (): Promise<void> => {
       tags TEXT
     );
 
+    CREATE TABLE IF NOT EXISTS urge (
+      id TEXT PRIMARY KEY NOT NULL,
+      timestamp TEXT NOT NULL,
+      note TEXT,
+      context TEXT
+    );
+
     CREATE TABLE IF NOT EXISTS app_settings (
       key TEXT PRIMARY KEY NOT NULL,
       value TEXT NOT NULL
@@ -63,4 +70,23 @@ export interface RelapseInput {
   timestamp?: string;
   note?: string;
   tags?: string[];
+}
+
+/**
+ * Urge record interface
+ */
+export interface Urge {
+  id: string;
+  timestamp: string; // ISO8601 format
+  note?: string;
+  context?: string; // e.g., "stress", "boredom", "trigger"
+}
+
+/**
+ * Urge input interface (for creating new records)
+ */
+export interface UrgeInput {
+  timestamp?: string;
+  note?: string;
+  context?: string;
 }

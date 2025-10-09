@@ -34,7 +34,7 @@ export default function AchievementBadge({
   const sizeConfig = {
     small: { container: 60, emoji: 24, badge: 50 },
     medium: { container: 80, emoji: 32, badge: 70 },
-    large: { container: 100, emoji: 40, badge: 90 },
+    large: { container: 100, emoji: 36, badge: 80 },
   };
 
   const config = sizeConfig[size];
@@ -57,7 +57,7 @@ export default function AchievementBadge({
     };
 
   const BadgeContent = (
-    <View className="items-center" style={{ width: config.container }}>
+    <View className="items-center justify-center" style={{ width: '100%' }}>
       {/* Badge Circle */}
       <View
         className={`items-center justify-center rounded-full border-3 ${
@@ -107,6 +107,7 @@ export default function AchievementBadge({
               : 'text-gray-400 dark:text-gray-500'
           }`}
           numberOfLines={2}
+          style={{ width: '100%' }}
         >
           {achievement.title}
         </Text>
