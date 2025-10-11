@@ -1,6 +1,6 @@
 import React, { useMemo, useEffect, useState } from 'react';
-import { View, Text, ScrollView, TouchableOpacity } from 'react-native';
-import { ChevronLeft, TrendingUp, TrendingDown, Calendar, Target } from 'lucide-react-native';
+import { View, Text, ScrollView, TouchableOpacity, Pressable } from 'react-native';
+import { ChevronLeft, TrendingUp, TrendingDown, Calendar, Target, X } from 'lucide-react-native';
 import { useRelapseStore } from '../stores/relapseStore';
 import { useThemeStore } from '../stores/themeStore';
 import { getJourneyStart } from '../db/helpers';
@@ -89,16 +89,22 @@ export default function InsightsModal({ onClose }: InsightsModalProps) {
   return (
     <View className="flex-1 bg-gray-50 dark:bg-gray-900">
       {/* Header */}
-      <View className="px-6 pt-16 pb-4 bg-white border-b border-gray-200 dark:bg-gray-800 dark:border-gray-700">
-        <View className="flex-row items-center mb-4">
-          <TouchableOpacity onPress={onClose} className="p-2 mr-2 rounded-full bg-gray-100 dark:bg-gray-700">
-            <ChevronLeft size={24} color={colorScheme === 'dark' ? '#fff' : '#000'} />
-          </TouchableOpacity>
-          <Text className="text-3xl font-bold text-gray-900 dark:text-white">Advanced Insights</Text>
+      <View className="px-6 py-6 bg-rose-50 dark:bg-gray-800">
+        <View className="flex-row items-center justify-between">
+          <View>
+            <Text className="text-3xl font-bold text-gray-900 dark:text-white">Advanced Insights</Text>
+            <Text className="mt-1 text-sm text-gray-600 dark:text-gray-400">
+              Detailed analytics and patterns from your journey
+            </Text>
+          </View>
+          <Pressable
+            onPress={onClose}
+            className="items-center justify-center w-10 h-10 bg-gray-200 rounded-full dark:bg-gray-700 active:bg-gray-300 dark:active:bg-gray-600"
+          >
+            <X size={20} color={colorScheme === 'dark' ? '#FFFFFF' : '#000000'} strokeWidth={2.5} />
+          </Pressable>
         </View>
-        <Text className="text-sm text-gray-600 dark:text-gray-400">
-          Detailed analytics and patterns from your journey
-        </Text>
+
       </View>
 
       {/* Content */}
@@ -149,13 +155,12 @@ export default function InsightsModal({ onClose }: InsightsModalProps) {
 
         {/* Trend */}
         <View
-          className={`p-4 mb-4 rounded-xl ${
-            insights.trend === 'improving'
-              ? 'bg-green-50 dark:bg-green-900/20'
-              : insights.trend === 'declining'
+          className={`p-4 mb-4 rounded-xl ${insights.trend === 'improving'
+            ? 'bg-green-50 dark:bg-green-900/20'
+            : insights.trend === 'declining'
               ? 'bg-red-50 dark:bg-red-900/20'
               : 'bg-gray-50 dark:bg-gray-800'
-          }`}
+            }`}
         >
           <View className="flex-row items-center mb-2">
             {insights.trend === 'improving' ? (
@@ -166,35 +171,33 @@ export default function InsightsModal({ onClose }: InsightsModalProps) {
               <TrendingUp size={24} color="#6b7280" />
             )}
             <Text
-              className={`ml-2 text-lg font-semibold ${
-                insights.trend === 'improving'
-                  ? 'text-green-900 dark:text-green-100'
-                  : insights.trend === 'declining'
+              className={`ml-2 text-lg font-semibold ${insights.trend === 'improving'
+                ? 'text-green-900 dark:text-green-100'
+                : insights.trend === 'declining'
                   ? 'text-red-900 dark:text-red-100'
                   : 'text-gray-900 dark:text-gray-100'
-              }`}
+                }`}
             >
               {insights.trend === 'improving'
                 ? 'Improving Trend 🎉'
                 : insights.trend === 'declining'
-                ? 'Declining Trend'
-                : 'Stable Trend'}
+                  ? 'Declining Trend'
+                  : 'Stable Trend'}
             </Text>
           </View>
           <Text
-            className={`text-sm ${
-              insights.trend === 'improving'
-                ? 'text-green-700 dark:text-green-300'
-                : insights.trend === 'declining'
+            className={`text-sm ${insights.trend === 'improving'
+              ? 'text-green-700 dark:text-green-300'
+              : insights.trend === 'declining'
                 ? 'text-red-700 dark:text-red-300'
                 : 'text-gray-700 dark:text-gray-300'
-            }`}
+              }`}
           >
             {insights.trend === 'improving'
               ? 'Your relapse frequency has decreased over time. Keep it up!'
               : insights.trend === 'declining'
-              ? 'Your relapse frequency has increased recently. Stay focused!'
-              : 'Your progress has been consistent.'}
+                ? 'Your relapse frequency has increased recently. Stay focused!'
+                : 'Your progress has been consistent.'}
           </Text>
         </View>
 
@@ -210,7 +213,7 @@ export default function InsightsModal({ onClose }: InsightsModalProps) {
         </View>
 
         {/* Placeholder for future analytics */}
-        <View className="p-4 mb-6 border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-xl">
+        <View className="p-4 mb-6 border-2 border-gray-300 border-dashed dark:border-gray-700 rounded-xl">
           <Text className="text-sm font-medium text-center text-gray-500 dark:text-gray-400">
             More analytics coming soon...
           </Text>

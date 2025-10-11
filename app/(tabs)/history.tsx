@@ -5,7 +5,6 @@ import { useRelapseStore } from '../../src/stores/relapseStore';
 import { useThemeStore } from '../../src/stores/themeStore';
 import { getJourneyStart } from '../../src/db/helpers';
 import ViewToggle from '../../src/components/ViewToggle';
-import HistoryStats from '../../src/components/HistoryStats';
 import HistoryList from '../../src/components/HistoryList';
 import HistoryCalendar from '../../src/components/HistoryCalendar';
 import CalendarRelapseDetails from '../../src/components/CalendarRelapseDetails';
@@ -63,8 +62,6 @@ export default function HistoryScreen() {
 
       {/* View Toggle */}
       <View className="px-6 py-2">
-        {/* <HistoryStats streak={stats.streak} total={stats.total} /> */}
-
         {/* Insights Button */}
         <TouchableOpacity
           onPress={() => setShowInsightsModal(true)}

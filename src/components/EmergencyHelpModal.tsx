@@ -53,11 +53,11 @@ export default function EmergencyHelpModal({ onClose }: EmergencyHelpModalProps)
     >
       <ScrollView className="flex-1">
         {/* Header */}
-        <View className="px-6 pt-16 pb-6 border-b bg-rose-50 dark:bg-gray-800 border-rose-100 dark:border-gray-700">
+        <View className="px-6 py-6 bg-rose-50 dark:bg-gray-800">
           <View className="flex-row items-center justify-between">
             <View className="flex-1">
               <Text className="text-2xl font-bold text-gray-900 dark:text-white">You've Got This</Text>
-              <Text className="mt-1 text-sm text-rose-600 dark:text-rose-400">
+              <Text className="mt-1 text-sm text-gray-600 dark:text-gray-400">
                 This urge will pass. You are stronger.
               </Text>
             </View>
@@ -74,8 +74,8 @@ export default function EmergencyHelpModal({ onClose }: EmergencyHelpModalProps)
         <View className="px-6 py-6">
           <View className="flex-row items-center justify-between mb-4">
             <View className="flex-row items-center gap-2">
-              <Brain size={20} color="#059669" strokeWidth={2.5} />
-              <Text className="text-lg font-bold text-gray-900 dark:text-white">Stoic Wisdom</Text>
+              <Brain size={30} color="#059669" strokeWidth={2} />
+              <Text className="text-xl font-semibold text-gray-900 dark:text-white">Stoic Wisdom</Text>
             </View>
             <Pressable
               onPress={handleNewQuote}
