@@ -78,24 +78,6 @@ export default function RootLayout() {
         <Stack.Screen name="index" />
         <Stack.Screen name="onboarding" />
         <Stack.Screen name="(tabs)" />
-        <Stack.Screen
-          name="emergency-help"
-          options={{
-            presentation: 'modal',
-            animation: 'slide_from_bottom',
-            animationDuration: 200,
-            contentStyle: { backgroundColor: colorScheme === 'dark' ? '#111827' : '#ffffff' }
-          }}
-        />
-        <Stack.Screen
-          name="insights"
-          options={{
-            presentation: 'modal',
-            animation: 'slide_from_bottom',
-            animationDuration: 200,
-            contentStyle: { backgroundColor: colorScheme === 'dark' ? '#111827' : '#f9fafb' }
-          }}
-        />
       </Stack>
     </AppLock>
   );
