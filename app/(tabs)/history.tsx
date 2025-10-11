@@ -1,4 +1,4 @@
-import { View, Text, TouchableOpacity } from 'react-native';
+import { View, Text, TouchableOpacity, ScrollView } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { useState, useMemo, useEffect } from 'react';
 import { router } from 'expo-router';
@@ -61,8 +61,8 @@ export default function HistoryScreen() {
       </View>
 
       {/* View Toggle */}
-      <View className="px-6 py-4">
-        <HistoryStats streak={stats.streak} total={stats.total} />
+      <View className="px-6 py-2">
+        {/* <HistoryStats streak={stats.streak} total={stats.total} /> */}
 
         {/* Insights Button */}
         <TouchableOpacity
@@ -83,7 +83,11 @@ export default function HistoryScreen() {
       {viewMode === 'list' ? (
         <HistoryList relapses={relapses} />
       ) : (
-        <View className="flex-1">
+        <ScrollView
+          className="flex-1"
+          showsVerticalScrollIndicator={false}
+          bounces={true}
+        >
           <HistoryCalendar
             relapses={relapses}
             selectedDate={selectedDate}
@@ -91,7 +95,7 @@ export default function HistoryScreen() {
             journeyStart={journeyStart}
           />
           <CalendarRelapseDetails selectedDate={selectedDate} relapses={relapses} />
-        </View>
+        </ScrollView>
       )}
     </View>
   );

@@ -33,11 +33,16 @@ export default function HistoryCalendar({
         customStyles: {
           container: {
             backgroundColor: isDark ? '#7F1D1D' : '#FEE2E2', // red-900/red-100
-            borderRadius: 8,
+            borderRadius: 10,
+            width: 40,
+            height: 40,
+            justifyContent: 'center',
+            alignItems: 'center',
           },
           text: {
             color: isDark ? '#FFFFFF' : '#991B1B', // white/red-800
             fontWeight: 'bold',
+            fontSize: 18,
           },
         },
       };
@@ -53,8 +58,17 @@ export default function HistoryCalendar({
           ...marks[selectedDate]?.customStyles,
           container: {
             ...marks[selectedDate]?.customStyles?.container,
-            borderWidth: 2,
+            borderWidth: 3,
             borderColor: '#10B981', // emerald-500
+            width: 40,
+            height: 40,
+            justifyContent: 'center',
+            alignItems: 'center',
+          },
+          text: {
+            ...marks[selectedDate]?.customStyles?.text,
+            fontSize: 18,
+            fontWeight: 'bold',
           },
         },
       };
@@ -90,16 +104,16 @@ export default function HistoryCalendar({
       textDisabledColor: isDark ? '#4B5563' : '#D1D5DB', // gray-600/gray-300
       monthTextColor: isDark ? '#F9FAFB' : '#111827', // gray-50/gray-900
       textMonthFontWeight: 'bold' as const,
-      textDayFontSize: 14,
-      textMonthFontSize: 16,
-      textDayHeaderFontSize: 12,
+      textDayFontSize: 18, // Increased from 14
+      textMonthFontSize: 20, // Increased from 16
+      textDayHeaderFontSize: 14, // Increased from 12
       arrowColor: '#10B981', // emerald-500
     }),
     [isDark]
   );
 
   return (
-    <View className="px-6 py-4">
+    <View className="px-4 py-6">
       <Calendar
         markingType="custom"
         markedDates={markedDates}
@@ -111,13 +125,14 @@ export default function HistoryCalendar({
         // Show calendar from journey start or first relapse
         minDate={journeyStart || undefined}
         style={{
-          borderRadius: 12,
+          borderRadius: 16,
           overflow: 'hidden',
-          elevation: 2,
+          elevation: 3,
           shadowColor: '#000',
-          shadowOffset: { width: 0, height: 2 },
-          shadowOpacity: 0.1,
-          shadowRadius: 4,
+          shadowOffset: { width: 0, height: 3 },
+          shadowOpacity: 0.15,
+          shadowRadius: 6,
+          paddingVertical: 8,
         }}
       />
     </View>

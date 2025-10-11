@@ -14,18 +14,16 @@ export default function EmergencyHelpScreen() {
   const [currentTeaching, setCurrentTeaching] = useState<StoicTeaching>(getRandomTeaching());
   const [breathCount, setBreathCount] = useState(0);
 
-  // Haptic feedback on mount
+  // Screen mounted
   useEffect(() => {
-    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+    // Removed haptic feedback
   }, []);
 
   const handleNewQuote = () => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     setCurrentTeaching(getRandomTeaching());
   };
 
   const handleBreathingExercise = () => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     setBreathCount((prev) => prev + 1);
   };
 
@@ -82,38 +80,8 @@ export default function EmergencyHelpScreen() {
       </View>
 
       <ScrollView className="flex-1">
-        {/* Breathing Exercise */}
-        <View className="px-6 py-8 border-b border-gray-200 dark:border-gray-700 bg-gradient-to-b">
-          <View className="flex-row items-center gap-2 mb-4">
-            <Zap size={20} color="#EF4444" strokeWidth={2.5} />
-            <Text className="text-lg font-bold text-gray-900 dark:text-white">Breathing Exercise</Text>
-          </View>
-          <Text className="mb-4 text-sm leading-6 text-gray-600 dark:text-gray-400">
-            Before anything else, take control of your breath. Tap the button and follow along:
-          </Text>
-          <Pressable
-            onPress={handleBreathingExercise}
-            className="py-6 bg-gradient-to-r from-rose-500 to-orange-500 dark:from-rose-600 dark:to-orange-600 rounded-2xl active:opacity-80"
-          >
-            <Text className="text-xl font-bold text-center text-white">
-              {breathCount === 0 && 'Start Breathing'}
-              {breathCount > 0 && breathCount < 4 && `Breathe In... (${breathCount}/4)`}
-              {breathCount >= 4 && breathCount < 8 && `Hold... (${breathCount - 4}/4)`}
-              {breathCount >= 8 && breathCount < 12 && `Breathe Out... (${breathCount - 8}/4)`}
-              {breathCount >= 12 && 'Great! Do it again'}
-            </Text>
-          </Pressable>
-          {breathCount >= 12 && (
-            <Pressable onPress={() => setBreathCount(0)} className="mt-3">
-              <Text className="text-sm text-center text-gray-600 dark:text-gray-400">
-                Reset breathing counter
-              </Text>
-            </Pressable>
-          )}
-        </View>
-
         {/* Stoic Teaching */}
-        <View className="px-6 py-8">
+        <View className="px-6 py-6">
           <View className="flex-row items-center justify-between mb-4">
             <View className="flex-row items-center gap-2">
               <Brain size={20} color="#059669" strokeWidth={2.5} />
@@ -132,7 +100,7 @@ export default function EmergencyHelpScreen() {
           <View
             className={`p-6 border-2 rounded-2xl ${getCategoryColor(currentTeaching.category)}`}
           >
-            <Text className="mb-1 text-xs font-bold tracking-wider uppercase text-gray-500 dark:text-gray-400">
+            <Text className="mb-1 text-xs font-bold tracking-wider text-gray-500 uppercase dark:text-gray-400">
               {currentTeaching.category}
             </Text>
             <Text className={`text-xl font-bold leading-8 mb-4 ${getCategoryTextColor(currentTeaching.category)}`}>

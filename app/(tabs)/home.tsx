@@ -16,7 +16,6 @@ import GrowthIcon from '../../src/components/GrowthIcon';
 import { calculateUserStats } from '../../src/utils/statsHelpers';
 import { getNewlyUnlockedAchievements } from '../../src/data/achievements';
 import { Achievement } from '../../src/components/AchievementBadge';
-import * as Haptics from 'expo-haptics';
 import { Sparkles, Shield, Heart } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
 
@@ -154,23 +153,17 @@ export default function DashboardScreen() {
     }
   }, [celebrationAchievement]);
 
-  // Handle growth stage transitions with haptic feedback
+  // Handle growth stage transitions
   const handleStageChange = (newStage: GrowthStage) => {
-    if (previousStageRef.current && previousStageRef.current !== newStage) {
-      // Stage has changed - trigger haptic feedback
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-    }
     previousStageRef.current = newStage;
   };
 
 
   const handleRelapsePress = () => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     setShowModal(true);
   };
 
   const handleUrgePress = () => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     setShowUrgeModal(true);
   };
 
@@ -183,14 +176,14 @@ export default function DashboardScreen() {
       <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'} />
 
       {/* Header */}
-      <View className="px-6 pt-16 pb-6 border-b bg-emerald-50 dark:bg-gray-800 border-emerald-100 dark:border-gray-700">
+      <View className="px-4 pb-6 pt-14 bg-emerald-50 dark:bg-gray-800">
         <View className="flex-row items-center gap-3">
           <View className="items-center justify-center w-12 h-12 rounded-2xl bg-emerald-100 dark:bg-emerald-900/30">
             <Sparkles size={24} color="#059669" strokeWidth={2} />
           </View>
           <View className="flex-1">
-            <Text className="text-2xl font-bold text-gray-900 dark:text-white">Seeding</Text>
-            <Text className="text-sm text-emerald-600 dark:text-emerald-400">Track your progress</Text>
+            <Text className="text-3xl font-medium tracking-widest text-gray-900 dark:text-white">Seeding</Text>
+            <Text className="text-xs tracking-widest text-gray-900 dark:text-white">Your journey starts here</Text>
           </View>
         </View>
       </View>
@@ -200,7 +193,7 @@ export default function DashboardScreen() {
         {/* Stats Cards */}
         <View className="">
           {/* <View className="items-center p-6 mb-4 bg-white shadow-sm rounded-2xl"> */}
-          <View className="items-center p-6 mb-6 rounded-2xl">
+          <View className="items-center p-6 mb-0 rounded-2xl">
             <Text className="mb-4 text-sm font-medium tracking-wide text-gray-500 uppercase dark:text-gray-400">
               Current Streak
             </Text>
@@ -244,6 +237,44 @@ export default function DashboardScreen() {
               </View>
             </CircularProgress>
           </View>
+        </View>
+
+        {/* Action Buttons */}
+        <View className="gap-3 px-6 mb-6">
+          {/* Log Urge Resisted Button - Positive Action */}
+          <Pressable
+            onPress={handleUrgePress}
+            className="flex-row items-center justify-center w-full gap-2 py-4 mt-0 bg-blue-600 dark:bg-blue-700 rounded-2xl active:bg-blue-700 dark:active:bg-blue-800"
+          >
+            <Shield size={22} color="#FFFFFF" strokeWidth={2.5} />
+            <Text className="text-lg font-semibold text-center text-white">
+              I Resisted an Urge
+            </Text>
+          </Pressable>
+
+          {/* Record Relapse Button - Neutral Action */}
+          <Pressable
+            onPress={handleRelapsePress}
+            className="w-full py-4 bg-emerald-600 dark:bg-emerald-700 rounded-2xl active:bg-emerald-700 dark:active:bg-emerald-800"
+          >
+            <Text className="text-lg font-semibold text-center text-white">
+              Record Relapse
+            </Text>
+          </Pressable>
+
+          {/* Emergency Help Button - Most Important */}
+          <Pressable
+            onPress={handleHelpPress}
+            className="flex-row items-center justify-center w-full gap-2 py-4 bg-rose-500 dark:bg-rose-600 rounded-2xl active:bg-rose-600 dark:active:bg-rose-700"
+          >
+            <Heart size={22} color="#FFFFFF" strokeWidth={2.5} />
+            <Text className="text-lg font-semibold text-center text-white">
+              Need Help Now?
+            </Text>
+          </Pressable>
+          <Text className="-mt-1 text-xs text-center text-gray-500 dark:text-gray-400">
+            Stoic wisdom & guidance when you need it
+          </Text>
         </View>
 
         {/* Stats Summary Cards - 2x2 Grid */}
@@ -297,43 +328,7 @@ export default function DashboardScreen() {
           </View>
         </View>
 
-        {/* Action Buttons */}
-        <View className="gap-3 px-6 mb-6">
-          {/* Log Urge Resisted Button */}
-          <Pressable
-            onPress={handleUrgePress}
-            className="flex-row items-center justify-center w-full gap-2 py-4 bg-blue-600 dark:bg-blue-700 rounded-2xl active:bg-blue-700 dark:active:bg-blue-800"
-          >
-            <Shield size={22} color="#FFFFFF" strokeWidth={2.5} />
-            <Text className="text-lg font-semibold text-center text-white">
-              I Resisted an Urge
-            </Text>
-          </Pressable>
-
-          {/* Record Relapse Button */}
-          <Pressable
-            onPress={handleRelapsePress}
-            className="w-full py-4 bg-emerald-600 dark:bg-emerald-700 rounded-2xl active:bg-emerald-700 dark:active:bg-emerald-800"
-          >
-            <Text className="text-lg font-semibold text-center text-white">
-              Record Relapse
-            </Text>
-          </Pressable>
-
-          {/* Emergency Help Button */}
-          <Pressable
-            onPress={handleHelpPress}
-            className="w-full py-3.5 bg-rose-500 dark:bg-rose-600 rounded-2xl active:bg-rose-600 dark:active:bg-rose-700 flex-row items-center justify-center gap-2"
-          >
-            <Heart size={20} color="#FFFFFF" strokeWidth={2.5} />
-            <Text className="text-base font-semibold text-center text-white">
-              Need Help Now?
-            </Text>
-          </Pressable>
-          <Text className="text-xs text-center text-gray-500 dark:text-gray-400 -mt-1">
-            Stoic wisdom & guidance when you need it
-          </Text>
-        </View>
+        
 
         {/* Motivation Section */}
         <MotivationCard />

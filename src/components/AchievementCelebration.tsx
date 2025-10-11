@@ -17,11 +17,9 @@ export default function AchievementCelebration({
   onClose,
 }: AchievementCelebrationProps) {
 
-  // Trigger haptic feedback when achievement appears
+  // Achievement celebration mounted
   useEffect(() => {
-    if (visible && achievement) {
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-    }
+    // Removed haptic feedback
   }, [visible, achievement]);
 
   if (!achievement) return null;

@@ -81,14 +81,18 @@ export default function RootLayout() {
         <Stack.Screen
           name="emergency-help"
           options={{
-            animation: 'none',
+            presentation: 'modal',
+            animation: 'slide_from_bottom',
+            animationDuration: 200,
             contentStyle: { backgroundColor: colorScheme === 'dark' ? '#111827' : '#ffffff' }
           }}
         />
         <Stack.Screen
           name="insights"
           options={{
-            animation: 'none',
+            presentation: 'modal',
+            animation: 'slide_from_bottom',
+            animationDuration: 200,
             contentStyle: { backgroundColor: colorScheme === 'dark' ? '#111827' : '#f9fafb' }
           }}
         />

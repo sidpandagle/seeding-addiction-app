@@ -35,9 +35,6 @@ export default function RelapseModal({ onClose, existingRelapse }: RelapseModalP
     try {
       setIsSubmitting(true);
 
-      // Gentle haptic feedback for relapse logging
-      await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-
       if (existingRelapse) {
         await updateRelapse(existingRelapse.id, {
           note: note.trim() || undefined,

@@ -15,20 +15,23 @@ export default function UrgeModal({ onClose }: UrgeModalProps) {
   const colorScheme = useThemeStore((state) => state.colorScheme);
 
   const [note, setNote] = useState('');
-  const [selectedContext, setSelectedContext] = useState<string | undefined>();
+  const [selectedContext, setSelectedContext] = useState<string[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const toggleContext = (context: string) => {
+    setSelectedContext((prev) =>
+      prev.includes(context) ? prev.filter((c) => c !== context) : [...prev, context]
+    );
+  };
 
   const handleSave = async () => {
     try {
       setIsSubmitting(true);
 
-      // Positive haptic feedback for resisting an urge
-      await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-
       await addUrge({
         timestamp: new Date().toISOString(),
         note: note.trim() || undefined,
-        context: selectedContext,
+        context: selectedContext.length > 0 ? selectedContext.join(', ') : undefined,
       });
 
       // Brief delay for feedback
@@ -83,16 +86,16 @@ export default function UrgeModal({ onClose }: UrgeModalProps) {
             {CONTEXT_OPTIONS.map((context) => (
               <Pressable
                 key={context}
-                onPress={() => setSelectedContext(selectedContext === context ? undefined : context)}
+                onPress={() => toggleContext(context)}
                 className={`px-4 py-2 rounded-full ${
-                  selectedContext === context
+                  selectedContext.includes(context)
                     ? 'bg-blue-600 dark:bg-blue-700'
                     : 'bg-gray-200 dark:bg-gray-700'
                 }`}
               >
                 <Text
                   className={`text-sm font-medium ${
-                    selectedContext === context
+                    selectedContext.includes(context)
                       ? 'text-white'
                       : 'text-gray-700 dark:text-gray-300'
                   }`}

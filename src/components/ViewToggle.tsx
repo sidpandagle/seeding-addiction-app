@@ -9,7 +9,7 @@ interface ViewToggleProps {
 
 export default function ViewToggle({ mode, onModeChange }: ViewToggleProps) {
   return (
-    <View className="flex-row p-2 mt-1 bg-gray-200 rounded-lg dark:bg-gray-700">
+    <View className="flex-row p-2 mt-2 bg-gray-200 rounded-lg dark:bg-gray-700">
       <Pressable
         onPress={() => onModeChange('list')}
         className={`flex-1 py-2 px-4 rounded-md ${
