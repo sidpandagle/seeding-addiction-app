@@ -50,7 +50,7 @@ export default function AchievementsScreen() {
     return getAchievements(stats.elapsedTime);
   }, [stats.elapsedTime]);
 
-  const unlockedCount = achievements.filter((a:any) => a.unlocked).length;
+  const unlockedCount = achievements.filter((a:any) => a.isUnlocked).length;
   const totalCount = achievements.length;
 
   return (

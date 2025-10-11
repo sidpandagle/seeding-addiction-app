@@ -1,4 +1,4 @@
-import { View, Text, ScrollView } from 'react-native';
+import { View, Text } from 'react-native';
 import type { Relapse } from '../db/schema';
 
 interface CalendarRelapseDetailsProps {
@@ -43,10 +43,7 @@ export default function CalendarRelapseDetails({ selectedDate, relapses }: Calen
   }
 
   return (
-    <ScrollView
-      className="bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700"
-      style={{ maxHeight: 300 }}
-    >
+    <View className="bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700">
       <View className="px-6 py-6">
         <Text className="text-base font-semibold text-gray-900 dark:text-white mb-4">{formattedDate}</Text>
 
@@ -85,6 +82,6 @@ export default function CalendarRelapseDetails({ selectedDate, relapses }: Calen
           </View>
         ))}
       </View>
-    </ScrollView>
+    </View>
   );
 }

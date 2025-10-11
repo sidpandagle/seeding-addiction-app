@@ -1,14 +1,15 @@
 import React, { useMemo, useEffect, useState } from 'react';
 import { View, Text, ScrollView, TouchableOpacity } from 'react-native';
-import { router } from 'expo-router';
-import { StatusBar } from 'expo-status-bar';
 import { ChevronLeft, TrendingUp, TrendingDown, Calendar, Target } from 'lucide-react-native';
-import { useRelapseStore } from '../src/stores/relapseStore';
-import { useThemeStore } from '../src/stores/themeStore';
-import { getJourneyStart } from '../src/db/helpers';
-import { ScreenWrapper } from '../src/components/ScreenWrapper';
+import { useRelapseStore } from '../stores/relapseStore';
+import { useThemeStore } from '../stores/themeStore';
+import { getJourneyStart } from '../db/helpers';
 
-export default function InsightsScreen() {
+interface InsightsModalProps {
+  onClose: () => void;
+}
+
+export default function InsightsModal({ onClose }: InsightsModalProps) {
   const colorScheme = useThemeStore((state) => state.colorScheme);
   const { relapses } = useRelapseStore();
   const [journeyStart, setJourneyStart] = useState<string | null>(null);
@@ -86,13 +87,11 @@ export default function InsightsScreen() {
   }, [relapses, journeyStart]);
 
   return (
-    <ScreenWrapper backgroundColor="#f9fafb" darkBackgroundColor="#111827">
-      <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'} />
-
+    <View className="flex-1 bg-gray-50 dark:bg-gray-900">
       {/* Header */}
       <View className="px-6 pt-16 pb-4 bg-white border-b border-gray-200 dark:bg-gray-800 dark:border-gray-700">
         <View className="flex-row items-center mb-4">
-          <TouchableOpacity onPress={() => router.back()} className="p-2 mr-2 rounded-full bg-gray-100 dark:bg-gray-700">
+          <TouchableOpacity onPress={onClose} className="p-2 mr-2 rounded-full bg-gray-100 dark:bg-gray-700">
             <ChevronLeft size={24} color={colorScheme === 'dark' ? '#fff' : '#000'} />
           </TouchableOpacity>
           <Text className="text-3xl font-bold text-gray-900 dark:text-white">Advanced Insights</Text>
@@ -217,6 +216,6 @@ export default function InsightsScreen() {
           </Text>
         </View>
       </ScrollView>
-    </ScreenWrapper>
+    </View>
   );
 }

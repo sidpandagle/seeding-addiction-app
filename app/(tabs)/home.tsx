@@ -1,4 +1,4 @@
-import { View, Text, Pressable, Modal, ScrollView } from 'react-native';
+import { View, Text, Pressable, Modal, ScrollView, Image } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { useState, useMemo, useEffect, useRef } from 'react';
 import { useRelapseStore } from '../../src/stores/relapseStore';
@@ -6,6 +6,7 @@ import { useUrgeStore } from '../../src/stores/urgeStore';
 import { useThemeStore } from '../../src/stores/themeStore';
 import RelapseModal from '../../src/components/RelapseModal';
 import UrgeModal from '../../src/components/UrgeModal';
+import EmergencyHelpModal from '../../src/components/EmergencyHelpModal';
 import CircularProgress from '../../src/components/CircularProgress';
 import { MotivationCard } from '../../src/components/MotivationCard';
 import AchievementCelebration from '../../src/components/AchievementCelebration';
@@ -16,14 +17,13 @@ import GrowthIcon from '../../src/components/GrowthIcon';
 import { calculateUserStats } from '../../src/utils/statsHelpers';
 import { getNewlyUnlockedAchievements } from '../../src/data/achievements';
 import { Achievement } from '../../src/components/AchievementBadge';
-import { Sparkles, Shield, Heart } from 'lucide-react-native';
-import { useRouter } from 'expo-router';
+import { Shield, AlertCircle, RotateCcw } from 'lucide-react-native';
 
 export default function DashboardScreen() {
-  const router = useRouter();
   const colorScheme = useThemeStore((state) => state.colorScheme);
   const [showModal, setShowModal] = useState(false);
   const [showUrgeModal, setShowUrgeModal] = useState(false);
+  const [showHelpModal, setShowHelpModal] = useState(false);
   const [currentTime, setCurrentTime] = useState(Date.now());
   const [journeyStart, setJourneyStart] = useState<string | null>(null);
   const relapses = useRelapseStore((state) => state.relapses);
@@ -168,7 +168,7 @@ export default function DashboardScreen() {
   };
 
   const handleHelpPress = () => {
-    router.push('/emergency-help');
+    setShowHelpModal(true);
   };
 
   return (
@@ -176,15 +176,19 @@ export default function DashboardScreen() {
       <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'} />
 
       {/* Header */}
-      <View className="px-4 pb-6 pt-14 bg-emerald-50 dark:bg-gray-800">
+      <View className="px-4 pb-5 pt-14 bg-emerald-50 dark:bg-gray-800 text-red-">
         <View className="flex-row items-center gap-3">
-          <View className="items-center justify-center w-12 h-12 rounded-2xl bg-emerald-100 dark:bg-emerald-900/30">
-            <Sparkles size={24} color="#059669" strokeWidth={2} />
+          <View className="flex-1 ml-2">
+            <Text className="text-2xl font-medium tracking-widest text-gray-900 dark:text-white">Seeding</Text>
+            <Text className="text-sm tracking-widest text-gray-600 dark:text-gray-400">Your journey starts here</Text>
           </View>
-          <View className="flex-1">
-            <Text className="text-3xl font-medium tracking-widest text-gray-900 dark:text-white">Seeding</Text>
-            <Text className="text-xs tracking-widest text-gray-900 dark:text-white">Your journey starts here</Text>
-          </View>
+          <Pressable
+            onPress={handleHelpPress}
+            // className="items-center justify-center w-12 h-12 bg-rose-500 dark:bg-rose-600 rounded-2xl active:bg-rose-600 dark:active:bg-rose-700"
+            className="items-center justify-center w-12 h-12 mr-1"
+          >
+            <AlertCircle size={30} color="#ef4444" strokeWidth={2.5} />
+          </Pressable>
         </View>
       </View>
 
@@ -255,26 +259,13 @@ export default function DashboardScreen() {
           {/* Record Relapse Button - Neutral Action */}
           <Pressable
             onPress={handleRelapsePress}
-            className="w-full py-4 bg-emerald-600 dark:bg-emerald-700 rounded-2xl active:bg-emerald-700 dark:active:bg-emerald-800"
+            className="flex-row items-center justify-center w-full gap-2 py-4 bg-emerald-600 dark:bg-emerald-700 rounded-2xl active:bg-emerald-700 dark:active:bg-emerald-800"
           >
+            <RotateCcw size={22} color="#FFFFFF" strokeWidth={2.5} />
             <Text className="text-lg font-semibold text-center text-white">
               Record Relapse
             </Text>
           </Pressable>
-
-          {/* Emergency Help Button - Most Important */}
-          <Pressable
-            onPress={handleHelpPress}
-            className="flex-row items-center justify-center w-full gap-2 py-4 bg-rose-500 dark:bg-rose-600 rounded-2xl active:bg-rose-600 dark:active:bg-rose-700"
-          >
-            <Heart size={22} color="#FFFFFF" strokeWidth={2.5} />
-            <Text className="text-lg font-semibold text-center text-white">
-              Need Help Now?
-            </Text>
-          </Pressable>
-          <Text className="-mt-1 text-xs text-center text-gray-500 dark:text-gray-400">
-            Stoic wisdom & guidance when you need it
-          </Text>
         </View>
 
         {/* Stats Summary Cards - 2x2 Grid */}
@@ -351,6 +342,16 @@ export default function DashboardScreen() {
           onRequestClose={() => setShowUrgeModal(false)}
         >
           <UrgeModal onClose={() => setShowUrgeModal(false)} />
+        </Modal>
+
+        {/* Emergency Help Modal */}
+        <Modal
+          visible={showHelpModal}
+          animationType="slide"
+          presentationStyle="pageSheet"
+          onRequestClose={() => setShowHelpModal(false)}
+        >
+          <EmergencyHelpModal onClose={() => setShowHelpModal(false)} />
         </Modal>
 
         {/* Achievement Celebration Modal */}

@@ -18,12 +18,12 @@ export default function OnboardingScreen() {
         await setJourneyStart(new Date().toISOString());
       }
 
-      // Navigate to dashboard
-      router.replace('/(tabs)/dashboard');
+      // Navigate to home
+      router.replace('/(tabs)/home');
     } catch (error) {
       console.error('Failed to start journey:', error);
       // Still navigate even if there's an error
-      router.replace('/(tabs)/dashboard');
+      router.replace('/(tabs)/home');
     }
   };
 
@@ -34,13 +34,13 @@ export default function OnboardingScreen() {
         <Text className="mb-6 text-4xl font-bold text-gray-900 dark:text-white">
           Welcome to Seeding
         </Text>
-        <Text className="mb-2 text-lg font-regular text-center text-gray-600 dark:text-gray-400">
+        <Text className="mb-2 text-lg text-center text-gray-600 font-regular dark:text-gray-400">
           A privacy-focused relapse tracking app
         </Text>
 
         <Pressable
           onPress={handleGetStarted}
-          className="px-8 py-4 mt-12 bg-emerald-600 dark:bg-emerald-700 rounded-full active:bg-emerald-700 dark:active:bg-emerald-800"
+          className="px-8 py-4 mt-12 rounded-full bg-emerald-600 dark:bg-emerald-700 active:bg-emerald-700 dark:active:bg-emerald-800"
         >
           <Text className="text-lg font-semibold text-white">
             Get Started

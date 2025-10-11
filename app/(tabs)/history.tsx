@@ -1,7 +1,6 @@
-import { View, Text, TouchableOpacity, ScrollView } from 'react-native';
+import { View, Text, TouchableOpacity, ScrollView, Modal } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { useState, useMemo, useEffect } from 'react';
-import { router } from 'expo-router';
 import { useRelapseStore } from '../../src/stores/relapseStore';
 import { useThemeStore } from '../../src/stores/themeStore';
 import { getJourneyStart } from '../../src/db/helpers';
@@ -10,6 +9,7 @@ import HistoryStats from '../../src/components/HistoryStats';
 import HistoryList from '../../src/components/HistoryList';
 import HistoryCalendar from '../../src/components/HistoryCalendar';
 import CalendarRelapseDetails from '../../src/components/CalendarRelapseDetails';
+import InsightsModal from '../../src/components/InsightsModal';
 import { BarChart3 } from 'lucide-react-native';
 
 type ViewMode = 'list' | 'calendar';
@@ -20,6 +20,7 @@ export default function HistoryScreen() {
   const [journeyStart, setJourneyStart] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<ViewMode>('list');
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
+  const [showInsightsModal, setShowInsightsModal] = useState(false);
 
   // Load journey start timestamp
   useEffect(() => {
@@ -66,7 +67,7 @@ export default function HistoryScreen() {
 
         {/* Insights Button */}
         <TouchableOpacity
-          onPress={() => router.push('/insights')}
+          onPress={() => setShowInsightsModal(true)}
           className="flex-row items-center justify-center px-4 py-3 my-4 bg-emerald-50 dark:bg-emerald-900/20 rounded-xl"
           activeOpacity={0.7}
         >
@@ -97,6 +98,16 @@ export default function HistoryScreen() {
           <CalendarRelapseDetails selectedDate={selectedDate} relapses={relapses} />
         </ScrollView>
       )}
+
+      {/* Insights Modal */}
+      <Modal
+        visible={showInsightsModal}
+        animationType="slide"
+        presentationStyle="pageSheet"
+        onRequestClose={() => setShowInsightsModal(false)}
+      >
+        <InsightsModal onClose={() => setShowInsightsModal(false)} />
+      </Modal>
     </View>
   );
 }
