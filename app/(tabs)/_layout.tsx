@@ -1,22 +1,9 @@
 import { Tabs } from 'expo-router';
-import { View } from 'react-native';
 import { useThemeStore } from '../../src/stores/themeStore';
-import { useEffect, useState } from 'react';
 import { Home, History, Trophy, Settings } from 'lucide-react-native';
 
 export default function TabsLayout() {
   const colorScheme = useThemeStore((state) => state.colorScheme);
-  const hasHydrated = useThemeStore((state) => state._hasHydrated);
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  // Wait for both mount and hydration to complete
-  if (!mounted || !hasHydrated) {
-    return <View style={{ flex: 1, backgroundColor: '#ffffff' }} />;
-  }
 
   return (
     <Tabs

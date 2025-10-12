@@ -1,6 +1,6 @@
 import { Stack } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { View, Text, ActivityIndicator } from 'react-native';
+import { View } from 'react-native';
 import { useRelapseStore } from '../src/stores/relapseStore';
 import { useThemeStore } from '../src/stores/themeStore';
 import { AppLock } from '../src/components/AppLock';
@@ -8,7 +8,12 @@ import { initializeEncryptionKey } from '../src/services/security';
 import { initializeDatabase } from '../src/db/schema';
 import { useFonts, Poppins_400Regular, Poppins_500Medium, Poppins_600SemiBold, Poppins_700Bold } from '@expo-google-fonts/poppins';
 import { useColorScheme } from 'nativewind';
+import * as SplashScreen from 'expo-splash-screen';
+import Animated, { FadeIn } from 'react-native-reanimated';
 import "../global.css";
+
+// Prevent splash screen from auto-hiding
+SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
   const loadRelapses = useRelapseStore((state) => state.loadRelapses);
@@ -32,15 +37,15 @@ export default function RootLayout() {
   useEffect(() => {
     const initialize = async () => {
       try {
+        // Run all initialization tasks in parallel for faster startup
+        await Promise.all([
+          initializeDatabase(),
+          initializeEncryptionKey(),
+        ]);
 
-        // Initialize database
-        await initializeDatabase();
-
-        // Initialize encryption key for secure storage
-        await initializeEncryptionKey();
-
-        // Load relapses from database
-        await loadRelapses();
+        // Data loading happens after initial render - non-blocking
+        // This allows the UI to show faster
+        loadRelapses();
 
         setIsReady(true);
       } catch (err) {
@@ -54,31 +59,51 @@ export default function RootLayout() {
     initialize();
   }, []);
 
+  // Hide splash screen when everything is ready
+  useEffect(() => {
+    const hideSplash = async () => {
+      if (fontsLoaded && isReady) {
+        // Hide splash immediately - no artificial delay
+        await SplashScreen.hideAsync();
+      }
+    };
+
+    hideSplash();
+  }, [fontsLoaded, isReady]);
+
+  // Don't render anything until ready - splash screen stays visible
   if (!fontsLoaded || !isReady) {
-    return (
-      <View className="items-center justify-center flex-1 bg-white dark:bg-gray-900">
-        <ActivityIndicator size="large" color="#1B5E20" />
-        <Text className="mt-4 text-gray-600 font-regular dark:text-gray-300">Loading...</Text>
-      </View>
-    );
+    return null;
   }
 
   if (error) {
     return (
       <View className="items-center justify-center flex-1 px-6 bg-white dark:bg-gray-900">
-        <Text className="mb-2 text-2xl font-bold text-red-600 dark:text-red-400">Error</Text>
-        <Text className="text-center text-gray-600 font-regular dark:text-gray-300">{error}</Text>
+        <Animated.Text
+          entering={FadeIn.duration(150)}
+          className="mb-2 text-2xl font-bold text-red-600 dark:text-red-400"
+        >
+          Error
+        </Animated.Text>
+        <Animated.Text
+          entering={FadeIn.duration(150).delay(50)}
+          className="text-center text-gray-600 font-regular dark:text-gray-300"
+        >
+          {error}
+        </Animated.Text>
       </View>
     );
   }
 
   return (
     <AppLock>
-      <Stack screenOptions={{ headerShown: false }}>
-        <Stack.Screen name="index" />
-        <Stack.Screen name="onboarding" />
-        <Stack.Screen name="(tabs)" />
-      </Stack>
+      <Animated.View entering={FadeIn.duration(150)} style={{ flex: 1 }}>
+        <Stack screenOptions={{ headerShown: false }}>
+          <Stack.Screen name="index" />
+          <Stack.Screen name="onboarding" />
+          <Stack.Screen name="(tabs)" />
+        </Stack>
+      </Animated.View>
     </AppLock>
   );
 }

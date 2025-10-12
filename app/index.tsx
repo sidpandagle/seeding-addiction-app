@@ -1,4 +1,3 @@
-import { View, ActivityIndicator } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useEffect } from 'react';
 import { getJourneyStart } from '../src/db/helpers';
@@ -28,9 +27,7 @@ export default function Index() {
     checkJourneyStatus();
   }, []);
 
-  return (
-    <View className="items-center justify-center flex-1 ">
-      <ActivityIndicator size="large" color="#2563eb" />
-    </View>
-  );
+  // Return null - navigation happens immediately
+  // No need for loading UI as splash screen is still visible
+  return null;
 }
