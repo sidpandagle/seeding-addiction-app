@@ -53,7 +53,7 @@ export default function EmergencyHelpModal({ onClose }: EmergencyHelpModalProps)
     >
       <ScrollView className="flex-1">
         {/* Header */}
-        <View className="px-6 py-6 bg-rose-50 dark:bg-gray-800">
+        <View className="px-6 pt-16 pb-6 bg-rose-50 dark:bg-gray-800">
           <View className="flex-row items-center justify-between">
             <View className="flex-1">
               <Text className="text-2xl font-bold text-gray-900 dark:text-white">You've Got This</Text>

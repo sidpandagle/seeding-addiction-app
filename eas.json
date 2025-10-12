@@ -33,8 +33,7 @@
         "simulator": false
       },
       "android": {
-        "buildType": "app-bundle",
-        "enableProguardInReleaseBuilds": true
+        "buildType": "app-bundle"
       },
       "env": {
         "EXPO_USE_METRO_WORKSPACE_ROOT": "1"
