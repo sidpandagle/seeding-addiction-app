@@ -52,32 +52,36 @@ export default function AchievementsScreen() {
 
   const unlockedCount = achievements.filter((a:any) => a.isUnlocked).length;
   const totalCount = achievements.length;
+  const isDark = colorScheme === 'dark';
 
   return (
-    <View className="flex-1 bg-gray-50 dark:bg-gray-900">
-      <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'} />
+    <View className="flex-1 bg-neutral-50 dark:bg-[#1A1825]">
+      <StatusBar style={isDark ? 'light' : 'dark'} />
 
-      {/* Header */}
-      <View className="px-6 pt-16 pb-4 bg-white border-b border-gray-200 dark:bg-gray-800 dark:border-gray-700">
-        <Text className="text-2xl font-bold text-gray-900 dark:text-white">Achievements</Text>
-        <Text className="mt-0.5 text-sm text-gray-600 dark:text-gray-400">
-          Unlocked {unlockedCount} of {totalCount} achievements
+      {/* Minimal Header */}
+      <View className="px-6 pt-16 pb-6 bg-white dark:bg-[#252336]">
+        <Text className="text-2xl font-semibold text-neutral-900 dark:text-neutral-50 tracking-tight">
+          Achievements
+        </Text>
+        <Text className="mt-1 text-sm text-neutral-500 dark:text-neutral-400">
+          {unlockedCount} of {totalCount} unlocked
         </Text>
       </View>
 
       {/* Content */}
       <ScrollView
         className="flex-1"
-        contentContainerStyle={{ paddingHorizontal: 20, paddingVertical: 24 }}
+        contentContainerStyle={{ paddingHorizontal: 24, paddingVertical: 24 }}
+        showsVerticalScrollIndicator={false}
       >
         {/* Motivation Message */}
-        <View className="p-4 mb-6 bg-emerald-50 dark:bg-emerald-950/30 rounded-xl">
-          <Text className="text-sm text-emerald-900 dark:text-emerald-200">
+        <View className="p-5 mb-6 bg-primary-50 dark:bg-primary-900/20 rounded-2xl">
+          <Text className="text-sm text-primary-800 dark:text-primary-200 leading-relaxed">
             {unlockedCount === 0
-              ? '🌱 You don’t win this fight once — you win it every damn day!'
+              ? '🌱 Every journey begins with a single step'
               : unlockedCount === totalCount
-              ? '🏆 Congratulations! You\'ve unlocked all achievements!'
-              : `🚀 Keep going! ${totalCount - unlockedCount} more to unlock.`}
+              ? '✨ You\'ve unlocked all achievements. Remarkable!'
+              : `🌿 Keep nurturing your growth. ${totalCount - unlockedCount} more await.`}
           </Text>
         </View>
 

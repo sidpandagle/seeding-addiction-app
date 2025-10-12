@@ -27,25 +27,41 @@ export default function OnboardingScreen() {
     }
   };
 
+  const isDark = colorScheme === 'dark';
+
   return (
-    <View className="flex-1 bg-white dark:bg-gray-900">
-      <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'} />
-      <View className="items-center justify-center flex-1 px-6">
-        <Text className="mb-6 text-4xl font-bold text-gray-900 dark:text-white">
+    <View className="flex-1 bg-neutral-50 dark:bg-[#1A1825]">
+      <StatusBar style={isDark ? 'light' : 'dark'} />
+      <View className="items-center justify-center flex-1 px-8">
+        {/* Decorative Element */}
+        <View className="mb-8">
+          <Text className="text-6xl text-center">🌱</Text>
+        </View>
+
+        {/* Title */}
+        <Text className="text-4xl font-semibold text-center text-neutral-900 dark:text-neutral-50 tracking-tight mb-4">
           Welcome to Seeding
         </Text>
-        <Text className="mb-2 text-lg text-center text-gray-600 font-regular dark:text-gray-400">
-          A privacy-focused relapse tracking app
+
+        {/* Subtitle */}
+        <Text className="text-base text-center text-neutral-600 dark:text-neutral-400 leading-relaxed max-w-sm">
+          A calm, private space for tracking your journey towards self-discipline and inner peace
         </Text>
 
+        {/* CTA Button */}
         <Pressable
           onPress={handleGetStarted}
-          className="px-8 py-4 mt-12 rounded-full bg-emerald-600 dark:bg-emerald-700 active:bg-emerald-700 dark:active:bg-emerald-800"
+          className="px-10 py-4 mt-12 rounded-2xl bg-primary-500 dark:bg-primary-600 active:bg-primary-600 dark:active:bg-primary-700"
         >
-          <Text className="text-lg font-semibold text-white">
-            Get Started
+          <Text className="text-base font-semibold text-white tracking-wide">
+            Begin Your Journey
           </Text>
         </Pressable>
+
+        {/* Footer Note */}
+        <Text className="absolute bottom-12 text-xs text-center text-neutral-400 dark:text-neutral-500 px-8">
+          All your data stays private on your device
+        </Text>
       </View>
     </View>
   );

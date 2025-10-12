@@ -1,4 +1,5 @@
 import { View, Text, Pressable } from 'react-native';
+import { useThemeStore } from '../stores/themeStore';
 
 type ViewMode = 'list' | 'calendar';
 
@@ -8,17 +9,20 @@ interface ViewToggleProps {
 }
 
 export default function ViewToggle({ mode, onModeChange }: ViewToggleProps) {
+  const colorScheme = useThemeStore((state) => state.colorScheme);
+  const isDark = colorScheme === 'dark';
+
   return (
-    <View className="flex-row p-2 mt-2 bg-gray-200 rounded-lg dark:bg-gray-700">
+    <View className="flex-row p-1.5 bg-neutral-100 dark:bg-[#2F2D42] rounded-2xl">
       <Pressable
         onPress={() => onModeChange('list')}
-        className={`flex-1 py-2 px-4 rounded-md ${
-          mode === 'list' ? 'bg-white dark:bg-gray-600' : ''
+        className={`flex-1 py-2.5 px-4 rounded-xl ${
+          mode === 'list' ? 'bg-white dark:bg-[#3D3A52]' : ''
         }`}
       >
         <Text
-          className={`text-sm font-medium text-center ${
-            mode === 'list' ? 'text-gray-900 dark:text-white' : 'text-gray-600 dark:text-gray-400'
+          className={`text-sm font-semibold text-center ${
+            mode === 'list' ? 'text-neutral-900 dark:text-neutral-50' : 'text-neutral-500 dark:text-neutral-400'
           }`}
         >
           List
@@ -26,13 +30,13 @@ export default function ViewToggle({ mode, onModeChange }: ViewToggleProps) {
       </Pressable>
       <Pressable
         onPress={() => onModeChange('calendar')}
-        className={`flex-1 py-2 px-4 rounded-md ${
-          mode === 'calendar' ? 'bg-white dark:bg-gray-600' : ''
+        className={`flex-1 py-2.5 px-4 rounded-xl ${
+          mode === 'calendar' ? 'bg-white dark:bg-[#3D3A52]' : ''
         }`}
       >
         <Text
-          className={`text-sm font-medium text-center ${
-            mode === 'calendar' ? 'text-gray-900 dark:text-white' : 'text-gray-600 dark:text-gray-400'
+          className={`text-sm font-semibold text-center ${
+            mode === 'calendar' ? 'text-neutral-900 dark:text-neutral-50' : 'text-neutral-500 dark:text-neutral-400'
           }`}
         >
           Calendar

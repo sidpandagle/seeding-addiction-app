@@ -15,21 +15,21 @@ interface CircularProgressProps {
   checkpointLabel?: string; // e.g., "Next: 1 day"
   showCheckpoint?: boolean;
   useGradient?: boolean; // Enable gradient mode
-  gradientColors?: string[]; // Array of colors for gradient (default: green to gold)
+  gradientColors?: string[]; // Array of colors for gradient
 }
 
 export default function CircularProgress({
   size = 120,
   strokeWidth = 8,
   progress,
-  color = '#1B5E20', // Deep emerald green from theme
-  backgroundColor = '#E0E0E0',
+  color = '#6B9A7F', // Soft sage from new theme
+  backgroundColor = '#F5F5F5',
   showPercentage = false,
   children,
   checkpointLabel,
   showCheckpoint = false,
   useGradient = false,
-  gradientColors = ['#1B5E20', '#A5D6A7', '#FFD54F'], // Green → Lime → Gold
+  gradientColors = ['#6B9A7F', '#8FB79C'], // Soft sage gradient
 }: CircularProgressProps) {
   const radius = (size - strokeWidth) / 2;
   const circumference = 2 * Math.PI * radius;
@@ -37,11 +37,11 @@ export default function CircularProgress({
   // Animated value for smooth progress transitions
   const animatedProgress = useRef(new Animated.Value(progress)).current;
 
-  // Animate progress changes
+  // Animate progress changes with gentle easing
   useEffect(() => {
     Animated.timing(animatedProgress, {
       toValue: progress,
-      duration: 500,
+      duration: 600, // Slightly slower for calmer feel
       useNativeDriver: true,
     }).start();
   }, [progress, animatedProgress]);
@@ -84,7 +84,7 @@ export default function CircularProgress({
             strokeWidth={strokeWidth}
             fill="none"
           />
-          {/* Progress Circle */}
+          {/* Progress Circle - Softer appearance */}
           <AnimatedCircle
             cx={size / 2}
             cy={size / 2}
@@ -95,6 +95,7 @@ export default function CircularProgress({
             strokeDasharray={circumference}
             strokeDashoffset={strokeDashoffset}
             strokeLinecap="round"
+            opacity={0.95}
           />
         </Svg>
 
@@ -102,7 +103,7 @@ export default function CircularProgress({
         <View style={{ position: 'absolute' }} className="items-center justify-center">
           {children}
           {showPercentage && !children && (
-            <Text className="text-2xl font-bold text-gray-900">
+            <Text className="text-2xl font-semibold text-neutral-900 dark:text-neutral-50">
               {Math.round(progress * 100)}%
             </Text>
           )}
@@ -111,7 +112,7 @@ export default function CircularProgress({
 
       {/* Checkpoint Label */}
       {showCheckpoint && checkpointLabel && (
-        <Text className="mt-6 text-xs font-medium tracking-wide text-gray-500 uppercase dark:text-gray-400">
+        <Text className="mt-6 px-4 text-xs text-center text-neutral-500 dark:text-neutral-400 leading-relaxed">
           {checkpointLabel}
         </Text>
       )}

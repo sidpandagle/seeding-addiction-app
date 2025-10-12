@@ -51,26 +51,33 @@ export default function HistoryScreen() {
     };
   }, [relapses, journeyStart]);
 
-  return (
-    <View className="flex-1 bg-gray-50 dark:bg-gray-900">
-      <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'} />
+  const isDark = colorScheme === 'dark';
 
-      {/* Header */}
-      <View className="px-6 pt-16 bg-white border-b border-gray-200 dark:bg-gray-800 dark:border-gray-700">
-        <Text className="mb-6 text-3xl font-bold text-gray-900 dark:text-white">History</Text>
+  return (
+    <View className="flex-1 bg-neutral-50 dark:bg-[#1A1825]">
+      <StatusBar style={isDark ? 'light' : 'dark'} />
+
+      {/* Minimal Header */}
+      <View className="px-6 pt-16 pb-6 bg-white dark:bg-[#252336]">
+        <Text className="text-2xl font-semibold text-neutral-900 dark:text-neutral-50 tracking-tight">
+          History
+        </Text>
+        <Text className="mt-1 text-sm text-neutral-500 dark:text-neutral-400">
+          Track your journey over time
+        </Text>
       </View>
 
-      {/* View Toggle */}
-      <View className="px-6 py-2">
+      {/* View Controls */}
+      <View className="px-6 py-4">
         {/* Insights Button */}
         <TouchableOpacity
           onPress={() => setShowInsightsModal(true)}
-          className="flex-row items-center justify-center px-4 py-3 my-4 bg-emerald-50 dark:bg-emerald-900/20 rounded-xl"
+          className="flex-row items-center justify-center px-5 py-3.5 mb-4 bg-accent-50 dark:bg-accent-900/20 rounded-2xl"
           activeOpacity={0.7}
         >
-          <BarChart3 size={20} color="#10b981" strokeWidth={2} />
-          <Text className="ml-2 text-base font-semibold text-emerald-600 dark:text-emerald-400">
-            View Advanced Insights
+          <BarChart3 size={19} color={isDark ? '#AFA6D9' : '#948ACD'} strokeWidth={2.2} />
+          <Text className="ml-2 text-sm font-semibold text-accent-700 dark:text-accent-300">
+            View Insights
           </Text>
         </TouchableOpacity>
 

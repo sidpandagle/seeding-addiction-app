@@ -5,22 +5,24 @@ import { useThemeStore } from '../stores/themeStore';
 import motivationalQuotes from '../data/motivationalQuotes.json';
 
 export const MotivationCard: React.FC = () => {
-  const isDark = useThemeStore((state:any) => state.isDark);
+  const colorScheme = useThemeStore((state:any) => state.colorScheme);
   const [currentIndex, setCurrentIndex] = useState(0);
 
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentIndex((prev) => (prev + 1) % motivationalQuotes.length);
-    }, 10000); // Change every 10 seconds
+    }, 12000); // Change every 12 seconds
 
     return () => clearInterval(interval);
   }, [])
 
+  const isDark = colorScheme === 'dark';
+
   return (
-    <View className="relative p-5 mx-4 mb-6 border rounded-2xl bg-emerald-50 dark:bg-emerald-950/30 border-emerald-200 dark:border-emerald-800">
-      <View className="flex-row items-center mb-2">
-        <Text className="mr-2 text-2xl">🌱</Text>
-        <Text className="text-base font-semibold text-emerald-700 dark:text-emerald-400">
+    <View className="mx-6 mb-8 p-6 bg-white dark:bg-[#252336] rounded-2xl">
+      <View className="flex-row items-center mb-3">
+        <Text className="mr-2 text-xl">�</Text>
+        <Text className="text-sm font-semibold text-primary-700 dark:text-primary-300 tracking-wide">
           Daily Reflection
         </Text>
       </View>
@@ -30,15 +32,15 @@ export const MotivationCard: React.FC = () => {
           key={currentIndex}
           entering={FadeIn.duration(800)}
           exiting={FadeOut.duration(600)}
-          className="text-base font-regular italic leading-6 text-gray-700 dark:text-gray-300"
+          className="text-base leading-relaxed text-neutral-700 dark:text-neutral-300 italic"
         >
           "{motivationalQuotes[currentIndex].text}"
         </Animated.Text>
       </View>
 
-      {/* Decorative elements */}
-      <View className="absolute flex-row gap-1 bottom-2 right-3">
-        <Text className="text-xs opacity-30">🌿</Text>
+      {/* Subtle decorative element */}
+      <View className="absolute bottom-4 right-4 opacity-10">
+        <Text className="text-2xl">✨</Text>
       </View>
     </View>
   );

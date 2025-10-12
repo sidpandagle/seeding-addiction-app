@@ -102,24 +102,31 @@ export default function SettingsScreen() {
     );
   };
 
-  return (
-    <View className="flex-1 bg-gray-50 dark:bg-gray-900">
-      <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'} />
+  const isDark = colorScheme === 'dark';
 
-      {/* Header */}
-      <View className="bg-white dark:bg-gray-800 pt-16 pb-4 px-6 border-b border-gray-200 dark:border-gray-700">
-        <Text className="text-2xl font-bold text-gray-900 dark:text-white">Settings</Text>
+  return (
+    <View className="flex-1 bg-neutral-50 dark:bg-[#1A1825]">
+      <StatusBar style={isDark ? 'light' : 'dark'} />
+
+      {/* Minimal Header */}
+      <View className="bg-white dark:bg-[#252336] pt-16 pb-6 px-6">
+        <Text className="text-2xl font-semibold text-neutral-900 dark:text-neutral-50 tracking-tight">
+          Settings
+        </Text>
+        <Text className="mt-1 text-sm text-neutral-500 dark:text-neutral-400">
+          Customize your experience
+        </Text>
       </View>
 
-      <ScrollView className="flex-1">
+      <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
         {/* Appearance Section */}
         <View className="mt-6 px-6">
-          <Text className="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-3">
+          <Text className="text-xs font-semibold text-neutral-400 dark:text-neutral-500 uppercase tracking-wider mb-3">
             Appearance
           </Text>
 
-          <View className="bg-white dark:bg-gray-800 rounded-xl p-4 mb-4">
-            <Text className="text-base font-semibold text-gray-900 dark:text-white mb-3">
+          <View className="bg-white dark:bg-[#252336] rounded-2xl p-5 mb-4">
+            <Text className="text-base font-semibold text-neutral-900 dark:text-neutral-50 mb-4">
               Theme
             </Text>
 
@@ -129,13 +136,13 @@ export default function SettingsScreen() {
               className="flex-row items-center py-3 active:opacity-70"
             >
               <View className={`w-5 h-5 rounded-full border-2 mr-3 items-center justify-center ${
-                colorScheme === 'light' ? 'border-emerald-500' : 'border-gray-300 dark:border-gray-600'
+                colorScheme === 'light' ? 'border-primary-500' : 'border-neutral-300 dark:border-neutral-600'
               }`}>
                 {colorScheme === 'light' && (
-                  <View className="w-3 h-3 rounded-full bg-emerald-500" />
+                  <View className="w-3 h-3 rounded-full bg-primary-500" />
                 )}
               </View>
-              <Text className="text-base font-medium text-gray-900 dark:text-white">
+              <Text className="text-base text-neutral-800 dark:text-neutral-200">
                 Light
               </Text>
             </Pressable>
@@ -146,13 +153,13 @@ export default function SettingsScreen() {
               className="flex-row items-center py-3 active:opacity-70"
             >
               <View className={`w-5 h-5 rounded-full border-2 mr-3 items-center justify-center ${
-                colorScheme === 'dark' ? 'border-emerald-500' : 'border-gray-300 dark:border-gray-600'
+                colorScheme === 'dark' ? 'border-primary-500' : 'border-neutral-300 dark:border-neutral-600'
               }`}>
                 {colorScheme === 'dark' && (
-                  <View className="w-3 h-3 rounded-full bg-emerald-500" />
+                  <View className="w-3 h-3 rounded-full bg-primary-500" />
                 )}
               </View>
-              <Text className="text-base font-medium text-gray-900 dark:text-white">
+              <Text className="text-base text-neutral-800 dark:text-neutral-200">
                 Dark
               </Text>
             </Pressable>
@@ -160,65 +167,66 @@ export default function SettingsScreen() {
         </View>
 
         {/* Security Section */}
-        <View className="mt-6 px-6">
-          <Text className="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-3">
+        <View className="mt-4 px-6">
+          <Text className="text-xs font-semibold text-neutral-400 dark:text-neutral-500 uppercase tracking-wider mb-3">
             Security
           </Text>
 
-          <View className="bg-white dark:bg-gray-800 rounded-xl p-4 mb-4">
+          <View className="bg-white dark:bg-[#252336] rounded-2xl p-5 mb-4">
             <View className="flex-row items-center justify-between">
-              <View className="flex-1">
-                <Text className="text-base font-semibold text-gray-900 dark:text-white">
+              <View className="flex-1 pr-4">
+                <Text className="text-base font-semibold text-neutral-900 dark:text-neutral-50">
                   App Lock
                 </Text>
-                <Text className="text-sm font-regular text-gray-500 dark:text-gray-400 mt-1">
+                <Text className="text-sm text-neutral-500 dark:text-neutral-400 mt-1 leading-relaxed">
                   {biometricAvailable
-                    ? `Protect app with ${authMethodName}`
-                    : 'Biometric authentication not available'}
+                    ? `Protect with ${authMethodName}`
+                    : 'Biometric not available'}
                 </Text>
               </View>
               <Switch
                 value={appLockEnabled}
                 onValueChange={handleAppLockToggle}
                 disabled={!biometricAvailable}
-                trackColor={{ false: '#d1d5db', true: '#10b981' }}
-                thumbColor={appLockEnabled ? '#ffffff' : '#f3f4f6'}
+                trackColor={{ false: isDark ? '#3D3A52' : '#E0E0E0', true: '#6B9A7F' }}
+                thumbColor={appLockEnabled ? '#ffffff' : '#f5f5f5'}
+                ios_backgroundColor={isDark ? '#3D3A52' : '#E0E0E0'}
               />
             </View>
           </View>
         </View>
 
         {/* Data Section */}
-        <View className="mt-6 px-6">
-          <Text className="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-3">
+        <View className="mt-4 px-6">
+          <Text className="text-xs font-semibold text-neutral-400 dark:text-neutral-500 uppercase tracking-wider mb-3">
             Data
           </Text>
 
           <Pressable
             onPress={handleResetData}
-            className="bg-white dark:bg-gray-800 rounded-xl p-4 mb-4 active:opacity-70"
+            className="bg-white dark:bg-[#252336] rounded-2xl p-5 mb-4 active:opacity-70"
           >
             <View className="flex-row items-center justify-between">
-              <View className="flex-1">
-                <Text className="text-base font-semibold text-red-600 dark:text-red-400">
+              <View className="flex-1 pr-4">
+                <Text className="text-base font-semibold text-warm-600 dark:text-warm-400">
                   Reset All Data
                 </Text>
-                <Text className="text-sm font-regular text-gray-500 dark:text-gray-400 mt-1">
-                  Permanently delete all records and start fresh
+                <Text className="text-sm text-neutral-500 dark:text-neutral-400 mt-1 leading-relaxed">
+                  Delete all records and start fresh
                 </Text>
               </View>
-              <Text className="text-red-600 dark:text-red-400 text-lg font-medium">→</Text>
+              <Text className="text-warm-600 dark:text-warm-400 text-lg">→</Text>
             </View>
           </Pressable>
         </View>
 
         {/* App Info */}
-        <View className="px-6 pb-8 mt-6">
-          <Text className="text-center text-sm font-regular text-gray-400 dark:text-gray-500">
+        <View className="px-6 pb-12 mt-8">
+          <Text className="text-center text-sm text-neutral-400 dark:text-neutral-500">
             Seeding v1.0.0
           </Text>
-          <Text className="text-center text-xs font-regular text-gray-400 dark:text-gray-500 mt-1">
-            Privacy-focused relapse tracking
+          <Text className="text-center text-xs text-neutral-400 dark:text-neutral-500 mt-2">
+            Privacy-focused journey tracking
           </Text>
         </View>
       </ScrollView>

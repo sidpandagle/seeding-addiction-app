@@ -171,155 +171,162 @@ export default function DashboardScreen() {
     setShowHelpModal(true);
   };
 
-  return (
-    <View className="flex-1 bg-white dark:bg-gray-900">
-      <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'} />
+  const isDark = colorScheme === 'dark';
 
-      {/* Header */}
-      <View className="px-4 pb-5 pt-14 bg-emerald-50 dark:bg-gray-800 text-red-">
-        <View className="flex-row items-center gap-3">
-          <View className="flex-1 ml-2">
-            <Text className="text-2xl font-medium tracking-widest text-gray-900 dark:text-white">Seeding</Text>
-            <Text className="text-sm tracking-widest text-gray-600 dark:text-gray-400">Your journey starts here</Text>
+  return (
+    <View className="flex-1 bg-neutral-50 dark:bg-[#1A1825]">
+      <StatusBar style={isDark ? 'light' : 'dark'} />
+
+      {/* Minimal Header */}
+      <View className="px-6 pb-6 pt-16 bg-white dark:bg-[#252336]">
+        <View className="flex-row items-center justify-between">
+          <View>
+            <Text className="text-2xl font-semibold text-neutral-900 dark:text-neutral-50 tracking-tight">
+              Your Journey
+            </Text>
+            <Text className="text-sm text-neutral-500 dark:text-neutral-400 mt-0.5">
+              One moment at a time
+            </Text>
           </View>
           <Pressable
             onPress={handleHelpPress}
-            // className="items-center justify-center w-12 h-12 bg-rose-500 dark:bg-rose-600 rounded-2xl active:bg-rose-600 dark:active:bg-rose-700"
-            className="items-center justify-center w-12 h-12 mr-1"
+            className="items-center justify-center w-11 h-11 rounded-2xl bg-warm-50 dark:bg-warm-900/30 active:bg-warm-100 dark:active:bg-warm-900/50"
           >
-            <AlertCircle size={30} color="#ef4444" strokeWidth={2.5} />
+            <AlertCircle size={22} color={isDark ? '#F2AB7D' : '#E89463'} strokeWidth={2.2} />
           </Pressable>
         </View>
       </View>
 
-      <ScrollView className="flex-1">
+      <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
 
-        {/* Stats Cards */}
-        <View className="">
-          {/* <View className="items-center p-6 mb-4 bg-white shadow-sm rounded-2xl"> */}
-          <View className="items-center p-6 mb-0 rounded-2xl">
-            <Text className="mb-4 text-sm font-medium tracking-wide text-gray-500 uppercase dark:text-gray-400">
-              Current Streak
-            </Text>
-
+        {/* Main Progress Section */}
+        <View className="px-6 py-8">
+          <View className="items-center">
+            
             {/* Circular Progress */}
             <CircularProgress
-              size={240}
-              strokeWidth={14}
+              size={260}
+              strokeWidth={12}
               progress={stats.checkpointProgress?.progress ?? 0}
               useGradient={true}
-              gradientColors={['#07b087', '#8ace19']}
-              backgroundColor={colorScheme === 'dark' ? '#1F2937' : '#E8F5E9'}
-              showCheckpoint={true}
-              checkpointLabel={
-                stats.checkpointProgress?.isCompleted
-                  ? 'All milestones achieved! 🎉'
-                  : stats.checkpointProgress?.nextCheckpoint
-                    ? `Next: ${stats.checkpointProgress.nextCheckpoint.label} (${formatTimeRemaining(stats.checkpointProgress.nextCheckpoint.duration - stats.timeDiff)} left)`
-                    : 'Starting your journey...'
-              }
+              gradientColors={['#6B9A7F', '#8FB79C']}
+              backgroundColor={isDark ? '#2F2D42' : '#F5F5F5'}
+              showCheckpoint={false}
             >
               <View className="items-center">
                 {/* Growth Icon */}
                 <GrowthIcon
                   stage={stats.growthStage.id}
-                  size={60}
+                  size={48}
                   animated={true}
                   glowing={false}
                   onStageChange={handleStageChange}
                 />
 
                 {/* Time Counter */}
-                {stats.days > 0 ?
-                  <Text className="mt-2 text-5xl font-bold text-gray-900 dark:text-white">
-                    {stats.days}<Text className='text-lg font-medium'>d</Text>
+                {stats.days > 0 && (
+                  <Text className="mt-3 text-5xl font-semibold text-neutral-900 dark:text-neutral-50 tracking-tight">
+                    {stats.days}
+                    <Text className='text-lg font-medium text-neutral-400 dark:text-neutral-500'>d</Text>
                   </Text>
-                  : null}
-                <Text className={`font-bold text-gray-900 dark:text-white ${stats.days > 0 ? 'mt-2 text-2xl' : 'mt-2 text-3xl'}`}>
-                  {stats.hours > 0 ? <>{stats.hours.toString().padStart(2, '0')}<Text className='text-base font-medium'>h</Text></> : null} {stats.minutes.toString().padStart(2, '0')}<Text className='text-base font-medium'>m</Text> {stats.seconds.toString().padStart(2, '0')}<Text className='text-base font-medium'>s</Text>
+                )}
+                <Text className={`font-semibold text-neutral-900 dark:text-neutral-50 tracking-tight ${stats.days > 0 ? 'mt-1 text-xl' : 'mt-3 text-3xl'}`}>
+                  {stats.hours > 0 && <>{stats.hours.toString().padStart(2, '0')}<Text className='text-sm font-medium text-neutral-400 dark:text-neutral-500'>h</Text> </>}
+                  {stats.minutes.toString().padStart(2, '0')}<Text className='text-sm font-medium text-neutral-400 dark:text-neutral-500'>m</Text> {stats.seconds.toString().padStart(2, '0')}<Text className='text-sm font-medium text-neutral-400 dark:text-neutral-500'>s</Text>
                 </Text>
               </View>
             </CircularProgress>
+
+            {/* Checkpoint Label */}
+            {stats.checkpointProgress && (
+              <View className="mt-6 px-5 py-3 bg-primary-50 dark:bg-primary-900/20 rounded-2xl">
+                <Text className="text-xs text-center text-primary-700 dark:text-primary-300 leading-relaxed">
+                  {stats.checkpointProgress.isCompleted
+                    ? '✨ All milestones achieved'
+                    : stats.checkpointProgress.nextCheckpoint
+                      ? `Next: ${stats.checkpointProgress.nextCheckpoint.label}`
+                      : 'Beginning your journey'}
+                </Text>
+              </View>
+            )}
           </View>
         </View>
 
-        {/* Action Buttons */}
-        <View className="gap-3 px-6 mb-6">
-          {/* Log Urge Resisted Button - Positive Action */}
+        {/* Action Buttons - Calm and Supportive */}
+        <View className="px-6 pb-6 gap-3">
+          {/* Log Urge Resisted Button */}
           <Pressable
             onPress={handleUrgePress}
-            className="flex-row items-center justify-center w-full gap-2 py-4 mt-0 bg-blue-600 dark:bg-blue-700 rounded-2xl active:bg-blue-700 dark:active:bg-blue-800"
+            className="flex-row items-center justify-center py-4 px-6 bg-cool-500 dark:bg-cool-600 rounded-2xl active:bg-cool-600 dark:active:bg-cool-700"
           >
-            <Shield size={22} color="#FFFFFF" strokeWidth={2.5} />
-            <Text className="text-lg font-semibold text-center text-white">
+            <Shield size={20} color="#FFFFFF" strokeWidth={2.2} />
+            <Text className="ml-2 text-base font-semibold text-white tracking-wide">
               I Resisted an Urge
             </Text>
           </Pressable>
 
-          {/* Record Relapse Button - Neutral Action */}
+          {/* Record Relapse Button */}
           <Pressable
             onPress={handleRelapsePress}
-            className="flex-row items-center justify-center w-full gap-2 py-4 bg-emerald-600 dark:bg-emerald-700 rounded-2xl active:bg-emerald-700 dark:active:bg-emerald-800"
+            className="flex-row items-center justify-center py-4 px-6 bg-primary-500 dark:bg-primary-600 rounded-2xl active:bg-primary-600 dark:active:bg-primary-700"
           >
-            <RotateCcw size={22} color="#FFFFFF" strokeWidth={2.5} />
-            <Text className="text-lg font-semibold text-center text-white">
+            <RotateCcw size={20} color="#FFFFFF" strokeWidth={2.2} />
+            <Text className="ml-2 text-base font-semibold text-white tracking-wide">
               Record Relapse
             </Text>
           </Pressable>
         </View>
 
-        {/* Stats Summary Cards - 2x2 Grid */}
-        <View className="px-6 mb-6">
+        {/* Stats Grid - Soft and Balanced */}
+        <View className="px-6 pb-6">
           {/* First Row */}
-          <View className="flex-row gap-4 mb-4">
+          <View className="flex-row gap-3 mb-3">
             {/* Total Attempts */}
-            <View className="flex-1 p-4 bg-emerald-50 dark:bg-emerald-950/30 rounded-2xl">
-              <Text className="mb-1 text-xs font-medium tracking-wide uppercase text-emerald-600 dark:text-emerald-400">
-                Total Attempts
+            <View className="flex-1 p-5 bg-white dark:bg-[#252336] rounded-2xl">
+              <Text className="text-xs font-medium uppercase tracking-wider text-primary-600 dark:text-primary-400 mb-2">
+                Attempts
               </Text>
-              <Text className="text-3xl font-semibold text-emerald-900 dark:text-emerald-100">
+              <Text className="text-3xl font-semibold text-primary-700 dark:text-primary-300">
                 {stats.totalAttempts}
               </Text>
             </View>
 
             {/* Best Streak */}
-            <View className="flex-1 p-4 bg-amber-50 dark:bg-amber-950/30 rounded-2xl">
-              <Text className="mb-1 text-xs font-medium tracking-wide uppercase text-amber-600 dark:text-amber-400">
+            <View className="flex-1 p-5 bg-white dark:bg-[#252336] rounded-2xl">
+              <Text className="text-xs font-medium uppercase tracking-wider text-warm-600 dark:text-warm-400 mb-2">
                 Best Streak
               </Text>
-              <Text className="text-3xl font-semibold text-amber-900 dark:text-amber-100">
+              <Text className="text-3xl font-semibold text-warm-700 dark:text-warm-300">
                 {stats.bestStreak}
-                <Text className="text-xs font-medium text-amber-600 dark:text-amber-400"> days</Text>
+                <Text className="text-xs font-medium text-warm-500"> days</Text>
               </Text>
             </View>
           </View>
 
-          {/* Second Row - Urge Stats */}
-          <View className="flex-row gap-4">
+          {/* Second Row */}
+          <View className="flex-row gap-3">
             {/* Urges Resisted */}
-            <View className="flex-1 p-4 bg-blue-50 dark:bg-blue-950/30 rounded-2xl">
-              <Text className="mb-1 text-xs font-medium tracking-wide text-blue-600 uppercase dark:text-blue-400">
-                Urges Resisted
+            <View className="flex-1 p-5 bg-white dark:bg-[#252336] rounded-2xl">
+              <Text className="text-xs font-medium uppercase tracking-wider text-cool-600 dark:text-cool-400 mb-2">
+                Resisted
               </Text>
-              <Text className="text-3xl font-semibold text-blue-900 dark:text-blue-100">
+              <Text className="text-3xl font-semibold text-cool-700 dark:text-cool-300">
                 {userStats.urgesResisted}
               </Text>
             </View>
 
-            {/* Resistance Rate */}
-            <View className="flex-1 p-4 bg-purple-50 dark:bg-purple-950/30 rounded-2xl">
-              <Text className="mb-1 text-xs font-medium tracking-wide text-purple-600 uppercase dark:text-purple-400">
-                Success Rate
+            {/* Success Rate */}
+            <View className="flex-1 p-5 bg-white dark:bg-[#252336] rounded-2xl">
+              <Text className="text-xs font-medium uppercase tracking-wider text-accent-600 dark:text-accent-400 mb-2">
+                Success
               </Text>
-              <Text className="text-3xl font-semibold text-purple-900 dark:text-purple-100">
+              <Text className="text-3xl font-semibold text-accent-700 dark:text-accent-300">
                 {userStats.resistanceRate}
-                <Text className="text-xs font-medium text-purple-600 dark:text-purple-400">%</Text>
+                <Text className="text-xs font-medium text-accent-500">%</Text>
               </Text>
             </View>
           </View>
         </View>
-
-        
 
         {/* Motivation Section */}
         <MotivationCard />

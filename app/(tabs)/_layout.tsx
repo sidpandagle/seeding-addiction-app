@@ -4,16 +4,17 @@ import { Home, History, Trophy, Settings } from 'lucide-react-native';
 
 export default function TabsLayout() {
   const colorScheme = useThemeStore((state) => state.colorScheme);
+  const isDark = colorScheme === 'dark';
 
   return (
     <Tabs
     screenOptions={{
         headerShown: false,
-        tabBarActiveTintColor: '#10b981',
-        tabBarInactiveTintColor: colorScheme === 'dark' ? '#6b7280' : '#9ca3af',
+        tabBarActiveTintColor: isDark ? '#8FB79C' : '#6B9A7F',
+        tabBarInactiveTintColor: isDark ? '#6B6B78' : '#9E9E9E',
         tabBarStyle: {
-          backgroundColor: colorScheme === 'dark' ? '#1f2937' : '#ffffff',
-          borderTopColor: colorScheme === 'dark' ? '#374151' : '#e5e7eb',
+          backgroundColor: isDark ? '#252336' : '#FFFFFF',
+          borderTopColor: isDark ? '#2F2D42' : '#F5F5F5',
           borderTopWidth: 1,
           height: 80,
           paddingBottom: 8,
@@ -25,17 +26,13 @@ export default function TabsLayout() {
           alignItems: 'center',
         },
         tabBarLabelStyle: {
-          fontSize: 12,
+          fontSize: 11,
           fontFamily: 'Poppins_500Medium',
           marginTop: 4,
+          letterSpacing: 0.25,
         },
         tabBarIconStyle: {
           marginTop: 4,
-        },
-        tabBarIndicatorStyle: {
-          backgroundColor: '#10b981',
-          height: 3,
-          borderRadius: 2,
         },
       }}
     >
@@ -44,7 +41,7 @@ export default function TabsLayout() {
         options={{
           title: 'Home',
           tabBarIcon: ({ color, focused }) => (
-            <Home size={24} color={color} strokeWidth={focused ? 2.5 : 2} />
+            <Home size={22} color={color} strokeWidth={focused ? 2.5 : 2.2} />
           ),
         }}
       />
@@ -53,7 +50,7 @@ export default function TabsLayout() {
         options={{
           title: 'History',
           tabBarIcon: ({ color, focused }) => (
-            <History size={24} color={color} strokeWidth={focused ? 2.5 : 2} />
+            <History size={22} color={color} strokeWidth={focused ? 2.5 : 2.2} />
           ),
         }}
       />
@@ -62,7 +59,7 @@ export default function TabsLayout() {
         options={{
           title: 'Achievements',
           tabBarIcon: ({ color, focused }) => (
-            <Trophy size={24} color={color} strokeWidth={focused ? 2.5 : 2} />
+            <Trophy size={22} color={color} strokeWidth={focused ? 2.5 : 2.2} />
           ),
         }}
       />
@@ -71,7 +68,7 @@ export default function TabsLayout() {
         options={{
           title: 'Settings',
           tabBarIcon: ({ color, focused }) => (
-            <Settings size={24} color={color} strokeWidth={focused ? 2.5 : 2} />
+            <Settings size={22} color={color} strokeWidth={focused ? 2.5 : 2.2} />
           ),
         }}
       />

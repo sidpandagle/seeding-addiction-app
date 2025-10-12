@@ -16,8 +16,8 @@ interface ScreenWrapperProps extends ViewProps {
 
 export function ScreenWrapper({
   children,
-  backgroundColor = '#ffffff',
-  darkBackgroundColor = '#111827',
+  backgroundColor = '#FDFCFB',
+  darkBackgroundColor = '#1A1825',
   style,
   ...props
 }: ScreenWrapperProps) {
@@ -26,8 +26,8 @@ export function ScreenWrapper({
 
   useEffect(() => {
     opacity.value = withTiming(1, {
-      duration: 200,
-      easing: Easing.out(Easing.ease),
+      duration: 250,
+      easing: Easing.out(Easing.cubic),
     });
   }, []);
 
