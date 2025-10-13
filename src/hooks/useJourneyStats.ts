@@ -7,13 +7,14 @@ import { getGrowthStage } from '../utils/growthStages';
 /**
  * Shared hook for journey statistics
  * Consolidates duplicate calculations across screens
- * Calculates stats on demand without intervals
+ * Updates every second to recalculate progress and elapsed time
  * LiveTimer component handles its own second-by-second updates independently
  */
 export function useJourneyStats() {
   const relapses = useRelapseStore((state) => state.relapses);
   const [journeyStart, setJourneyStart] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [currentTime, setCurrentTime] = useState(Date.now());
 
   // Load journey start timestamp
   useEffect(() => {
@@ -38,6 +39,15 @@ export function useJourneyStats() {
       isMounted = false;
     };
   }, [relapses]); // Reload when relapses change
+
+  // Update current time every second to recalculate progress
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentTime(Date.now());
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, []);
 
   const stats = useMemo(() => {
     let startTime: string | null = null;
@@ -71,7 +81,7 @@ export function useJourneyStats() {
     }
 
     // Calculate elapsed time at the moment of render
-    const elapsedTime = Math.max(0, Date.now() - new Date(startTime).getTime());
+    const elapsedTime = Math.max(0, currentTime - new Date(startTime).getTime());
 
     const { days, hours, minutes, seconds } = millisecondsToTimeBreakdown(elapsedTime);
 
@@ -89,7 +99,7 @@ export function useJourneyStats() {
       // Legacy compatibility
       timeDiff: elapsedTime,
     };
-  }, [relapses, journeyStart, isLoading]);
+  }, [relapses, journeyStart, isLoading, currentTime]);
 
   return stats;
 }
