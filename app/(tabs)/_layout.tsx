@@ -1,9 +1,11 @@
 import { Tabs } from 'expo-router';
 import { useThemeStore } from '../../src/stores/themeStore';
 import { Home, History, Trophy, Settings } from 'lucide-react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function TabsLayout() {
   const colorScheme = useThemeStore((state) => state.colorScheme);
+  const insets = useSafeAreaInsets();
 
   return (
     <Tabs
@@ -15,8 +17,8 @@ export default function TabsLayout() {
           backgroundColor: colorScheme === 'dark' ? '#1f2937' : '#ffffff',
           borderTopColor: colorScheme === 'dark' ? '#374151' : '#e5e7eb',
           borderTopWidth: 1,
-          height: 70,
-          paddingBottom: 10,
+          height: 70 + insets.bottom,
+          paddingBottom: Math.max(insets.bottom, 10),
           paddingTop: 10,
         },
         tabBarItemStyle: {
