@@ -15,9 +15,9 @@ export default function TabsLayout() {
           backgroundColor: colorScheme === 'dark' ? '#1f2937' : '#ffffff',
           borderTopColor: colorScheme === 'dark' ? '#374151' : '#e5e7eb',
           borderTopWidth: 1,
-          height: 80,
-          paddingBottom: 8,
-          paddingTop: 8,
+          height: 70,
+          paddingBottom: 10,
+          paddingTop: 10,
         },
         tabBarItemStyle: {
           flex: 1,
@@ -25,17 +25,12 @@ export default function TabsLayout() {
           alignItems: 'center',
         },
         tabBarLabelStyle: {
-          fontSize: 12,
-          fontFamily: 'Poppins_500Medium',
-          marginTop: 4,
+          fontSize: 11,
+          fontFamily: 'Poppins_600SemiBold',
+          marginTop: 2,
         },
         tabBarIconStyle: {
-          marginTop: 4,
-        },
-        tabBarIndicatorStyle: {
-          backgroundColor: '#10b981',
-          height: 3,
-          borderRadius: 2,
+          marginTop: 2,
         },
       }}
     >

@@ -7,31 +7,37 @@ import { getGrowthStage } from '../utils/growthStages';
 /**
  * Shared hook for journey statistics
  * Consolidates duplicate calculations across screens
- * Updates every second for real-time stats, but only recalculates when dependencies change
- * LiveTimer component handles its own second-by-second updates
+ * Calculates stats on demand without intervals
+ * LiveTimer component handles its own second-by-second updates independently
  */
 export function useJourneyStats() {
   const relapses = useRelapseStore((state) => state.relapses);
   const [journeyStart, setJourneyStart] = useState<string | null>(null);
-  const [updateTrigger, setUpdateTrigger] = useState(Date.now());
+  const [isLoading, setIsLoading] = useState(true);
 
   // Load journey start timestamp
   useEffect(() => {
+    let isMounted = true;
     const loadJourneyStart = async () => {
-      const start = await getJourneyStart();
-      setJourneyStart(start);
+      try {
+        const start = await getJourneyStart();
+        if (isMounted) {
+          setJourneyStart(start);
+          setIsLoading(false);
+        }
+      } catch (error) {
+        console.error('Error loading journey start:', error);
+        if (isMounted) {
+          setIsLoading(false);
+        }
+      }
     };
     loadJourneyStart();
+    
+    return () => {
+      isMounted = false;
+    };
   }, [relapses]); // Reload when relapses change
-
-  // Update stats every second for real-time accuracy
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setUpdateTrigger(Date.now());
-    }, 1000);
-
-    return () => clearInterval(interval);
-  }, []);
 
   const stats = useMemo(() => {
     let startTime: string | null = null;
@@ -58,12 +64,14 @@ export function useJourneyStats() {
         checkpointProgress: null,
         growthStage: getGrowthStage(0),
         hasStarted: false,
+        isLoading,
         // Legacy compatibility
         timeDiff: 0,
       };
     }
 
-    const elapsedTime = Math.max(0, updateTrigger - new Date(startTime).getTime());
+    // Calculate elapsed time at the moment of render
+    const elapsedTime = Math.max(0, Date.now() - new Date(startTime).getTime());
 
     const { days, hours, minutes, seconds } = millisecondsToTimeBreakdown(elapsedTime);
 
@@ -77,10 +85,11 @@ export function useJourneyStats() {
       checkpointProgress: getCheckpointProgress(elapsedTime),
       growthStage: getGrowthStage(elapsedTime),
       hasStarted: true,
+      isLoading,
       // Legacy compatibility
       timeDiff: elapsedTime,
     };
-  }, [relapses, journeyStart, updateTrigger]);
+  }, [relapses, journeyStart, isLoading]);
 
   return stats;
 }

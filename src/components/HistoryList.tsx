@@ -44,22 +44,22 @@ export default function HistoryList({ relapses }: HistoryListProps) {
         index,
       })}
       ListHeaderComponent={
-        <View className="px-6 py-4 bg-gray-50 dark:bg-gray-900">
-          <Text className="mb-3 text-xs font-semibold tracking-wide text-gray-500 uppercase dark:text-gray-400">
+        <View className="px-6 py-4 bg-gray-50 dark:bg-gray-950">
+          <Text className="mb-3 text-xs font-bold tracking-widest text-gray-500 uppercase dark:text-gray-400">
             Filter by Tag
           </Text>
           <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-            <View className="flex-row gap-2">
+            <View className="flex-row gap-2.5">
               <Pressable
                 onPress={() => setSelectedTag(null)}
                 className={`px-4 py-2.5 rounded-full ${
                   selectedTag === null
                     ? 'bg-emerald-600 dark:bg-emerald-600'
-                    : 'bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700'
+                    : 'bg-white dark:bg-gray-900 border-2 border-gray-200 dark:border-gray-700'
                 }`}
               >
                 <Text
-                  className={`text-sm font-semibold ${
+                  className={`text-sm font-bold ${
                     selectedTag === null ? 'text-white' : 'text-gray-700 dark:text-gray-300'
                   }`}
                 >
@@ -75,11 +75,11 @@ export default function HistoryList({ relapses }: HistoryListProps) {
                     className={`px-4 py-2.5 rounded-full ${
                       selectedTag === tag
                         ? 'bg-emerald-600 dark:bg-emerald-600'
-                        : 'bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700'
+                        : 'bg-white dark:bg-gray-900 border-2 border-gray-200 dark:border-gray-700'
                     }`}
                   >
                     <Text
-                      className={`text-sm font-semibold ${
+                      className={`text-sm font-bold ${
                         selectedTag === tag ? 'text-white' : 'text-gray-700 dark:text-gray-300'
                       }`}
                     >
@@ -94,8 +94,8 @@ export default function HistoryList({ relapses }: HistoryListProps) {
       }
       ListEmptyComponent={
         <View className="items-center justify-center px-6 py-20">
-          <View className="items-center justify-center w-16 h-16 mb-4 bg-gray-200 rounded-full dark:bg-gray-700">
-            <Text className="text-3xl">✓</Text>
+          <View className="items-center justify-center w-20 h-20 mb-4 bg-emerald-50 border border-emerald-200 dark:bg-emerald-900/30 dark:border-emerald-800 rounded-3xl">
+            <Text className="text-4xl">✓</Text>
           </View>
           <Text className="mb-2 text-xl font-bold text-gray-900 dark:text-white">
             {selectedTag ? 'No matches found' : 'No relapses recorded'}
@@ -106,7 +106,7 @@ export default function HistoryList({ relapses }: HistoryListProps) {
         </View>
       }
       renderItem={({ item }) => (
-        <View className="p-5 mx-6 mb-3 bg-white border border-gray-200 dark:bg-gray-800 rounded-2xl dark:border-gray-700">
+        <View className="p-6 mx-6 mb-4 bg-white border border-gray-200 dark:bg-gray-900 dark:border-gray-700 rounded-2xl">
           <View className="flex-row items-start justify-between mb-3">
             <View className="flex-1">
               <Text className="mb-1 text-lg font-bold text-gray-900 dark:text-white">
@@ -117,7 +117,7 @@ export default function HistoryList({ relapses }: HistoryListProps) {
                   year: 'numeric',
                 })}
               </Text>
-              <Text className="text-sm text-gray-500 dark:text-gray-400">
+              <Text className="text-sm font-medium text-gray-500 dark:text-gray-400">
                 {new Date(item.timestamp).toLocaleTimeString('en-US', {
                   hour: 'numeric',
                   minute: '2-digit',
@@ -127,7 +127,7 @@ export default function HistoryList({ relapses }: HistoryListProps) {
           </View>
 
           {item.note && (
-            <Text className="mb-3 text-sm leading-5 text-gray-700 dark:text-gray-300">
+            <Text className="mb-3 text-sm leading-6 text-gray-700 dark:text-gray-300">
               {item.note}
             </Text>
           )}
@@ -137,9 +137,9 @@ export default function HistoryList({ relapses }: HistoryListProps) {
               {item.tags.map((tag: string) => (
                 <View
                   key={tag}
-                  className="px-3 py-1.5 bg-gray-100 dark:bg-gray-700 rounded-full"
+                  className="px-3 py-1.5 bg-emerald-50 dark:bg-emerald-900/30 rounded-full"
                 >
-                  <Text className="text-xs font-medium text-gray-700 dark:text-gray-300">
+                  <Text className="text-xs font-bold text-emerald-700 dark:text-emerald-300">
                     {tag}
                   </Text>
                 </View>

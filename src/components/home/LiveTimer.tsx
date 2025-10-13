@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { View, Text } from 'react-native';
+import Animated, { FadeIn } from 'react-native-reanimated';
 import { millisecondsToTimeBreakdown } from '../../utils/checkpointHelpers';
 
 interface LiveTimerProps {
@@ -8,7 +9,7 @@ interface LiveTimerProps {
 }
 
 /**
- * Optimized timer component that only re-renders itself
+ * Optimized timer component with elegant design
  * Isolated from parent component to prevent cascading re-renders
  */
 export default function LiveTimer({ startTime, showDays = true }: LiveTimerProps) {
@@ -27,17 +28,36 @@ export default function LiveTimer({ startTime, showDays = true }: LiveTimerProps
   const { days, hours, minutes, seconds } = millisecondsToTimeBreakdown(timeDiff);
 
   return (
-    <View className="items-center">
+    <Animated.View 
+      entering={FadeIn.duration(600)}
+      className="items-center"
+    >
       {showDays && days > 0 && (
-        <Text className="mt-2 text-5xl font-bold text-gray-900 dark:text-white">
-          {days}
-          <Text className='text-lg font-medium'>d</Text>
-        </Text>
+        <View className="mb-1">
+          <Text className="text-5xl font-extrabold text-gray-900 dark:text-white">
+            {days}
+            <Text className="text-xl font-medium text-gray-500 dark:text-gray-400"> days</Text>
+          </Text>
+        </View>
       )}
-      <Text className={`font-bold text-gray-900 dark:text-white ${days > 0 ? 'mt-2 text-2xl' : 'mt-2 text-3xl'}`}>
-        {hours > 0 && <>{hours.toString().padStart(2, '0')}<Text className='text-base font-medium'>h</Text> </>}
-        {minutes.toString().padStart(2, '0')}<Text className='text-base font-medium'>m</Text> {seconds.toString().padStart(2, '0')}<Text className='text-base font-medium'>s</Text>
-      </Text>
-    </View>
+      <View className="flex-row items-baseline gap-1">
+        {hours > 0 && (
+          <>
+            <Text className={`font-bold text-gray-800 dark:text-gray-200 ${days > 0 ? 'text-2xl' : 'text-3xl'}`}>
+              {hours.toString().padStart(2, '0')}
+            </Text>
+            <Text className="text-sm font-medium text-gray-500 dark:text-gray-400">h</Text>
+          </>
+        )}
+        <Text className={`font-bold text-gray-800 dark:text-gray-200 ${days > 0 ? 'text-2xl' : 'text-3xl'}`}>
+          {minutes.toString().padStart(2, '0')}
+        </Text>
+        <Text className="text-sm font-medium text-gray-500 dark:text-gray-400">m</Text>
+        <Text className={`font-bold text-gray-800 dark:text-gray-200 ${days > 0 ? 'text-2xl' : 'text-3xl'}`}>
+          {seconds.toString().padStart(2, '0')}
+        </Text>
+        <Text className="text-sm font-medium text-gray-500 dark:text-gray-400">s</Text>
+      </View>
+    </Animated.View>
   );
 }

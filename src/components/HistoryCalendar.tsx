@@ -93,29 +93,25 @@ export default function HistoryCalendar({
   );
 
   return (
-    <View className="px-4 py-6">
-      <Calendar
-        key={colorScheme} // Force re-render when theme changes
-        markingType="custom"
-        markedDates={markedDates}
-        onDayPress={handleDayPress}
-        theme={theme}
-        enableSwipeMonths={true}
-        // Allow future dates - no restrictions
-        maxDate={undefined}
-        // Show calendar from journey start or first relapse
-        minDate={journeyStart || undefined}
-        style={{
-          borderRadius: 16,
-          overflow: 'hidden',
-          elevation: 3,
-          shadowColor: '#000',
-          shadowOffset: { width: 0, height: 3 },
-          shadowOpacity: 0.15,
-          shadowRadius: 6,
-          paddingVertical: 8,
-        }}
-      />
+    <View className="px-6 py-6">
+      <View className="overflow-hidden border border-gray-200 bg-white dark:bg-gray-900 dark:border-gray-700 rounded-2xl">
+        <Calendar
+          key={colorScheme} // Force re-render when theme changes
+          markingType="custom"
+          markedDates={markedDates}
+          onDayPress={handleDayPress}
+          theme={theme}
+          enableSwipeMonths={true}
+          // Allow future dates - no restrictions
+          maxDate={undefined}
+          // Show calendar from journey start or first relapse
+          minDate={journeyStart || undefined}
+          style={{
+            paddingVertical: 12,
+            paddingHorizontal: 8,
+          }}
+        />
+      </View>
     </View>
   );
 }

@@ -93,91 +93,104 @@ export default function InsightsModal({ onClose }: InsightsModalProps) {
   }, [relapses, journeyStart]);
 
   return (
-    <View className="flex-1 bg-gray-50 dark:bg-gray-900">
-      {/* Header */}
-      <View className="px-6 pt-16 pb-6 bg-rose-50 dark:bg-gray-800">
-        <View className="flex-row items-center justify-between">
-          <View>
-            <Text className="text-3xl font-bold text-gray-900 dark:text-white">Advanced Insights</Text>
-            <Text className="mt-1 text-sm text-gray-600 dark:text-gray-400">
+    <View className="flex-1 bg-gray-50 dark:bg-gray-950">
+      {/* Modern Header */}
+      <View className="px-6 pt-16 pb-6 bg-emerald-50 dark:bg-gray-900">
+        <View className="flex-row items-center justify-between mb-2">
+          <View className="flex-1">
+            <Text className="text-3xl font-semibold tracking-wide text-gray-900 dark:text-white">Advanced Insights</Text>
+            <Text className="mt-1 text-sm font-medium text-emerald-700 dark:text-emerald-400">
               Detailed analytics and patterns from your journey
             </Text>
           </View>
           <Pressable
             onPress={onClose}
-            className="items-center justify-center w-10 h-10 bg-gray-200 rounded-full dark:bg-gray-700 active:bg-gray-300 dark:active:bg-gray-600"
+            className="items-center justify-center w-12 h-12 bg-white rounded-2xl dark:bg-gray-800 active:bg-gray-50 dark:active:bg-gray-700"
           >
             <X size={20} color={colorScheme === 'dark' ? '#FFFFFF' : '#000000'} strokeWidth={2.5} />
           </Pressable>
         </View>
-
       </View>
 
       {/* Content */}
       <ScrollView className="flex-1 px-6 py-6">
         {/* Journey Overview */}
-        <View className="p-4 mb-4 bg-emerald-50 dark:bg-emerald-900/20 rounded-xl">
-          <View className="flex-row items-center mb-2">
-            <Calendar size={20} color="#10b981" />
-            <Text className="ml-2 text-lg font-semibold text-emerald-900 dark:text-emerald-100">
+        <View className="p-5 mb-4 bg-emerald-50 border border-emerald-200 dark:bg-emerald-900/20 dark:border-emerald-800 rounded-2xl">
+          <View className="flex-row items-center mb-3">
+            <View className="items-center justify-center w-10 h-10 mr-3 rounded-full bg-emerald-100 dark:bg-emerald-900/40">
+              <Calendar size={20} color="#10b981" />
+            </View>
+            <Text className="text-lg font-bold text-emerald-900 dark:text-emerald-100">
               Journey Overview
             </Text>
           </View>
-          <Text className="text-3xl font-bold text-emerald-600 dark:text-emerald-400">
+          <Text className="text-4xl font-bold text-emerald-600 dark:text-emerald-400">
             {insights.totalDays} days
           </Text>
-          <Text className="text-sm text-emerald-700 dark:text-emerald-300">Total journey duration</Text>
+          <Text className="mt-1 text-sm font-medium text-emerald-700 dark:text-emerald-300">Total journey duration</Text>
         </View>
 
         {/* Streak Stats */}
-        <View className="flex-row mb-4 space-x-2">
-          <View className="flex-1 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-xl">
-            <Target size={20} color="#3b82f6" />
-            <Text className="mt-2 text-2xl font-bold text-blue-600 dark:text-blue-400">
+        <View className="flex-row gap-3 mb-4">
+          <View className="flex-1 p-5 bg-blue-50 border border-blue-200 dark:bg-blue-900/20 dark:border-blue-800 rounded-2xl">
+            <View className="items-center justify-center w-10 h-10 mb-3 rounded-full bg-blue-100 dark:bg-blue-900/40">
+              <Target size={20} color="#3b82f6" />
+            </View>
+            <Text className="text-3xl font-bold text-blue-600 dark:text-blue-400">
               {insights.longestStreak}
             </Text>
-            <Text className="text-sm text-blue-700 dark:text-blue-300">Longest Streak</Text>
+            <Text className="mt-1 text-sm font-medium text-blue-700 dark:text-blue-300">Longest Streak</Text>
           </View>
 
-          <View className="flex-1 p-4 bg-purple-50 dark:bg-purple-900/20 rounded-xl">
-            <TrendingUp size={20} color="#a855f7" />
-            <Text className="mt-2 text-2xl font-bold text-purple-600 dark:text-purple-400">
+          <View className="flex-1 p-5 bg-purple-50 border border-purple-200 dark:bg-purple-900/20 dark:border-purple-800 rounded-2xl">
+            <View className="items-center justify-center w-10 h-10 mb-3 rounded-full bg-purple-100 dark:bg-purple-900/40">
+              <TrendingUp size={20} color="#a855f7" />
+            </View>
+            <Text className="text-3xl font-bold text-purple-600 dark:text-purple-400">
               {insights.averageStreak}
             </Text>
-            <Text className="text-sm text-purple-700 dark:text-purple-300">Average Streak</Text>
+            <Text className="mt-1 text-sm font-medium text-purple-700 dark:text-purple-300">Average Streak</Text>
           </View>
         </View>
 
         {/* Relapse Stats */}
-        <View className="p-4 mb-4 bg-orange-50 dark:bg-orange-900/20 rounded-xl">
-          <Text className="text-lg font-semibold text-orange-900 dark:text-orange-100">Total Relapses</Text>
-          <Text className="text-3xl font-bold text-orange-600 dark:text-orange-400">
+        <View className="p-5 mb-4 bg-orange-50 border border-orange-200 dark:bg-orange-900/20 dark:border-orange-800 rounded-2xl">
+          <Text className="mb-2 text-lg font-bold text-orange-900 dark:text-orange-100">Total Relapses</Text>
+          <Text className="text-4xl font-bold text-orange-600 dark:text-orange-400">
             {insights.totalRelapses}
           </Text>
-          <Text className="text-sm text-orange-700 dark:text-orange-300">
+          <Text className="mt-1 text-sm font-medium text-orange-700 dark:text-orange-300">
             Rate: {insights.relapseRate} per day
           </Text>
         </View>
 
         {/* Trend */}
         <View
-          className={`p-4 mb-4 rounded-xl ${insights.trend === 'improving'
-            ? 'bg-green-50 dark:bg-green-900/20'
+          className={`p-5 mb-4 rounded-2xl border ${insights.trend === 'improving'
+            ? 'bg-green-50 border-green-200 dark:bg-green-900/20 dark:border-green-800'
             : insights.trend === 'declining'
-              ? 'bg-red-50 dark:bg-red-900/20'
-              : 'bg-gray-50 dark:bg-gray-800'
+              ? 'bg-red-50 border-red-200 dark:bg-red-900/20 dark:border-red-800'
+              : 'bg-gray-50 border-gray-200 dark:bg-gray-800 dark:border-gray-700'
             }`}
         >
-          <View className="flex-row items-center mb-2">
-            {insights.trend === 'improving' ? (
-              <TrendingDown size={24} color="#10b981" />
-            ) : insights.trend === 'declining' ? (
-              <TrendingUp size={24} color="#ef4444" />
-            ) : (
-              <TrendingUp size={24} color="#6b7280" />
-            )}
+          <View className="flex-row items-center mb-3">
+            <View className={`items-center justify-center w-10 h-10 mr-3 rounded-full ${
+              insights.trend === 'improving' 
+                ? 'bg-green-100 dark:bg-green-900/40' 
+                : insights.trend === 'declining' 
+                  ? 'bg-red-100 dark:bg-red-900/40' 
+                  : 'bg-gray-100 dark:bg-gray-700'
+            }`}>
+              {insights.trend === 'improving' ? (
+                <TrendingDown size={20} color="#10b981" />
+              ) : insights.trend === 'declining' ? (
+                <TrendingUp size={20} color="#ef4444" />
+              ) : (
+                <TrendingUp size={20} color="#6b7280" />
+              )}
+            </View>
             <Text
-              className={`ml-2 text-lg font-semibold ${insights.trend === 'improving'
+              className={`text-lg font-bold ${insights.trend === 'improving'
                 ? 'text-green-900 dark:text-green-100'
                 : insights.trend === 'declining'
                   ? 'text-red-900 dark:text-red-100'
@@ -192,7 +205,7 @@ export default function InsightsModal({ onClose }: InsightsModalProps) {
             </Text>
           </View>
           <Text
-            className={`text-sm ${insights.trend === 'improving'
+            className={`text-sm leading-5 ${insights.trend === 'improving'
               ? 'text-green-700 dark:text-green-300'
               : insights.trend === 'declining'
                 ? 'text-red-700 dark:text-red-300'
@@ -208,19 +221,19 @@ export default function InsightsModal({ onClose }: InsightsModalProps) {
         </View>
 
         {/* Motivational Message */}
-        <View className="p-4 mb-6 bg-gray-50 dark:bg-gray-800 rounded-xl">
-          <Text className="text-base font-medium text-gray-900 dark:text-white">
+        <View className="p-5 mb-6 bg-white border border-gray-200 dark:bg-gray-900 dark:border-gray-700 rounded-2xl">
+          <Text className="mb-2 text-base font-bold text-gray-900 dark:text-white">
             💪 Remember: Progress isn't linear
           </Text>
-          <Text className="mt-2 text-sm text-gray-600 dark:text-gray-400">
+          <Text className="text-sm leading-5 text-gray-600 dark:text-gray-400">
             Every day is a new opportunity to grow stronger. Your journey is unique, and these insights are
             here to help you understand your patterns and celebrate your progress.
           </Text>
         </View>
 
         {/* Placeholder for future analytics */}
-        <View className="p-4 mb-6 border-2 border-gray-300 border-dashed dark:border-gray-700 rounded-xl">
-          <Text className="text-sm font-medium text-center text-gray-500 dark:text-gray-400">
+        <View className="p-5 mb-6 border-2 border-gray-300 border-dashed dark:border-gray-700 rounded-2xl">
+          <Text className="text-sm font-semibold text-center text-gray-500 dark:text-gray-400">
             More analytics coming soon...
           </Text>
         </View>
