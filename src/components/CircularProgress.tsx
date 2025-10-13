@@ -12,7 +12,7 @@ interface CircularProgressProps {
   backgroundColor?: string;
   showPercentage?: boolean;
   children?: React.ReactNode;
-  checkpointLabel?: string; // e.g., "Next: 1 day"
+  checkpointLabel?: React.ReactNode; // e.g., "Next: 1 day" or a component
   showCheckpoint?: boolean;
   useGradient?: boolean; // Enable gradient mode
   gradientColors?: string[]; // Array of colors for gradient (default: green to gold)

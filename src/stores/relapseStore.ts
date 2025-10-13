@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import type { Relapse, RelapseInput } from '../db/schema';
 import * as dbHelpers from '../db/helpers';
+import * as Crypto from 'expo-crypto';
 
 interface RelapseState {
   relapses: Relapse[];
@@ -18,7 +19,7 @@ interface RelapseActions {
 
 type RelapseStore = RelapseState & RelapseActions;
 
-export const useRelapseStore = create<RelapseStore>((set) => ({
+export const useRelapseStore = create<RelapseStore>((set, get) => ({
   // Initial state
   relapses: [],
   loading: false,
@@ -28,7 +29,8 @@ export const useRelapseStore = create<RelapseStore>((set) => ({
   loadRelapses: async () => {
     set({ loading: true, error: null });
     try {
-      const relapses = await dbHelpers.getRelapses();
+      // Load up to 1000 most recent relapses for performance
+      const relapses = await dbHelpers.getRelapses(1000);
       set({ relapses, loading: false });
     } catch (error) {
       set({
@@ -39,34 +41,69 @@ export const useRelapseStore = create<RelapseStore>((set) => ({
   },
 
   addRelapse: async (input: RelapseInput) => {
-    set({ loading: true, error: null });
+    // Generate optimistic ID using crypto UUID to prevent collisions
+    const optimisticId = `temp-${Crypto.randomUUID()}`;
+    const timestamp = input.timestamp || new Date().toISOString();
+    
+    const optimisticRelapse: Relapse = {
+      id: optimisticId,
+      timestamp,
+      note: input.note,
+      tags: input.tags,
+    };
+
+    // Optimistic update - add immediately to UI
+    set((state) => ({
+      relapses: [optimisticRelapse, ...state.relapses],
+      loading: false,
+    }));
+
     try {
+      // Perform actual database insert
       const newRelapse = await dbHelpers.addRelapse(input);
+      
+      // Replace optimistic entry with real one
       set((state) => ({
-        relapses: [newRelapse, ...state.relapses],
-        loading: false,
+        relapses: state.relapses.map((r) =>
+          r.id === optimisticId ? newRelapse : r
+        ),
+        error: null,
       }));
     } catch (error) {
-      set({
+      // Rollback on error - remove optimistic entry
+      set((state) => ({
+        relapses: state.relapses.filter((r) => r.id !== optimisticId),
         error: error instanceof Error ? error.message : 'Failed to add relapse',
-        loading: false,
-      });
+      }));
+      throw error; // Re-throw to let caller handle
     }
   },
 
   deleteRelapse: async (id: string) => {
-    set({ loading: true, error: null });
+    // Store the relapse for potential rollback
+    const relapseToDelete = get().relapses.find((r) => r.id === id);
+    
+    // Optimistic update - remove immediately from UI
+    set((state) => ({
+      relapses: state.relapses.filter((r) => r.id !== id),
+      loading: false,
+    }));
+
     try {
+      // Perform actual database delete
       await dbHelpers.deleteRelapse(id);
-      set((state) => ({
-        relapses: state.relapses.filter((r) => r.id !== id),
-        loading: false,
-      }));
+      set({ error: null });
     } catch (error) {
-      set({
-        error: error instanceof Error ? error.message : 'Failed to delete relapse',
-        loading: false,
-      });
+      // Rollback on error - restore the deleted relapse
+      if (relapseToDelete) {
+        set((state) => ({
+          relapses: [relapseToDelete, ...state.relapses].sort(
+            (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+          ),
+          error: error instanceof Error ? error.message : 'Failed to delete relapse',
+        }));
+      }
+      throw error;
     }
   },
 

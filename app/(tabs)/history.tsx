@@ -1,14 +1,17 @@
 import { View, Text, TouchableOpacity, ScrollView, Modal } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useRelapseStore } from '../../src/stores/relapseStore';
 import { useThemeStore } from '../../src/stores/themeStore';
 import { getJourneyStart } from '../../src/db/helpers';
+import { useJourneyStats } from '../../src/hooks/useJourneyStats';
 import ViewToggle from '../../src/components/ViewToggle';
 import HistoryList from '../../src/components/HistoryList';
 import HistoryCalendar from '../../src/components/HistoryCalendar';
 import CalendarRelapseDetails from '../../src/components/CalendarRelapseDetails';
 import InsightsModal from '../../src/components/InsightsModal';
+import ErrorBoundary from '../../src/components/ErrorBoundary';
+import ModalErrorFallback from '../../src/components/ModalErrorFallback';
 import { BarChart3 } from 'lucide-react-native';
 
 type ViewMode = 'list' | 'calendar';
@@ -16,12 +19,13 @@ type ViewMode = 'list' | 'calendar';
 export default function HistoryScreen() {
   const colorScheme = useThemeStore((state) => state.colorScheme);
   const { relapses } = useRelapseStore();
+  const stats = useJourneyStats();
   const [journeyStart, setJourneyStart] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<ViewMode>('list');
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [showInsightsModal, setShowInsightsModal] = useState(false);
 
-  // Load journey start timestamp
+  // Load journey start timestamp for calendar
   useEffect(() => {
     const loadJourneyStart = async () => {
       const start = await getJourneyStart();
@@ -29,27 +33,6 @@ export default function HistoryScreen() {
     };
     loadJourneyStart();
   }, []);
-
-  const stats = useMemo(() => {
-    let startTime: string | null = null;
-
-    if (relapses.length === 0) {
-      startTime = journeyStart;
-    } else {
-      const sortedRelapses = [...relapses].sort(
-        (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
-      );
-      startTime = sortedRelapses[0].timestamp;
-    }
-
-    const elapsedTime = startTime ? Math.max(0, Date.now() - new Date(startTime).getTime()) : 0;
-    const daysSinceLastRelapse = Math.floor(elapsedTime / (1000 * 60 * 60 * 24));
-
-    return {
-      streak: daysSinceLastRelapse,
-      total: relapses.length,
-    };
-  }, [relapses, journeyStart]);
 
   return (
     <View className="flex-1 bg-gray-50 dark:bg-gray-900">
@@ -103,7 +86,9 @@ export default function HistoryScreen() {
         presentationStyle="pageSheet"
         onRequestClose={() => setShowInsightsModal(false)}
       >
-        <InsightsModal onClose={() => setShowInsightsModal(false)} />
+        <ErrorBoundary fallback={<ModalErrorFallback onClose={() => setShowInsightsModal(false)} />}>
+          <InsightsModal onClose={() => setShowInsightsModal(false)} />
+        </ErrorBoundary>
       </Modal>
     </View>
   );

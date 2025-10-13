@@ -7,6 +7,27 @@ export interface CheckpointProgress {
   isCompleted: boolean; // True if all checkpoints are completed
 }
 
+export interface TimeBreakdown {
+  days: number;
+  hours: number;
+  minutes: number;
+  seconds: number;
+}
+
+/**
+ * Convert milliseconds to days, hours, minutes, seconds breakdown
+ * @param milliseconds - Time in milliseconds
+ * @returns TimeBreakdown object with days, hours, minutes, seconds
+ */
+export function millisecondsToTimeBreakdown(milliseconds: number): TimeBreakdown {
+  const days = Math.floor(milliseconds / (1000 * 60 * 60 * 24));
+  const hours = Math.floor((milliseconds % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+  const minutes = Math.floor((milliseconds % (1000 * 60 * 60)) / (1000 * 60));
+  const seconds = Math.floor((milliseconds % (1000 * 60)) / 1000);
+  
+  return { days, hours, minutes, seconds };
+}
+
 /**
  * Calculate the current checkpoint progress based on elapsed time
  * @param elapsedTime - Time elapsed in milliseconds
@@ -63,32 +84,7 @@ export function getCheckpointProgress(elapsedTime: number): CheckpointProgress {
   };
 }
 
-/**
- * Get the current checkpoint that has been achieved
- * @param elapsedTime - Time elapsed in milliseconds
- * @returns Current checkpoint or null if none achieved yet
- */
-export function getCurrentCheckpoint(elapsedTime: number): Checkpoint | null {
-  return getCheckpointProgress(elapsedTime).currentCheckpoint;
-}
 
-/**
- * Get the next checkpoint to reach
- * @param elapsedTime - Time elapsed in milliseconds
- * @returns Next checkpoint or null if all completed
- */
-export function getNextCheckpoint(elapsedTime: number): Checkpoint | null {
-  return getCheckpointProgress(elapsedTime).nextCheckpoint;
-}
-
-/**
- * Calculate progress towards the next checkpoint (0 to 1)
- * @param elapsedTime - Time elapsed in milliseconds
- * @returns Progress value between 0 and 1
- */
-export function calculateProgress(elapsedTime: number): number {
-  return getCheckpointProgress(elapsedTime).progress;
-}
 
 /**
  * Format time remaining until next checkpoint
@@ -100,11 +96,7 @@ export function formatTimeRemaining(remainingTime: number): string {
     return '0s';
   }
 
-  const days = Math.floor(remainingTime / (1000 * 60 * 60 * 24));
-  const hours = Math.floor((remainingTime % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-  const minutes = Math.floor((remainingTime % (1000 * 60 * 60)) / (1000 * 60));
-  const seconds = Math.floor((remainingTime % (1000 * 60)) / 1000);
-
+  const { days, hours, minutes, seconds } = millisecondsToTimeBreakdown(remainingTime);
   const parts: string[] = [];
 
   if (days > 0) {

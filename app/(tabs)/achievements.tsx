@@ -1,49 +1,19 @@
 import { View, Text, ScrollView } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
-import { useState, useMemo, useEffect } from 'react';
-import { useRelapseStore } from '../../src/stores/relapseStore';
+import { useState, useMemo } from 'react';
 import { useThemeStore } from '../../src/stores/themeStore';
 import AchievementsGrid from '../../src/components/AchievementsGrid';
 import AchievementDetailModal from '../../src/components/AchievementDetailModal';
-import { getJourneyStart } from '../../src/db/helpers';
 import { getAchievements } from '../../src/data/achievements';
 import { Achievement } from '../../src/components/AchievementBadge';
+import { useJourneyStats } from '../../src/hooks/useJourneyStats';
 
 export default function AchievementsScreen() {
   const colorScheme = useThemeStore((state) => state.colorScheme);
-  const { relapses } = useRelapseStore();
-  const [journeyStart, setJourneyStart] = useState<string | null>(null);
   const [selectedAchievement, setSelectedAchievement] = useState<Achievement | null>(null);
 
-  // Load journey start timestamp
-  useEffect(() => {
-    const loadJourneyStart = async () => {
-      const start = await getJourneyStart();
-      setJourneyStart(start);
-    };
-    loadJourneyStart();
-  }, []);
-
-  const stats = useMemo(() => {
-    let startTime: string | null = null;
-
-    if (relapses.length === 0) {
-      // No relapses - use journey start time
-      startTime = journeyStart;
-    } else {
-      // Has relapses - use last relapse time
-      const sortedRelapses = [...relapses].sort(
-        (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
-      );
-      startTime = sortedRelapses[0].timestamp;
-    }
-
-    const elapsedTime = startTime ? Math.max(0, Date.now() - new Date(startTime).getTime()) : 0;
-
-    return {
-      elapsedTime,
-    };
-  }, [relapses, journeyStart]);
+  // Use centralized hook for journey stats
+  const stats = useJourneyStats();
 
   // Get achievements based on current elapsed time
   const achievements = useMemo(() => {

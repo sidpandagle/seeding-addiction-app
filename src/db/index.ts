@@ -10,6 +10,9 @@ export type { Relapse, RelapseInput } from './schema';
 export {
   addRelapse,
   getRelapses,
+  getRelapsesCount,
   deleteRelapse,
   updateRelapse,
+  getUrges,
+  getUrgesCount,
 } from './helpers';

@@ -4,6 +4,7 @@ import { ChevronLeft, TrendingUp, TrendingDown, Calendar, Target, X } from 'luci
 import { useRelapseStore } from '../stores/relapseStore';
 import { useThemeStore } from '../stores/themeStore';
 import { getJourneyStart } from '../db/helpers';
+import { calculateUserStats } from '../utils/statsHelpers';
 
 interface InsightsModalProps {
   onClose: () => void;
@@ -23,24 +24,31 @@ export default function InsightsModal({ onClose }: InsightsModalProps) {
   }, []);
 
   const insights = useMemo(() => {
+    // Calculate basic stats using shared utility
+    const userStats = calculateUserStats(relapses, journeyStart);
+    
     if (relapses.length === 0) {
+      const totalDays = journeyStart 
+        ? Math.floor((Date.now() - new Date(journeyStart).getTime()) / (1000 * 60 * 60 * 24)) 
+        : 0;
+      
       return {
-        totalDays: journeyStart ? Math.floor((Date.now() - new Date(journeyStart).getTime()) / (1000 * 60 * 60 * 24)) : 0,
+        totalDays,
         averageStreak: 0,
-        longestStreak: journeyStart ? Math.floor((Date.now() - new Date(journeyStart).getTime()) / (1000 * 60 * 60 * 24)) : 0,
+        longestStreak: totalDays,
         totalRelapses: 0,
-        relapseRate: 0,
+        relapseRate: '0.000',
         trend: 'improving' as const,
       };
     }
 
     // Sort relapses by timestamp (oldest first)
     const sorted = [...relapses].sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
-
-    // Calculate streaks
-    const streaks: number[] = [];
     const startTime = journeyStart ? new Date(journeyStart).getTime() : new Date(sorted[0].timestamp).getTime();
 
+    // Calculate all streaks to get average
+    const streaks: number[] = [];
+    
     // First streak: from journey start to first relapse
     streaks.push(Math.floor((new Date(sorted[0].timestamp).getTime() - startTime) / (1000 * 60 * 60 * 24)));
 
@@ -52,11 +60,9 @@ export default function InsightsModal({ onClose }: InsightsModalProps) {
       streaks.push(streakDays);
     }
 
-    // Current streak: from last relapse to now
-    const currentStreak = Math.floor((Date.now() - new Date(sorted[sorted.length - 1].timestamp).getTime()) / (1000 * 60 * 60 * 24));
-    streaks.push(currentStreak);
+    // Add current streak
+    streaks.push(userStats.currentStreak);
 
-    const longestStreak = Math.max(...streaks);
     const averageStreak = streaks.reduce((sum, streak) => sum + streak, 0) / streaks.length;
     const totalDays = Math.floor((Date.now() - startTime) / (1000 * 60 * 60 * 24));
     const relapseRate = relapses.length / (totalDays || 1);
@@ -79,7 +85,7 @@ export default function InsightsModal({ onClose }: InsightsModalProps) {
     return {
       totalDays,
       averageStreak: Math.round(averageStreak),
-      longestStreak,
+      longestStreak: userStats.bestStreak,
       totalRelapses: relapses.length,
       relapseRate: relapseRate.toFixed(3),
       trend,

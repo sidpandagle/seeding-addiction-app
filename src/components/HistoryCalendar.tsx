@@ -30,17 +30,10 @@ export default function HistoryCalendar({
       marks[dateKey] = {
         marked: true,
         dotColor: '#EF4444', // red-500
+        // Use standard marking without custom container styles to preserve touch handling
         customStyles: {
-          container: {
-            backgroundColor: isDark ? '#7F1D1D' : '#FEE2E2', // red-900/red-100
-            borderRadius: 10,
-            width: 40,
-            height: 40,
-            justifyContent: 'center',
-            alignItems: 'center',
-          },
           text: {
-            color: isDark ? '#FFFFFF' : '#991B1B', // white/red-800
+            color: isDark ? '#FECACA' : '#991B1B', // red-200/red-800
             fontWeight: 'bold',
             fontSize: 18,
           },
@@ -50,27 +43,14 @@ export default function HistoryCalendar({
 
     // Mark selected date
     if (selectedDate) {
+      const isRelapseDate = marks[selectedDate];
       marks[selectedDate] = {
         ...marks[selectedDate],
         selected: true,
         selectedColor: isDark ? '#047857' : '#10B981', // emerald-700/emerald-500
-        customStyles: {
-          ...marks[selectedDate]?.customStyles,
-          container: {
-            ...marks[selectedDate]?.customStyles?.container,
-            borderWidth: 3,
-            borderColor: '#10B981', // emerald-500
-            width: 40,
-            height: 40,
-            justifyContent: 'center',
-            alignItems: 'center',
-          },
-          text: {
-            ...marks[selectedDate]?.customStyles?.text,
-            fontSize: 18,
-            fontWeight: 'bold',
-          },
-        },
+        selectedTextColor: '#FFFFFF',
+        marked: isRelapseDate?.marked,
+        dotColor: isRelapseDate?.dotColor,
       };
     }
 
@@ -115,6 +95,7 @@ export default function HistoryCalendar({
   return (
     <View className="px-4 py-6">
       <Calendar
+        key={colorScheme} // Force re-render when theme changes
         markingType="custom"
         markedDates={markedDates}
         onDayPress={handleDayPress}

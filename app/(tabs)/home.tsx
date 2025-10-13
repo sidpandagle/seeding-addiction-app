@@ -1,6 +1,6 @@
 import { View, Text, Pressable, Modal, ScrollView, Image } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
-import { useState, useMemo, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRelapseStore } from '../../src/stores/relapseStore';
 import { useUrgeStore } from '../../src/stores/urgeStore';
 import { useThemeStore } from '../../src/stores/themeStore';
@@ -10,22 +10,22 @@ import EmergencyHelpModal from '../../src/components/EmergencyHelpModal';
 import CircularProgress from '../../src/components/CircularProgress';
 import { MotivationCard } from '../../src/components/MotivationCard';
 import AchievementCelebration from '../../src/components/AchievementCelebration';
-import { getJourneyStart } from '../../src/db/helpers';
-import { getCheckpointProgress, formatTimeRemaining } from '../../src/utils/checkpointHelpers';
-import { getGrowthStage, GrowthStage } from '../../src/utils/growthStages';
+import LiveTimer from '../../src/components/home/LiveTimer';
+import { GrowthStage } from '../../src/utils/growthStages';
 import GrowthIcon from '../../src/components/GrowthIcon';
 import { calculateUserStats } from '../../src/utils/statsHelpers';
 import { getNewlyUnlockedAchievements } from '../../src/data/achievements';
 import { Achievement } from '../../src/components/AchievementBadge';
 import { Shield, AlertCircle, RotateCcw } from 'lucide-react-native';
+import { useJourneyStats } from '../../src/hooks/useJourneyStats';
+import ErrorBoundary from '../../src/components/ErrorBoundary';
+import ModalErrorFallback from '../../src/components/ModalErrorFallback';
 
 export default function DashboardScreen() {
   const colorScheme = useThemeStore((state) => state.colorScheme);
   const [showModal, setShowModal] = useState(false);
   const [showUrgeModal, setShowUrgeModal] = useState(false);
   const [showHelpModal, setShowHelpModal] = useState(false);
-  const [currentTime, setCurrentTime] = useState(Date.now());
-  const [journeyStart, setJourneyStart] = useState<string | null>(null);
   const relapses = useRelapseStore((state) => state.relapses);
   const urges = useUrgeStore((state) => state.urges);
   const loadUrges = useUrgeStore((state) => state.loadUrges);
@@ -34,93 +34,20 @@ export default function DashboardScreen() {
   const previousTimeRef = useRef<number>(0);
   const lastShownAchievementIdRef = useRef<string | null>(null);
   const achievementCheckInProgressRef = useRef<boolean>(false);
+  
+  // Use centralized hook for journey stats
+  const stats = useJourneyStats();
 
-  // Load journey start timestamp and urges (reload when relapses change, e.g., after reset)
+  // Load urges on mount and when relapses change
   useEffect(() => {
-    const loadJourneyStart = async () => {
-      const start = await getJourneyStart();
-      setJourneyStart(start);
-    };
-    loadJourneyStart();
     loadUrges();
     // Reset achievement tracking when relapses change (new relapse recorded)
     lastShownAchievementIdRef.current = null;
     previousTimeRef.current = 0;
   }, [relapses, loadUrges]);
 
-  // Update time every second for live countdown
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentTime(Date.now());
-    }, 1000); // Update every second instead of 100ms to reduce re-renders
-
-    return () => clearInterval(interval);
-  }, []);
-
-  // Memoize user stats separately - they only change when relapses/urges/journeyStart change
-  const userStats = useMemo(() => {
-    return calculateUserStats(relapses, journeyStart, urges);
-  }, [relapses, journeyStart, urges]);
-
-  const stats = useMemo(() => {
-    let startTime: string | null = null;
-
-    if (relapses.length === 0) {
-      // No relapses - use journey start time
-      startTime = journeyStart;
-    } else {
-      // Has relapses - use last relapse time
-      const sortedRelapses = [...relapses].sort(
-        (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
-      );
-      startTime = sortedRelapses[0].timestamp;
-    }
-
-    if (!startTime) {
-      return {
-        streak: 0,
-        total: 0,
-        lastRelapse: null,
-        days: 0,
-        hours: 0,
-        minutes: 0,
-        seconds: 0,
-        timeDiff: 0,
-        checkpointProgress: null,
-        growthStage: getGrowthStage(0), // Default to first stage
-        bestStreak: 0,
-        totalAttempts: 0,
-      };
-    }
-
-    const timeDiff = Math.max(0, currentTime - new Date(startTime).getTime());
-
-    const days = Math.floor(timeDiff / (1000 * 60 * 60 * 24));
-    const hours = Math.floor((timeDiff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-    const minutes = Math.floor((timeDiff % (1000 * 60 * 60)) / (1000 * 60));
-    const seconds = Math.floor((timeDiff % (1000 * 60)) / 1000);
-
-    // Calculate checkpoint progress
-    const checkpointProgress = getCheckpointProgress(timeDiff);
-
-    // Calculate growth stage
-    const growthStage = getGrowthStage(timeDiff);
-
-    return {
-      streak: days,
-      total: relapses.length,
-      lastRelapse: relapses.length > 0 ? startTime : null,
-      days,
-      hours,
-      minutes,
-      seconds,
-      timeDiff,
-      checkpointProgress,
-      growthStage,
-      bestStreak: userStats.bestStreak,
-      totalAttempts: userStats.totalAttempts,
-    };
-  }, [relapses, currentTime, journeyStart, userStats]);
+  // Calculate user stats (urges and resistance rate)
+  const userStats = calculateUserStats(relapses, stats.startTime, urges);
 
   // Check for newly unlocked achievements (debounce to prevent duplicates)
   useEffect(() => {
@@ -215,7 +142,7 @@ export default function DashboardScreen() {
                 stats.checkpointProgress?.isCompleted
                   ? 'All milestones achieved! 🎉'
                   : stats.checkpointProgress?.nextCheckpoint
-                    ? `Next: ${stats.checkpointProgress.nextCheckpoint.label} (${formatTimeRemaining(stats.checkpointProgress.nextCheckpoint.duration - stats.timeDiff)} left)`
+                    ? `Next: ${stats.checkpointProgress.nextCheckpoint.label}`
                     : 'Starting your journey...'
               }
             >
@@ -229,15 +156,8 @@ export default function DashboardScreen() {
                   onStageChange={handleStageChange}
                 />
 
-                {/* Time Counter */}
-                {stats.days > 0 ?
-                  <Text className="mt-2 text-5xl font-bold text-gray-900 dark:text-white">
-                    {stats.days}<Text className='text-lg font-medium'>d</Text>
-                  </Text>
-                  : null}
-                <Text className={`font-bold text-gray-900 dark:text-white ${stats.days > 0 ? 'mt-2 text-2xl' : 'mt-2 text-3xl'}`}>
-                  {stats.hours > 0 ? <>{stats.hours.toString().padStart(2, '0')}<Text className='text-base font-medium'>h</Text></> : null} {stats.minutes.toString().padStart(2, '0')}<Text className='text-base font-medium'>m</Text> {stats.seconds.toString().padStart(2, '0')}<Text className='text-base font-medium'>s</Text>
-                </Text>
+                {/* Time Counter - Now using optimized LiveTimer */}
+                {stats.startTime && <LiveTimer startTime={stats.startTime} showDays={true} />}
               </View>
             </CircularProgress>
           </View>
@@ -278,7 +198,7 @@ export default function DashboardScreen() {
                 Total Attempts
               </Text>
               <Text className="text-3xl font-semibold text-emerald-900 dark:text-emerald-100">
-                {stats.totalAttempts}
+                {userStats.totalAttempts}
               </Text>
             </View>
 
@@ -288,7 +208,7 @@ export default function DashboardScreen() {
                 Best Streak
               </Text>
               <Text className="text-3xl font-semibold text-amber-900 dark:text-amber-100">
-                {stats.bestStreak}
+                {userStats.bestStreak}
                 <Text className="text-xs font-medium text-amber-600 dark:text-amber-400"> days</Text>
               </Text>
             </View>
@@ -331,7 +251,9 @@ export default function DashboardScreen() {
           presentationStyle="pageSheet"
           onRequestClose={() => setShowModal(false)}
         >
-          <RelapseModal onClose={() => setShowModal(false)} />
+          <ErrorBoundary fallback={<ModalErrorFallback onClose={() => setShowModal(false)} />}>
+            <RelapseModal onClose={() => setShowModal(false)} />
+          </ErrorBoundary>
         </Modal>
 
         {/* Urge Modal */}
@@ -341,7 +263,9 @@ export default function DashboardScreen() {
           presentationStyle="pageSheet"
           onRequestClose={() => setShowUrgeModal(false)}
         >
-          <UrgeModal onClose={() => setShowUrgeModal(false)} />
+          <ErrorBoundary fallback={<ModalErrorFallback onClose={() => setShowUrgeModal(false)} />}>
+            <UrgeModal onClose={() => setShowUrgeModal(false)} />
+          </ErrorBoundary>
         </Modal>
 
         {/* Emergency Help Modal */}
@@ -351,7 +275,9 @@ export default function DashboardScreen() {
           presentationStyle="pageSheet"
           onRequestClose={() => setShowHelpModal(false)}
         >
-          <EmergencyHelpModal onClose={() => setShowHelpModal(false)} />
+          <ErrorBoundary fallback={<ModalErrorFallback onClose={() => setShowHelpModal(false)} />}>
+            <EmergencyHelpModal onClose={() => setShowHelpModal(false)} />
+          </ErrorBoundary>
         </Modal>
 
         {/* Achievement Celebration Modal */}

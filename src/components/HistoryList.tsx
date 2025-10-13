@@ -12,9 +12,14 @@ export default function HistoryList({ relapses }: HistoryListProps) {
   const [selectedTag, setSelectedTag] = useState<string | null>(null);
 
   const filteredRelapses = useMemo(() => {
-    const sorted = [...relapses].sort(
-      (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
-    );
+    // Avoid re-sorting - relapses should already be sorted from DB query
+    // Only sort if absolutely necessary
+    const needsSorting = relapses.length > 1 && 
+      new Date(relapses[0].timestamp).getTime() < new Date(relapses[1].timestamp).getTime();
+    
+    const sorted = needsSorting 
+      ? [...relapses].sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
+      : relapses;
 
     if (selectedTag) {
       return sorted.filter((r) => r.tags?.includes(selectedTag));
@@ -27,6 +32,17 @@ export default function HistoryList({ relapses }: HistoryListProps) {
       data={filteredRelapses}
       keyExtractor={(item) => item.id}
       contentContainerClassName="pb-4"
+      // Performance optimizations
+      removeClippedSubviews={true}
+      maxToRenderPerBatch={10}
+      windowSize={5}
+      initialNumToRender={10}
+      updateCellsBatchingPeriod={50}
+      getItemLayout={(data, index) => ({
+        length: 120, // Approximate item height
+        offset: 120 * index,
+        index,
+      })}
       ListHeaderComponent={
         <View className="px-6 py-4 bg-gray-50 dark:bg-gray-900">
           <Text className="mb-3 text-xs font-semibold tracking-wide text-gray-500 uppercase dark:text-gray-400">

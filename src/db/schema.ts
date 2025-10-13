@@ -19,12 +19,18 @@ const initDB = async (): Promise<void> => {
       tags TEXT
     );
 
+    CREATE INDEX IF NOT EXISTS idx_relapse_timestamp ON relapse(timestamp DESC);
+    CREATE INDEX IF NOT EXISTS idx_relapse_tags ON relapse(tags);
+
     CREATE TABLE IF NOT EXISTS urge (
       id TEXT PRIMARY KEY NOT NULL,
       timestamp TEXT NOT NULL,
       note TEXT,
       context TEXT
     );
+
+    CREATE INDEX IF NOT EXISTS idx_urge_timestamp ON urge(timestamp DESC);
+    CREATE INDEX IF NOT EXISTS idx_urge_context ON urge(context);
 
     CREATE TABLE IF NOT EXISTS app_settings (
       key TEXT PRIMARY KEY NOT NULL,

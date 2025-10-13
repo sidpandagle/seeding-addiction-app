@@ -1,15 +1,19 @@
 import { getDatabase } from './schema';
 import type { Relapse, RelapseInput, Urge, UrgeInput } from './schema';
+import * as Crypto from 'expo-crypto';
+import { 
+  validateTimestamp, 
+  sanitizeString, 
+  validateTags, 
+  validateNote,
+  validateContext 
+} from '../utils/validation';
 
 /**
- * Generate a UUID v4
+ * Generate a cryptographically secure UUID v4
  */
 const generateUUID = (): string => {
-  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
-    const r = (Math.random() * 16) | 0;
-    const v = c === 'x' ? r : (r & 0x3) | 0x8;
-    return v.toString(16);
-  });
+  return Crypto.randomUUID();
 };
 
 /**
@@ -47,7 +51,25 @@ export const addRelapse = async (input: RelapseInput): Promise<Relapse> => {
 
   const id = generateUUID();
   const timestamp = input.timestamp || new Date().toISOString();
-  const note = input.note || null;
+  
+  // Validate inputs
+  const timestampValidation = validateTimestamp(timestamp);
+  if (timestampValidation !== true) {
+    throw new Error(timestampValidation);
+  }
+  
+  const noteValidation = validateNote(input.note);
+  if (noteValidation !== true) {
+    throw new Error(noteValidation);
+  }
+  
+  const tagsValidation = validateTags(input.tags);
+  if (tagsValidation !== true) {
+    throw new Error(tagsValidation);
+  }
+  
+  // Sanitize inputs
+  const note = sanitizeString(input.note, 5000) || null;
   const tags = input.tags ? JSON.stringify(input.tags) : null;
 
   await db.runAsync(
@@ -65,16 +87,26 @@ export const addRelapse = async (input: RelapseInput): Promise<Relapse> => {
 
 /**
  * Get all relapse records, ordered by timestamp (newest first)
+ * @param limit - Optional limit for number of records to return (default: all)
+ * @param offset - Optional offset for pagination (default: 0)
  */
-export const getRelapses = async (): Promise<Relapse[]> => {
+export const getRelapses = async (limit?: number, offset: number = 0): Promise<Relapse[]> => {
   const db = await getDatabase();
+
+  let query = 'SELECT * FROM relapse ORDER BY timestamp DESC';
+  const params: any[] = [];
+
+  if (limit !== undefined) {
+    query += ' LIMIT ? OFFSET ?';
+    params.push(limit, offset);
+  }
 
   const rows = await db.getAllAsync<{
     id: string;
     timestamp: string;
     note: string | null;
     tags: string | null;
-  }>('SELECT * FROM relapse ORDER BY timestamp DESC');
+  }>(query, params);
 
   return rows.map((row) => ({
     id: row.id,
@@ -154,8 +186,26 @@ export const addUrge = async (input: UrgeInput): Promise<Urge> => {
 
   const id = generateUUID();
   const timestamp = input.timestamp || new Date().toISOString();
-  const note = input.note || null;
-  const context = input.context || null;
+  
+  // Validate inputs
+  const timestampValidation = validateTimestamp(timestamp);
+  if (timestampValidation !== true) {
+    throw new Error(timestampValidation);
+  }
+  
+  const noteValidation = validateNote(input.note);
+  if (noteValidation !== true) {
+    throw new Error(noteValidation);
+  }
+  
+  const contextValidation = validateContext(input.context);
+  if (contextValidation !== true) {
+    throw new Error(contextValidation);
+  }
+  
+  // Sanitize inputs
+  const note = sanitizeString(input.note, 5000) || null;
+  const context = sanitizeString(input.context, 100) || null;
 
   await db.runAsync(
     'INSERT INTO urge (id, timestamp, note, context) VALUES (?, ?, ?, ?)',
@@ -172,16 +222,26 @@ export const addUrge = async (input: UrgeInput): Promise<Urge> => {
 
 /**
  * Get all urge records, ordered by timestamp (newest first)
+ * @param limit - Optional limit for number of records to return (default: all)
+ * @param offset - Optional offset for pagination (default: 0)
  */
-export const getUrges = async (): Promise<Urge[]> => {
+export const getUrges = async (limit?: number, offset: number = 0): Promise<Urge[]> => {
   const db = await getDatabase();
+
+  let query = 'SELECT * FROM urge ORDER BY timestamp DESC';
+  const params: any[] = [];
+
+  if (limit !== undefined) {
+    query += ' LIMIT ? OFFSET ?';
+    params.push(limit, offset);
+  }
 
   const rows = await db.getAllAsync<{
     id: string;
     timestamp: string;
     note: string | null;
     context: string | null;
-  }>('SELECT * FROM urge ORDER BY timestamp DESC');
+  }>(query, params);
 
   return rows.map((row) => ({
     id: row.id,
@@ -198,4 +258,26 @@ export const deleteUrge = async (id: string): Promise<void> => {
   const db = await getDatabase();
 
   await db.runAsync('DELETE FROM urge WHERE id = ?', [id]);
+};
+
+/**
+ * Get total count of relapse records
+ */
+export const getRelapsesCount = async (): Promise<number> => {
+  const db = await getDatabase();
+  const result = await db.getFirstAsync<{ count: number }>(
+    'SELECT COUNT(*) as count FROM relapse'
+  );
+  return result?.count || 0;
+};
+
+/**
+ * Get total count of urge records
+ */
+export const getUrgesCount = async (): Promise<number> => {
+  const db = await getDatabase();
+  const result = await db.getFirstAsync<{ count: number }>(
+    'SELECT COUNT(*) as count FROM urge'
+  );
+  return result?.count || 0;
 };

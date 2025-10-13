@@ -4,6 +4,7 @@ import { View } from 'react-native';
 import { useRelapseStore } from '../src/stores/relapseStore';
 import { useThemeStore } from '../src/stores/themeStore';
 import { AppLock } from '../src/components/AppLock';
+import ErrorBoundary from '../src/components/ErrorBoundary';
 import { initializeEncryptionKey } from '../src/services/security';
 import { initializeDatabase } from '../src/db/schema';
 import { useFonts, Poppins_400Regular, Poppins_500Medium, Poppins_600SemiBold, Poppins_700Bold } from '@expo-google-fonts/poppins';
@@ -43,9 +44,8 @@ export default function RootLayout() {
           initializeEncryptionKey(),
         ]);
 
-        // Data loading happens after initial render - non-blocking
-        // This allows the UI to show faster
-        loadRelapses();
+        // Load initial data before marking as ready
+        await loadRelapses();
 
         setIsReady(true);
       } catch (err) {
@@ -57,7 +57,7 @@ export default function RootLayout() {
     };
 
     initialize();
-  }, []);
+  }, [loadRelapses]);
 
   // Hide splash screen when everything is ready
   useEffect(() => {
@@ -96,14 +96,16 @@ export default function RootLayout() {
   }
 
   return (
-    <AppLock>
-      <Animated.View entering={FadeIn.duration(150)} style={{ flex: 1 }}>
-        <Stack screenOptions={{ headerShown: false }}>
-          <Stack.Screen name="index" />
-          <Stack.Screen name="onboarding" />
-          <Stack.Screen name="(tabs)" />
-        </Stack>
-      </Animated.View>
-    </AppLock>
+    <ErrorBoundary>
+      <AppLock>
+        <Animated.View entering={FadeIn.duration(150)} style={{ flex: 1 }}>
+          <Stack screenOptions={{ headerShown: false }}>
+            <Stack.Screen name="index" />
+            <Stack.Screen name="onboarding" />
+            <Stack.Screen name="(tabs)" />
+          </Stack>
+        </Animated.View>
+      </AppLock>
+    </ErrorBoundary>
   );
 }
