@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 import { View, Text } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { GrowthStage, GROWTH_STAGES } from '../utils/growthStages';
-import { useThemeStore } from '../stores/themeStore';
+import { useColorScheme } from '../stores/themeStore';
 
 interface GrowthIconProps {
   stage: GrowthStage;
@@ -19,8 +19,8 @@ export default function GrowthIcon({
   glowing = false,
   onStageChange,
 }: GrowthIconProps) {
-  const theme = useThemeStore((state:any) => state.theme);
-  const isDark = theme === 'dark';
+  const colorScheme = useColorScheme();
+  const isDark = colorScheme === 'dark';
   const stageConfig = GROWTH_STAGES.find((s) => s.id === stage) || GROWTH_STAGES[0];
 
   // Trigger callback on stage change

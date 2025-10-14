@@ -1,7 +1,7 @@
 import { View, Text, TextInput, Pressable, ScrollView, KeyboardAvoidingView, Platform } from 'react-native';
 import { useState } from 'react';
 import { useUrgeStore } from '../stores/urgeStore';
-import { useThemeStore } from '../stores/themeStore';
+import { useColorScheme } from '../stores/themeStore';
 import * as Haptics from 'expo-haptics';
 import { Shield } from 'lucide-react-native';
 
@@ -13,7 +13,7 @@ const CONTEXT_OPTIONS = ['Stress', 'Boredom', 'Trigger', 'Social', 'Tired', 'Anx
 
 export default function UrgeModal({ onClose }: UrgeModalProps) {
   const { addUrge } = useUrgeStore();
-  const colorScheme = useThemeStore((state) => state.colorScheme);
+  const colorScheme = useColorScheme();
 
   const [note, setNote] = useState('');
   const [selectedContext, setSelectedContext] = useState<string[]>([]);

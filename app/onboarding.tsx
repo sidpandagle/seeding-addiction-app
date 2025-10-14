@@ -2,11 +2,11 @@ import { View, Text, Pressable } from 'react-native';
 import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { setJourneyStart, getJourneyStart } from '../src/db/helpers';
-import { useThemeStore } from '../src/stores/themeStore';
+import { useColorScheme } from '../src/stores/themeStore';
 
 export default function OnboardingScreen() {
   const router = useRouter();
-  const colorScheme = useThemeStore((state) => state.colorScheme);
+  const colorScheme = useColorScheme();
 
   const handleGetStarted = async () => {
     try {

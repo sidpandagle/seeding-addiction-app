@@ -2,7 +2,7 @@ import React, { useMemo, useEffect, useState } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, Pressable } from 'react-native';
 import { ChevronLeft, TrendingUp, TrendingDown, Calendar, Target, X } from 'lucide-react-native';
 import { useRelapseStore } from '../stores/relapseStore';
-import { useThemeStore } from '../stores/themeStore';
+import { useColorScheme } from '../stores/themeStore';
 import { getJourneyStart } from '../db/helpers';
 import { calculateUserStats } from '../utils/statsHelpers';
 
@@ -11,7 +11,7 @@ interface InsightsModalProps {
 }
 
 export default function InsightsModal({ onClose }: InsightsModalProps) {
-  const colorScheme = useThemeStore((state) => state.colorScheme);
+  const colorScheme = useColorScheme();
   const { relapses } = useRelapseStore();
   const [journeyStart, setJourneyStart] = useState<string | null>(null);
 

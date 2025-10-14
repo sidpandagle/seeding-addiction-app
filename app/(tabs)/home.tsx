@@ -1,10 +1,10 @@
 import { View, Text, Pressable, Modal, ScrollView } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, memo } from 'react';
 import Animated, { FadeInDown, FadeIn, useAnimatedStyle, withSpring, useSharedValue, withRepeat, withSequence } from 'react-native-reanimated';
 import { useRelapseStore } from '../../src/stores/relapseStore';
 import { useUrgeStore } from '../../src/stores/urgeStore';
-import { useThemeStore } from '../../src/stores/themeStore';
+import { useColorScheme } from '../../src/stores/themeStore';
 import RelapseModal from '../../src/components/RelapseModal';
 import UrgeModal from '../../src/components/UrgeModal';
 import EmergencyHelpModal from '../../src/components/EmergencyHelpModal';
@@ -22,8 +22,8 @@ import { useJourneyStats } from '../../src/hooks/useJourneyStats';
 import ErrorBoundary from '../../src/components/ErrorBoundary';
 import ModalErrorFallback from '../../src/components/ModalErrorFallback';
 
-export default function DashboardScreen() {
-  const colorScheme = useThemeStore((state) => state.colorScheme);
+function DashboardScreen() {
+  const colorScheme = useColorScheme();
   const [showModal, setShowModal] = useState(false);
   const [showUrgeModal, setShowUrgeModal] = useState(false);
   const [showHelpModal, setShowHelpModal] = useState(false);
@@ -390,3 +390,6 @@ export default function DashboardScreen() {
     </View>
   );
 }
+
+// Memoize to prevent unnecessary re-renders on tab switches
+export default memo(DashboardScreen);

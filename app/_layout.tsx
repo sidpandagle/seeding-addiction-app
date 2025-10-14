@@ -1,8 +1,9 @@
 import { Stack } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { View } from 'react-native';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { useRelapseStore } from '../src/stores/relapseStore';
-import { useThemeStore } from '../src/stores/themeStore';
+import { useColorScheme as useColorSchemeStore } from '../src/stores/themeStore';
 import { AppLock } from '../src/components/AppLock';
 import ErrorBoundary from '../src/components/ErrorBoundary';
 import { initializeEncryptionKey } from '../src/services/security';
@@ -18,7 +19,7 @@ SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
   const loadRelapses = useRelapseStore((state) => state.loadRelapses);
-  const colorScheme = useThemeStore((state) => state.colorScheme);
+  const colorScheme = useColorSchemeStore();
   const { setColorScheme } = useColorScheme();
   const [isReady, setIsReady] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -96,16 +97,18 @@ export default function RootLayout() {
   }
 
   return (
-    <ErrorBoundary>
-      <AppLock>
-        <Animated.View entering={FadeIn.duration(150)} style={{ flex: 1 }}>
-          <Stack screenOptions={{ headerShown: false }}>
-            <Stack.Screen name="index" />
-            <Stack.Screen name="onboarding" />
-            <Stack.Screen name="(tabs)" />
-          </Stack>
-        </Animated.View>
-      </AppLock>
-    </ErrorBoundary>
+    <SafeAreaProvider>
+      <ErrorBoundary>
+        <AppLock>
+          <Animated.View entering={FadeIn.duration(150)} style={{ flex: 1 }}>
+            <Stack screenOptions={{ headerShown: false }}>
+              <Stack.Screen name="index" />
+              <Stack.Screen name="onboarding" />
+              <Stack.Screen name="(tabs)" />
+            </Stack>
+          </Animated.View>
+        </AppLock>
+      </ErrorBoundary>
+    </SafeAreaProvider>
   );
 }

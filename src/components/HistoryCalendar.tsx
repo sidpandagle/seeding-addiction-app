@@ -1,7 +1,7 @@
 import { useCallback, useMemo } from 'react';
 import { View } from 'react-native';
 import { Calendar, DateData } from 'react-native-calendars';
-import { useThemeStore } from '../stores/themeStore';
+import { useColorScheme } from '../stores/themeStore';
 import type { Relapse } from '../db/schema';
 
 interface HistoryCalendarProps {
@@ -17,7 +17,7 @@ export default function HistoryCalendar({
   onDateSelect,
   journeyStart,
 }: HistoryCalendarProps) {
-  const colorScheme = useThemeStore((state) => state.colorScheme);
+  const colorScheme = useColorScheme();
   const isDark = colorScheme === 'dark';
 
   // Create marked dates object for the calendar

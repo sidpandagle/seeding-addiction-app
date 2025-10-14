@@ -2,7 +2,7 @@ import { View, Text, ScrollView } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { useState, useMemo } from 'react';
 import Animated, { FadeInDown } from 'react-native-reanimated';
-import { useThemeStore } from '../../src/stores/themeStore';
+import { useColorScheme } from '../../src/stores/themeStore';
 import AchievementsGrid from '../../src/components/AchievementsGrid';
 import AchievementDetailModal from '../../src/components/AchievementDetailModal';
 import { getAchievements } from '../../src/data/achievements';
@@ -11,7 +11,7 @@ import { useJourneyStats } from '../../src/hooks/useJourneyStats';
 import { Trophy } from 'lucide-react-native';
 
 export default function AchievementsScreen() {
-  const colorScheme = useThemeStore((state) => state.colorScheme);
+  const colorScheme = useColorScheme();
   const [selectedAchievement, setSelectedAchievement] = useState<Achievement | null>(null);
 
   // Use centralized hook for journey stats

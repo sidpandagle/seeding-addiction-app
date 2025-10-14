@@ -11,12 +11,12 @@ import {
   getAuthenticationMethodName,
 } from '../../src/services/security';
 import { useRelapseStore } from '../../src/stores/relapseStore';
-import { useThemeStore } from '../../src/stores/themeStore';
+import { useColorScheme, useThemeStore } from '../../src/stores/themeStore';
 import { Settings2, Palette, Lock, Database, Sun, Moon, Shield, Trash2, Info } from 'lucide-react-native';
 
 export default function SettingsScreen() {
   const router = useRouter();
-  const colorScheme = useThemeStore((state) => state.colorScheme);
+  const colorScheme = useColorScheme();
   const resetAllData = useRelapseStore((state) => state.resetAllData);
   const [appLockEnabled, setAppLockEnabledState] = useState(false);
   const [biometricAvailable, setBiometricAvailable] = useState(false);

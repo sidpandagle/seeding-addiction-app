@@ -1,9 +1,9 @@
 import { View, Text, TouchableOpacity, ScrollView, Modal, Pressable } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, memo } from 'react';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 import { useRelapseStore } from '../../src/stores/relapseStore';
-import { useThemeStore } from '../../src/stores/themeStore';
+import { useColorScheme } from '../../src/stores/themeStore';
 import { getJourneyStart } from '../../src/db/helpers';
 import { useJourneyStats } from '../../src/hooks/useJourneyStats';
 import ViewToggle from '../../src/components/ViewToggle';
@@ -17,8 +17,8 @@ import { BarChart3, BookOpen, TrendingUp } from 'lucide-react-native';
 
 type ViewMode = 'list' | 'calendar';
 
-export default function HistoryScreen() {
-  const colorScheme = useThemeStore((state) => state.colorScheme);
+function HistoryScreen() {
+  const colorScheme = useColorScheme();
   const { relapses } = useRelapseStore();
   const stats = useJourneyStats();
   const [journeyStart, setJourneyStart] = useState<string | null>(null);
@@ -117,3 +117,6 @@ export default function HistoryScreen() {
     </View>
   );
 }
+
+// Memoize to prevent unnecessary re-renders on tab switches
+export default memo(HistoryScreen);

@@ -1,6 +1,6 @@
 import { View, Text, Pressable, ScrollView, KeyboardAvoidingView, Platform } from 'react-native';
 import { useState } from 'react';
-import { useThemeStore } from '../stores/themeStore';
+import { useColorScheme } from '../stores/themeStore';
 import { getRandomTeaching, type StoicTeaching } from '../data/stoicTeachings';
 import { X, RefreshCw, Brain } from 'lucide-react-native';
 
@@ -9,7 +9,7 @@ interface EmergencyHelpModalProps {
 }
 
 export default function EmergencyHelpModal({ onClose }: EmergencyHelpModalProps) {
-  const colorScheme = useThemeStore((state) => state.colorScheme);
+  const colorScheme = useColorScheme();
   const [currentTeaching, setCurrentTeaching] = useState<StoicTeaching>(getRandomTeaching());
 
   const handleNewQuote = () => {

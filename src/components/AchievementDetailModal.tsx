@@ -2,7 +2,7 @@ import React from 'react';
 import { View, Text, Modal, Pressable, ScrollView } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { LinearGradient } from 'expo-linear-gradient';
-import { useThemeStore } from '../stores/themeStore';
+import { useColorScheme } from '../stores/themeStore';
 import { Achievement } from './AchievementBadge';
 import { X } from 'lucide-react-native';
 
@@ -17,7 +17,7 @@ export default function AchievementDetailModal({
   visible,
   onClose,
 }: AchievementDetailModalProps) {
-  const colorScheme = useThemeStore((state) => state.colorScheme);
+  const colorScheme = useColorScheme();
 
   if (!achievement) return null;
 

@@ -1,7 +1,7 @@
 import { View, Text, TextInput, Pressable, ScrollView, KeyboardAvoidingView, Platform } from 'react-native';
 import { useState } from 'react';
 import { useRelapseStore } from '../stores/relapseStore';
-import { useThemeStore } from '../stores/themeStore';
+import { useColorScheme } from '../stores/themeStore';
 import * as Haptics from 'expo-haptics';
 import { RotateCcw } from 'lucide-react-native';
 
@@ -19,7 +19,7 @@ const AVAILABLE_TAGS = ['Stress', 'Trigger', 'Social', 'Boredom', 'Craving', 'Ot
 
 export default function RelapseModal({ onClose, existingRelapse }: RelapseModalProps) {
   const { addRelapse, updateRelapse } = useRelapseStore();
-  const colorScheme = useThemeStore((state) => state.colorScheme);
+  const colorScheme = useColorScheme();
 
   const [note, setNote] = useState(existingRelapse?.note || '');
   const [selectedTags, setSelectedTags] = useState<string[]>(existingRelapse?.tags || []);

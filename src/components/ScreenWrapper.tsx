@@ -6,7 +6,7 @@ import Animated, {
   withTiming,
   Easing
 } from 'react-native-reanimated';
-import { useThemeStore } from '../stores/themeStore';
+import { useColorScheme } from '../stores/themeStore';
 
 interface ScreenWrapperProps extends ViewProps {
   children: React.ReactNode;
@@ -21,7 +21,7 @@ export function ScreenWrapper({
   style,
   ...props
 }: ScreenWrapperProps) {
-  const colorScheme = useThemeStore((state) => state.colorScheme);
+  const colorScheme = useColorScheme();
   const opacity = useSharedValue(0);
 
   useEffect(() => {

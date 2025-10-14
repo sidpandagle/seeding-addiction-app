@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text } from 'react-native';
 import Animated, { FadeIn, FadeOut, SlideInRight, SlideOutLeft } from 'react-native-reanimated';
-import { useThemeStore } from '../stores/themeStore';
+import { useColorScheme } from '../stores/themeStore';
 import motivationalQuotes from '../data/motivationalQuotes.json';
 
 export const MotivationCard: React.FC = () => {
-  const colorScheme = useThemeStore((state) => state.colorScheme);
+  const colorScheme = useColorScheme();
   const [currentIndex, setCurrentIndex] = useState(0);
 
   useEffect(() => {
