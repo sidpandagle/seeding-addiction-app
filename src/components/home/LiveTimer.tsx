@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, memo } from 'react';
 import { View, Text } from 'react-native';
 import Animated, { FadeIn } from 'react-native-reanimated';
 import { millisecondsToTimeBreakdown } from '../../utils/checkpointHelpers';
@@ -8,11 +8,7 @@ interface LiveTimerProps {
   showDays?: boolean;
 }
 
-/**
- * Optimized timer component with elegant design
- * Isolated from parent component to prevent cascading re-renders
- */
-export default function LiveTimer({ startTime, showDays = true }: LiveTimerProps) {
+function LiveTimer({ startTime, showDays = true }: LiveTimerProps) {
   const [time, setTime] = useState(Date.now());
 
   useEffect(() => {
@@ -61,3 +57,6 @@ export default function LiveTimer({ startTime, showDays = true }: LiveTimerProps
     </Animated.View>
   );
 }
+
+// Export memoized version to prevent re-renders when parent updates
+export default memo(LiveTimer);

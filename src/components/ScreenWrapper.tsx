@@ -1,11 +1,5 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { View, ViewProps } from 'react-native';
-import Animated, {
-  useSharedValue,
-  useAnimatedStyle,
-  withTiming,
-  Easing
-} from 'react-native-reanimated';
 import { useColorScheme } from '../stores/themeStore';
 
 interface ScreenWrapperProps extends ViewProps {
@@ -14,6 +8,10 @@ interface ScreenWrapperProps extends ViewProps {
   darkBackgroundColor?: string;
 }
 
+/**
+ * Optimized screen wrapper without fade animations
+ * Removes 200ms delay on screen mounting for instant navigation
+ */
 export function ScreenWrapper({
   children,
   backgroundColor = '#ffffff',
@@ -22,19 +20,6 @@ export function ScreenWrapper({
   ...props
 }: ScreenWrapperProps) {
   const colorScheme = useColorScheme();
-  const opacity = useSharedValue(0);
-
-  useEffect(() => {
-    opacity.value = withTiming(1, {
-      duration: 200,
-      easing: Easing.out(Easing.ease),
-    });
-  }, []);
-
-  const animatedStyle = useAnimatedStyle(() => ({
-    opacity: opacity.value,
-  }));
-
   const bgColor = colorScheme === 'dark' ? darkBackgroundColor : backgroundColor;
 
   return (
@@ -42,9 +27,7 @@ export function ScreenWrapper({
       style={[{ flex: 1, backgroundColor: bgColor }, style]}
       {...props}
     >
-      <Animated.View style={[{ flex: 1 }, animatedStyle]}>
-        {children}
-      </Animated.View>
+      {children}
     </View>
   );
 }

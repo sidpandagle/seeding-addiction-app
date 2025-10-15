@@ -8,7 +8,8 @@ interface AchievementsGridProps {
   onAchievementPress?: (achievement: Achievement) => void;
 }
 
-export default function AchievementsGrid({
+// Phase 2 Optimization: Memoize component to prevent re-renders on parent updates
+const AchievementsGrid = React.memo(function AchievementsGrid({
   achievements,
   columns = 3,
   onAchievementPress,
@@ -49,4 +50,6 @@ export default function AchievementsGrid({
       </View>
     </View>
   );
-}
+});
+
+export default AchievementsGrid;

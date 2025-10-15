@@ -45,10 +45,14 @@ export default function RootLayout() {
           initializeEncryptionKey(),
         ]);
 
-        // Load initial data before marking as ready
-        await loadRelapses();
-
+        // Mark as ready immediately after DB initialization
+        // Data loading happens in background to prevent blocking startup
         setIsReady(true);
+
+        // Load initial data in background (non-blocking)
+        loadRelapses().catch((err) => {
+          console.error('Error loading relapses:', err);
+        });
       } catch (err) {
         console.error('Initialization error:', err);
         setError(err instanceof Error ? err.message : 'Failed to initialize app');

@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react';
+import React, { useCallback, useMemo } from 'react';
 import { View } from 'react-native';
 import { Calendar, DateData } from 'react-native-calendars';
 import { useColorScheme } from '../stores/themeStore';
@@ -11,7 +11,8 @@ interface HistoryCalendarProps {
   journeyStart: string | null;
 }
 
-export default function HistoryCalendar({
+// Phase 2 Optimization: Memoize component to prevent re-renders on parent updates
+const HistoryCalendar = React.memo(function HistoryCalendar({
   relapses,
   selectedDate,
   onDateSelect,
@@ -114,4 +115,6 @@ export default function HistoryCalendar({
       </View>
     </View>
   );
-}
+});
+
+export default HistoryCalendar;

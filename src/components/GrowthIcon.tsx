@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { View, Text } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { GrowthStage, GROWTH_STAGES } from '../utils/growthStages';
@@ -12,7 +12,8 @@ interface GrowthIconProps {
   onStageChange?: (newStage: GrowthStage) => void;
 }
 
-export default function GrowthIcon({
+// Phase 2 Optimization: Memoize component to prevent unnecessary re-renders
+const GrowthIcon = React.memo(function GrowthIcon({
   stage,
   size = 80,
   animated = true,
@@ -23,10 +24,14 @@ export default function GrowthIcon({
   const isDark = colorScheme === 'dark';
   const stageConfig = GROWTH_STAGES.find((s) => s.id === stage) || GROWTH_STAGES[0];
 
-  // Trigger callback on stage change
+  // Phase 2 Optimization: Track previous stage to prevent cascading updates
+  // Only call onStageChange when stage actually changes, not on every render
+  const prevStageRef = useRef<GrowthStage>(stage);
+
   useEffect(() => {
-    if (onStageChange) {
+    if (prevStageRef.current !== stage && onStageChange) {
       onStageChange(stage);
+      prevStageRef.current = stage;
     }
   }, [stage, onStageChange]);
 
@@ -55,4 +60,6 @@ export default function GrowthIcon({
   }
 
   return <View className="items-center justify-center">{iconContent}</View>;
-}
+});
+
+export default GrowthIcon;

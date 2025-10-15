@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage, StateStorage } from 'zustand/middleware';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { InteractionManager } from 'react-native';
 import { ColorScheme } from '../theme/colors';
 
 interface ThemeState {
@@ -11,9 +12,10 @@ interface ThemeState {
   setColorScheme: (scheme: ColorScheme) => void;
 }
 
-// Debounced AsyncStorage wrapper for instant theme switching
+// Optimized AsyncStorage wrapper using InteractionManager for instant theme switching
+// Defers persistence until after animations/interactions complete
 let debounceTimer: NodeJS.Timeout | null = null;
-const debouncedAsyncStorage: StateStorage = {
+const optimizedAsyncStorage: StateStorage = {
   getItem: async (name: string): Promise<string | null> => {
     return await AsyncStorage.getItem(name);
   },
@@ -23,10 +25,12 @@ const debouncedAsyncStorage: StateStorage = {
       clearTimeout(debounceTimer);
     }
 
-    // Debounce write by 500ms - UI updates instantly, persistence happens later
+    // Debounce write by 500ms - UI updates instantly, persistence happens after interactions
     debounceTimer = setTimeout(() => {
-      AsyncStorage.setItem(name, value).catch((error) => {
-        console.error('Failed to persist theme:', error);
+      InteractionManager.runAfterInteractions(() => {
+        AsyncStorage.setItem(name, value).catch((error) => {
+          console.error('Failed to persist theme:', error);
+        });
       });
     }, 500);
   },
@@ -49,7 +53,7 @@ export const useThemeStore = create<ThemeState>()(
     }),
     {
       name: 'theme-storage',
-      storage: createJSONStorage(() => debouncedAsyncStorage),
+      storage: createJSONStorage(() => optimizedAsyncStorage),
       onRehydrateStorage: () => (state) => {
         state?.setHasHydrated(true);
       },

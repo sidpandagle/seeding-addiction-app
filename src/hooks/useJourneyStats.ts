@@ -7,14 +7,13 @@ import { getGrowthStage } from '../utils/growthStages';
 /**
  * Shared hook for journey statistics
  * Consolidates duplicate calculations across screens
- * Updates every second to recalculate progress and elapsed time
+ * Recalculates only when relapses change (no interval)
  * LiveTimer component handles its own second-by-second updates independently
  */
 export function useJourneyStats() {
   const relapses = useRelapseStore((state) => state.relapses);
   const [journeyStart, setJourneyStart] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [currentTime, setCurrentTime] = useState(Date.now());
 
   // Load journey start timestamp
   useEffect(() => {
@@ -34,20 +33,11 @@ export function useJourneyStats() {
       }
     };
     loadJourneyStart();
-    
+
     return () => {
       isMounted = false;
     };
   }, [relapses]); // Reload when relapses change
-
-  // Update current time every second to recalculate progress
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentTime(Date.now());
-    }, 1000);
-
-    return () => clearInterval(interval);
-  }, []);
 
   const stats = useMemo(() => {
     let startTime: string | null = null;
@@ -80,8 +70,8 @@ export function useJourneyStats() {
       };
     }
 
-    // Calculate elapsed time at the moment of render
-    const elapsedTime = Math.max(0, currentTime - new Date(startTime).getTime());
+    // Calculate elapsed time at the moment of calculation (only when relapses change)
+    const elapsedTime = Math.max(0, Date.now() - new Date(startTime).getTime());
 
     const { days, hours, minutes, seconds } = millisecondsToTimeBreakdown(elapsedTime);
 
@@ -99,7 +89,132 @@ export function useJourneyStats() {
       // Legacy compatibility
       timeDiff: elapsedTime,
     };
-  }, [relapses, journeyStart, isLoading, currentTime]);
+  }, [relapses, journeyStart, isLoading]);
 
   return stats;
+}
+/**
+ * Hook for components that only need the start time
+ * Use for: LiveTimer component
+ */
+export function useJourneyStartTime(): string | null {
+  const relapses = useRelapseStore((state) => state.relapses);
+  const [journeyStart, setJourneyStart] = useState<string | null>(null);
+
+  useEffect(() => {
+    let isMounted = true;
+    const loadJourneyStart = async () => {
+      try {
+        const start = await getJourneyStart();
+        if (isMounted) {
+          setJourneyStart(start);
+        }
+      } catch (error) {
+        console.error('Error loading journey start:', error);
+      }
+    };
+    loadJourneyStart();
+    return () => {
+      isMounted = false;
+    };
+  }, [relapses]);
+
+  if (relapses.length === 0) {
+    return journeyStart;
+  } else {
+    const sortedRelapses = [...relapses].sort(
+      (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+    );
+    return sortedRelapses[0].timestamp;
+  }
+}
+
+/**
+ * Hook for components that only need the growth stage
+ * Use for: Growth icon displays
+ */
+export function useGrowthStage() {
+  const relapses = useRelapseStore((state) => state.relapses);
+  const [journeyStart, setJourneyStart] = useState<string | null>(null);
+
+  useEffect(() => {
+    let isMounted = true;
+    const loadJourneyStart = async () => {
+      try {
+        const start = await getJourneyStart();
+        if (isMounted) setJourneyStart(start);
+      } catch (error) {
+        console.error('Error loading journey start:', error);
+      }
+    };
+    loadJourneyStart();
+    return () => {
+      isMounted = false;
+    };
+  }, [relapses]);
+
+  const growthStage = useMemo(() => {
+    let startTime: string | null = null;
+
+    if (relapses.length === 0) {
+      startTime = journeyStart;
+    } else {
+      const sortedRelapses = [...relapses].sort(
+        (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+      );
+      startTime = sortedRelapses[0].timestamp;
+    }
+
+    if (!startTime) return getGrowthStage(0);
+
+    const elapsedTime = Math.max(0, Date.now() - new Date(startTime).getTime());
+    return getGrowthStage(elapsedTime);
+  }, [relapses, journeyStart]);
+
+  return growthStage;
+}
+
+/**
+ * Hook for components that only need checkpoint progress
+ * Use for: Progress bars and checkpoint displays
+ */
+export function useCheckpointProgress() {
+  const relapses = useRelapseStore((state) => state.relapses);
+  const [journeyStart, setJourneyStart] = useState<string | null>(null);
+
+  useEffect(() => {
+    let isMounted = true;
+    const loadJourneyStart = async () => {
+      try {
+        const start = await getJourneyStart();
+        if (isMounted) setJourneyStart(start);
+      } catch (error) {
+        console.error('Error loading journey start:', error);
+      }
+    };
+    loadJourneyStart();
+    return () => {
+      isMounted = false;
+    };
+  }, [relapses]);
+
+  const checkpointProgress = useMemo(() => {
+    let startTime: string | null = null;
+
+    if (relapses.length === 0) {
+      startTime = journeyStart;
+    } else {
+      const sortedRelapses = [...relapses].sort(
+        (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+      );
+      startTime = sortedRelapses[0].timestamp;
+    }
+
+    if (!startTime) return null;
+
+    const elapsedTime = Math.max(0, Date.now() - new Date(startTime).getTime());
+    return getCheckpointProgress(elapsedTime);
+  }, [relapses, journeyStart]);
+
+  return checkpointProgress;
 }

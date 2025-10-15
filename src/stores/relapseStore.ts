@@ -145,3 +145,51 @@ export const useRelapseStore = create<RelapseStore>((set, get) => ({
     }
   },
 }));
+
+/**
+ * Select only the relapses array
+ * Use when you only need relapse data, not loading/error states
+ */
+export const useRelapses = () => useRelapseStore((state) => state.relapses);
+
+/**
+ * Select only the loading state
+ * Use when you only need to show loading indicators
+ */
+export const useRelapsesLoading = () => useRelapseStore((state) => state.loading);
+
+/**
+ * Select only the error state
+ * Use when you only need to display error messages
+ */
+export const useRelapsesError = () => useRelapseStore((state) => state.error);
+
+/**
+ * Select only the actions (never causes re-renders)
+ * Use when you only need to call actions, not read state
+ */
+export const useRelapseActions = () => useRelapseStore((state) => ({
+  loadRelapses: state.loadRelapses,
+  addRelapse: state.addRelapse,
+  deleteRelapse: state.deleteRelapse,
+  updateRelapse: state.updateRelapse,
+  resetAllData: state.resetAllData,
+}));
+
+/**
+ * Select relapse count only (memoized to prevent re-renders on same count)
+ * Use when you only need the number of relapses
+ */
+export const useRelapseCount = () => useRelapseStore((state) => state.relapses.length);
+
+/**
+ * Select the most recent relapse timestamp
+ * Use for calculating current streak without needing full array
+ */
+export const useLatestRelapseTimestamp = () => useRelapseStore((state) => {
+  if (state.relapses.length === 0) return null;
+  const sorted = [...state.relapses].sort(
+    (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+  );
+  return sorted[0].timestamp;
+});

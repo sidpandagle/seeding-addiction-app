@@ -1,10 +1,14 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, memo } from 'react';
 import { View, Text } from 'react-native';
 import Animated, { FadeIn, FadeOut, SlideInRight, SlideOutLeft } from 'react-native-reanimated';
 import { useColorScheme } from '../stores/themeStore';
 import motivationalQuotes from '../data/motivationalQuotes.json';
 
-export const MotivationCard: React.FC = () => {
+/**
+ * Motivation card component with rotating quotes
+ * Memoized to isolate re-renders to this component only (every 10 seconds)
+ */
+const MotivationCardComponent: React.FC = () => {
   const colorScheme = useColorScheme();
   const [currentIndex, setCurrentIndex] = useState(0);
 
@@ -73,3 +77,6 @@ export const MotivationCard: React.FC = () => {
     </View>
   );
 };
+
+// Export memoized version to prevent parent re-renders from affecting this component
+export const MotivationCard = memo(MotivationCardComponent);

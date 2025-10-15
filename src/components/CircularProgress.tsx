@@ -36,14 +36,20 @@ export default function CircularProgress({
 
   // Animated value for smooth progress transitions
   const animatedProgress = useRef(new Animated.Value(progress)).current;
+  const previousProgress = useRef(progress);
 
-  // Animate progress changes
+  // Animate progress changes only if change is significant (>0.5% threshold)
+  // Prevents animation triggers on tiny changes
   useEffect(() => {
-    Animated.timing(animatedProgress, {
-      toValue: progress,
-      duration: 500,
-      useNativeDriver: true,
-    }).start();
+    const threshold = 0.005; // 0.5% threshold
+    if (Math.abs(progress - previousProgress.current) > threshold) {
+      previousProgress.current = progress;
+      Animated.timing(animatedProgress, {
+        toValue: progress,
+        duration: 500,
+        useNativeDriver: true,
+      }).start();
+    }
   }, [progress, animatedProgress]);
 
   // Interpolate animated progress to strokeDashoffset

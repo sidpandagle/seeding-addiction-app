@@ -36,28 +36,12 @@ function DashboardScreen() {
   const lastShownAchievementIdRef = useRef<string | null>(null);
   const achievementCheckInProgressRef = useRef<boolean>(false);
   
-  // Animation values
-  const pulseScale = useSharedValue(1);
-  const shimmerTranslate = useSharedValue(-1);
-
   // Use centralized hook for journey stats
   const stats = useJourneyStats();
 
-  // Subtle pulse animation for emergency button
-  useEffect(() => {
-    pulseScale.value = withRepeat(
-      withSequence(
-        withSpring(1.05, { damping: 8 }),
-        withSpring(1, { damping: 8 })
-      ),
-      -1,
-      false
-    );
-  }, []);
-
-  const emergencyButtonStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: pulseScale.value }],
-  }));
+  // Removed continuous pulse animation for emergency button
+  // Using static button to save battery and CPU resources
+  // Animation was causing unnecessary re-renders and battery drain
 
   // Load urges on mount and when relapses change
   useEffect(() => {
@@ -134,16 +118,14 @@ function DashboardScreen() {
               {stats.growthStage.description}
             </Text>
           </View>
-          
-          {/* Emergency Help Button with Pulse */}
-          <Animated.View style={emergencyButtonStyle}>
-            <Pressable
-              onPress={handleHelpPress}
-              className="items-center justify-center bg-white border border-gray-200 w-14 h-14 dark:bg-gray-800 dark:border-gray-700 rounded-2xl active:scale-95"
-            >
-              <AlertCircle size={28} color="#ef4444" strokeWidth={2.5} />
-            </Pressable>
-          </Animated.View>
+
+          {/* Emergency Help Button */}
+          <Pressable
+            onPress={handleHelpPress}
+            className="items-center justify-center bg-white border border-gray-200 w-14 h-14 dark:bg-gray-800 dark:border-gray-700 rounded-2xl active:scale-95"
+          >
+            <AlertCircle size={28} color="#ef4444" strokeWidth={2.5} />
+          </Pressable>
         </View>
       </View>
 
