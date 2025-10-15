@@ -1,22 +1,27 @@
-import { useMemo, useState, useEffect } from 'react';
-import { useRelapseStore } from '../stores/relapseStore';
+import { useMemo, useState, useEffect, useRef } from 'react';
 import { getJourneyStart } from '../db/helpers';
-import { getCheckpointProgress, millisecondsToTimeBreakdown } from '../utils/checkpointHelpers';
+import { getCheckpointProgress } from '../utils/checkpointHelpers';
 import { getGrowthStage } from '../utils/growthStages';
+import { useLatestRelapseTimestamp } from '../stores/relapseStore';
 
 /**
  * Shared hook for journey statistics
- * Consolidates duplicate calculations across screens
- * Recalculates only when relapses change (no interval)
+ * Optimized to avoid unnecessary re-renders and database calls
+ * Only recalculates when the latest relapse timestamp changes
  * LiveTimer component handles its own second-by-second updates independently
  */
 export function useJourneyStats() {
-  const relapses = useRelapseStore((state) => state.relapses);
+  // Use optimized selector that only updates when latest timestamp changes
+  const latestRelapseTimestamp = useLatestRelapseTimestamp();
+
   const [journeyStart, setJourneyStart] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const journeyStartLoadedRef = useRef(false);
 
-  // Load journey start timestamp
+  // Load journey start timestamp ONCE on mount (not on every relapse change)
   useEffect(() => {
+    if (journeyStartLoadedRef.current) return;
+
     let isMounted = true;
     const loadJourneyStart = async () => {
       try {
@@ -24,6 +29,7 @@ export function useJourneyStats() {
         if (isMounted) {
           setJourneyStart(start);
           setIsLoading(false);
+          journeyStartLoadedRef.current = true;
         }
       } catch (error) {
         console.error('Error loading journey start:', error);
@@ -37,77 +43,59 @@ export function useJourneyStats() {
     return () => {
       isMounted = false;
     };
-  }, [relapses]); // Reload when relapses change
+  }, []); // Only run once on mount
 
+  // Calculate stats based on snapshot when relapses change
+  // This provides a stable reference point for non-time-dependent components
   const stats = useMemo(() => {
-    let startTime: string | null = null;
-
-    if (relapses.length === 0) {
-      // No relapses - use journey start time
-      startTime = journeyStart;
-    } else {
-      // Has relapses - use last relapse time
-      const sortedRelapses = [...relapses].sort(
-        (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
-      );
-      startTime = sortedRelapses[0].timestamp;
-    }
+    // Determine start time (most recent relapse or journey start)
+    const startTime = latestRelapseTimestamp || journeyStart;
 
     if (!startTime) {
       return {
         startTime: null,
-        elapsedTime: 0,
-        days: 0,
-        hours: 0,
-        minutes: 0,
-        seconds: 0,
         checkpointProgress: null,
         growthStage: getGrowthStage(0),
         hasStarted: false,
         isLoading,
-        // Legacy compatibility
-        timeDiff: 0,
       };
     }
 
-    // Calculate elapsed time at the moment of calculation (only when relapses change)
-    const elapsedTime = Math.max(0, Date.now() - new Date(startTime).getTime());
-
-    const { days, hours, minutes, seconds } = millisecondsToTimeBreakdown(elapsedTime);
+    // Calculate elapsed time as a snapshot (not continuously updating)
+    // Time-dependent components should use LiveTimer or their own intervals
+    const snapshotTime = Math.max(0, Date.now() - new Date(startTime).getTime());
 
     return {
       startTime,
-      elapsedTime,
-      days,
-      hours,
-      minutes,
-      seconds,
-      checkpointProgress: getCheckpointProgress(elapsedTime),
-      growthStage: getGrowthStage(elapsedTime),
+      checkpointProgress: getCheckpointProgress(snapshotTime),
+      growthStage: getGrowthStage(snapshotTime),
       hasStarted: true,
       isLoading,
-      // Legacy compatibility
-      timeDiff: elapsedTime,
     };
-  }, [relapses, journeyStart, isLoading]);
+  }, [latestRelapseTimestamp, journeyStart, isLoading]);
 
   return stats;
 }
 /**
  * Hook for components that only need the start time
  * Use for: LiveTimer component
+ * Optimized to load journey start once and use cached latest relapse
  */
 export function useJourneyStartTime(): string | null {
-  const relapses = useRelapseStore((state) => state.relapses);
+  const latestRelapseTimestamp = useLatestRelapseTimestamp();
   const [journeyStart, setJourneyStart] = useState<string | null>(null);
+  const journeyStartLoadedRef = useRef(false);
 
   useEffect(() => {
+    if (journeyStartLoadedRef.current) return;
+
     let isMounted = true;
     const loadJourneyStart = async () => {
       try {
         const start = await getJourneyStart();
         if (isMounted) {
           setJourneyStart(start);
+          journeyStartLoadedRef.current = true;
         }
       } catch (error) {
         console.error('Error loading journey start:', error);
@@ -117,32 +105,33 @@ export function useJourneyStartTime(): string | null {
     return () => {
       isMounted = false;
     };
-  }, [relapses]);
+  }, []); // Only load once
 
-  if (relapses.length === 0) {
-    return journeyStart;
-  } else {
-    const sortedRelapses = [...relapses].sort(
-      (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
-    );
-    return sortedRelapses[0].timestamp;
-  }
+  // Return the most recent timestamp (relapse or journey start)
+  return latestRelapseTimestamp || journeyStart;
 }
 
 /**
  * Hook for components that only need the growth stage
  * Use for: Growth icon displays
+ * Optimized to load journey start once and use cached latest relapse
  */
 export function useGrowthStage() {
-  const relapses = useRelapseStore((state) => state.relapses);
+  const latestRelapseTimestamp = useLatestRelapseTimestamp();
   const [journeyStart, setJourneyStart] = useState<string | null>(null);
+  const journeyStartLoadedRef = useRef(false);
 
   useEffect(() => {
+    if (journeyStartLoadedRef.current) return;
+
     let isMounted = true;
     const loadJourneyStart = async () => {
       try {
         const start = await getJourneyStart();
-        if (isMounted) setJourneyStart(start);
+        if (isMounted) {
+          setJourneyStart(start);
+          journeyStartLoadedRef.current = true;
+        }
       } catch (error) {
         console.error('Error loading journey start:', error);
       }
@@ -151,25 +140,15 @@ export function useGrowthStage() {
     return () => {
       isMounted = false;
     };
-  }, [relapses]);
+  }, []); // Only load once
 
   const growthStage = useMemo(() => {
-    let startTime: string | null = null;
-
-    if (relapses.length === 0) {
-      startTime = journeyStart;
-    } else {
-      const sortedRelapses = [...relapses].sort(
-        (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
-      );
-      startTime = sortedRelapses[0].timestamp;
-    }
-
+    const startTime = latestRelapseTimestamp || journeyStart;
     if (!startTime) return getGrowthStage(0);
 
     const elapsedTime = Math.max(0, Date.now() - new Date(startTime).getTime());
     return getGrowthStage(elapsedTime);
-  }, [relapses, journeyStart]);
+  }, [latestRelapseTimestamp, journeyStart]);
 
   return growthStage;
 }
@@ -177,17 +156,24 @@ export function useGrowthStage() {
 /**
  * Hook for components that only need checkpoint progress
  * Use for: Progress bars and checkpoint displays
+ * Optimized to load journey start once and use cached latest relapse
  */
 export function useCheckpointProgress() {
-  const relapses = useRelapseStore((state) => state.relapses);
+  const latestRelapseTimestamp = useLatestRelapseTimestamp();
   const [journeyStart, setJourneyStart] = useState<string | null>(null);
+  const journeyStartLoadedRef = useRef(false);
 
   useEffect(() => {
+    if (journeyStartLoadedRef.current) return;
+
     let isMounted = true;
     const loadJourneyStart = async () => {
       try {
         const start = await getJourneyStart();
-        if (isMounted) setJourneyStart(start);
+        if (isMounted) {
+          setJourneyStart(start);
+          journeyStartLoadedRef.current = true;
+        }
       } catch (error) {
         console.error('Error loading journey start:', error);
       }
@@ -196,25 +182,15 @@ export function useCheckpointProgress() {
     return () => {
       isMounted = false;
     };
-  }, [relapses]);
+  }, []); // Only load once
 
   const checkpointProgress = useMemo(() => {
-    let startTime: string | null = null;
-
-    if (relapses.length === 0) {
-      startTime = journeyStart;
-    } else {
-      const sortedRelapses = [...relapses].sort(
-        (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
-      );
-      startTime = sortedRelapses[0].timestamp;
-    }
-
+    const startTime = latestRelapseTimestamp || journeyStart;
     if (!startTime) return null;
 
     const elapsedTime = Math.max(0, Date.now() - new Date(startTime).getTime());
     return getCheckpointProgress(elapsedTime);
-  }, [relapses, journeyStart]);
+  }, [latestRelapseTimestamp, journeyStart]);
 
   return checkpointProgress;
 }

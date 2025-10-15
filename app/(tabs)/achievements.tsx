@@ -1,12 +1,12 @@
 import { View, Text, ScrollView } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
-import { useState, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 import { useColorScheme } from '../../src/stores/themeStore';
-import AchievementsGrid from '../../src/components/AchievementsGrid';
-import AchievementDetailModal from '../../src/components/AchievementDetailModal';
+import AchievementsGrid from '../../src/components/achievements/AchievementsGrid';
+import AchievementDetailModal from '../../src/components/achievements/AchievementDetailModal';
 import { getAchievements } from '../../src/data/achievements';
-import { Achievement } from '../../src/components/AchievementBadge';
+import { Achievement } from '../../src/components/achievements/AchievementBadge';
 import { useJourneyStats } from '../../src/hooks/useJourneyStats';
 import { Trophy } from 'lucide-react-native';
 
@@ -17,10 +17,38 @@ export default function AchievementsScreen() {
   // Use centralized hook for journey stats
   const stats = useJourneyStats();
 
-  // Get achievements based on current elapsed time
-  const achievements = useMemo(() => {
-    return getAchievements(stats.elapsedTime);
-  }, [stats.elapsedTime]);
+  // Live achievements state that updates every second
+  const [achievements, setAchievements] = useState<Achievement[]>(() => getAchievements(0));
+
+  // Update achievements every second based on elapsed time
+  // Note: getAchievements() is internally memoized (1-minute cache)
+  // This reduces re-renders from 60/min to 1/min when no achievement changes
+  useEffect(() => {
+    if (!stats.startTime) {
+      setAchievements(getAchievements(0));
+      return;
+    }
+
+    const updateAchievements = () => {
+      const elapsedTime = Math.max(0, Date.now() - new Date(stats.startTime!).getTime());
+      const newAchievements = getAchievements(elapsedTime);
+
+      // Only update state if achievements actually changed (reference equality check)
+      // getAchievements() returns cached reference if nothing changed
+      setAchievements(prev => {
+        if (prev === newAchievements) return prev;
+        return newAchievements;
+      });
+    };
+
+    // Initial update
+    updateAchievements();
+
+    // Update every second
+    const interval = setInterval(updateAchievements, 1000);
+
+    return () => clearInterval(interval);
+  }, [stats.startTime]);
 
   const unlockedCount = achievements.filter((a:any) => a.isUnlocked).length;
   const totalCount = achievements.length;

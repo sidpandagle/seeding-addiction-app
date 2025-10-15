@@ -63,3 +63,6 @@ export const useThemeStore = create<ThemeState>()(
 
 // Optimized selector for only color scheme - prevents unnecessary re-renders
 export const useColorScheme = () => useThemeStore((state) => state.colorScheme);
+
+// Memoized theme values to reduce conditional checks in components
+export const useIsDarkMode = () => useThemeStore((state) => state.colorScheme === 'dark');

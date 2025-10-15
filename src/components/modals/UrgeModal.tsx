@@ -1,7 +1,7 @@
 import { View, Text, TextInput, Pressable, ScrollView, KeyboardAvoidingView, Platform } from 'react-native';
 import { useState } from 'react';
-import { useUrgeStore } from '../stores/urgeStore';
-import { useColorScheme } from '../stores/themeStore';
+import { useUrgeStore } from '../../stores/urgeStore';
+import { useColorScheme } from '../../stores/themeStore';
 import * as Haptics from 'expo-haptics';
 import { Shield } from 'lucide-react-native';
 

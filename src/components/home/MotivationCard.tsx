@@ -1,8 +1,8 @@
 import React, { useEffect, useState, memo } from 'react';
 import { View, Text } from 'react-native';
 import Animated, { FadeIn, FadeOut, SlideInRight, SlideOutLeft } from 'react-native-reanimated';
-import { useColorScheme } from '../stores/themeStore';
-import motivationalQuotes from '../data/motivationalQuotes.json';
+import { useColorScheme } from '../../stores/themeStore';
+import motivationalQuotes from '../../data/motivationalQuotes.json';
 
 /**
  * Motivation card component with rotating quotes

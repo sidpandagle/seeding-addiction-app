@@ -1,7 +1,7 @@
 import { View, Text, Pressable, ScrollView, KeyboardAvoidingView, Platform } from 'react-native';
 import { useState } from 'react';
-import { useColorScheme } from '../stores/themeStore';
-import { getRandomTeaching, type StoicTeaching } from '../data/stoicTeachings';
+import { useColorScheme } from '../../stores/themeStore';
+import { getRandomTeaching, type StoicTeaching } from '../../data/stoicTeachings';
 import { X, RefreshCw, Brain } from 'lucide-react-native';
 
 interface EmergencyHelpModalProps {

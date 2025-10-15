@@ -1,6 +1,5 @@
 import { useState, useEffect, memo } from 'react';
 import { View, Text } from 'react-native';
-import Animated, { FadeIn } from 'react-native-reanimated';
 import { millisecondsToTimeBreakdown } from '../../utils/checkpointHelpers';
 
 interface LiveTimerProps {
@@ -24,10 +23,7 @@ function LiveTimer({ startTime, showDays = true }: LiveTimerProps) {
   const { days, hours, minutes, seconds } = millisecondsToTimeBreakdown(timeDiff);
 
   return (
-    <Animated.View 
-      entering={FadeIn.duration(600)}
-      className="items-center"
-    >
+    <View className="items-center">
       {showDays && days > 0 && (
         <View className="mb-1">
           <Text className="text-5xl font-extrabold text-gray-900 dark:text-white">
@@ -54,7 +50,7 @@ function LiveTimer({ startTime, showDays = true }: LiveTimerProps) {
         </Text>
         <Text className="text-sm font-medium text-gray-500 dark:text-gray-400">s</Text>
       </View>
-    </Animated.View>
+    </View>
   );
 }
 

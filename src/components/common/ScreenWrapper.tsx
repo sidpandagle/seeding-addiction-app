@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, ViewProps } from 'react-native';
-import { useColorScheme } from '../stores/themeStore';
+import { useColorScheme } from '../../stores/themeStore';
 
 interface ScreenWrapperProps extends ViewProps {
   children: React.ReactNode;

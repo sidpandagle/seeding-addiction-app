@@ -1,15 +1,16 @@
-import { Achievement } from '../components/AchievementBadge';
 
 /**
  * Achievement definitions for milestone celebrations
  * Aligned with growth stages and checkpoints
  */
 
+import { Achievement } from "../components/achievements/AchievementBadge";
+
 export const ACHIEVEMENTS: Omit<Achievement, 'isUnlocked' | 'unlockedAt'>[] = [
   {
     id: 'first_5min',
-    title: 'First Steps',
-    description: 'Started your journey - 5 minutes strong',
+    title: 'Five Minute Freshman',
+    description: 'So far so good - 5 minutes strong',
     emoji: '🌱',
     threshold: 5 * 60 * 1000, // 5 minutes
   },

@@ -2,10 +2,11 @@ import { Stack } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { View } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { enableScreens } from 'react-native-screens';
 import { useRelapseStore } from '../src/stores/relapseStore';
 import { useColorScheme as useColorSchemeStore } from '../src/stores/themeStore';
-import { AppLock } from '../src/components/AppLock';
-import ErrorBoundary from '../src/components/ErrorBoundary';
+import { AppLock } from '../src/components/common/AppLock';
+import ErrorBoundary from '../src/components/common/ErrorBoundary';
 import { initializeEncryptionKey } from '../src/services/security';
 import { initializeDatabase } from '../src/db/schema';
 import { useFonts, Poppins_400Regular, Poppins_500Medium, Poppins_600SemiBold, Poppins_700Bold } from '@expo-google-fonts/poppins';
@@ -13,6 +14,9 @@ import { useColorScheme } from 'nativewind';
 import * as SplashScreen from 'expo-splash-screen';
 import Animated, { FadeIn } from 'react-native-reanimated';
 import "../global.css";
+
+// Enable native screens for better performance
+enableScreens(true);
 
 // Prevent splash screen from auto-hiding
 SplashScreen.preventAutoHideAsync();
@@ -104,7 +108,13 @@ export default function RootLayout() {
     <SafeAreaProvider>
       <ErrorBoundary>
         <AppLock>
-          <Animated.View entering={FadeIn.duration(150)} style={{ flex: 1 }}>
+          <Animated.View
+            entering={FadeIn.duration(150)}
+            style={{
+              flex: 1,
+              backgroundColor: colorScheme === 'dark' ? '#030712' : '#f9fafb'
+            }}
+          >
             <Stack screenOptions={{ headerShown: false }}>
               <Stack.Screen name="index" />
               <Stack.Screen name="onboarding" />

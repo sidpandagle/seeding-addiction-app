@@ -1,8 +1,8 @@
 import React, { useCallback, useMemo } from 'react';
 import { View } from 'react-native';
 import { Calendar, DateData } from 'react-native-calendars';
-import { useColorScheme } from '../stores/themeStore';
-import type { Relapse } from '../db/schema';
+import { useColorScheme } from '../../stores/themeStore';
+import type { Relapse } from '../../db/schema';
 
 interface HistoryCalendarProps {
   relapses: Relapse[];

@@ -4,23 +4,6 @@ import { Home, History, Trophy, Settings } from 'lucide-react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useMemo } from 'react';
 
-// Memoized icon components to prevent recreation on every render
-const HomeIcon = ({ color, focused }: { color: string; focused: boolean }) => (
-  <Home size={24} color={color} strokeWidth={focused ? 2.5 : 2} />
-);
-
-const HistoryIcon = ({ color, focused }: { color: string; focused: boolean }) => (
-  <History size={24} color={color} strokeWidth={focused ? 2.5 : 2} />
-);
-
-const TrophyIcon = ({ color, focused }: { color: string; focused: boolean }) => (
-  <Trophy size={24} color={color} strokeWidth={focused ? 2.5 : 2} />
-);
-
-const SettingsIcon = ({ color, focused }: { color: string; focused: boolean }) => (
-  <Settings size={24} color={color} strokeWidth={focused ? 2.5 : 2} />
-);
-
 export default function TabsLayout() {
   const colorScheme = useColorScheme();
   const insets = useSafeAreaInsets();
@@ -33,10 +16,9 @@ export default function TabsLayout() {
     tabBarStyle: {
       backgroundColor: colorScheme === 'dark' ? '#1f2937' : '#ffffff',
       borderTopColor: colorScheme === 'dark' ? '#374151' : '#e5e7eb',
-      borderTopWidth: 1,
       height: 70 + insets.bottom,
       paddingBottom: Math.max(insets.bottom, 10),
-      paddingTop: 10,
+      paddingTop: 5,
     },
     tabBarItemStyle: {
       flex: 1,
@@ -51,6 +33,15 @@ export default function TabsLayout() {
     tabBarIconStyle: {
       marginTop: 2,
     },
+    // Set background color for screen container to prevent white flash
+    sceneStyle: {
+      backgroundColor: colorScheme === 'dark' ? '#030712' : '#f9fafb',
+    },
+    // Performance optimizations for faster tab switching
+    lazy: false, // Preload all tabs to eliminate mounting delays
+    unmountOnBlur: false, // Keep screens mounted for instant switching
+    freezeOnBlur: true, // Freeze inactive screens to save resources
+    animation: 'fade' as const, // Fade transition is smoother and less prone to white flashes
   }), [colorScheme, insets.bottom]);
 
   return (
@@ -59,28 +50,36 @@ export default function TabsLayout() {
         name="home"
         options={{
           title: 'Home',
-          tabBarIcon: HomeIcon,
+          tabBarIcon: ({ color, focused }) => (
+            <Home size={24} color={color} strokeWidth={focused ? 2.5 : 2} />
+          ),
         }}
       />
       <Tabs.Screen
         name="history"
         options={{
           title: 'History',
-          tabBarIcon: HistoryIcon,
+          tabBarIcon: ({ color, focused }) => (
+            <History size={24} color={color} strokeWidth={focused ? 2.5 : 2} />
+          ),
         }}
       />
       <Tabs.Screen
         name="achievements"
         options={{
           title: 'Achievements',
-          tabBarIcon: TrophyIcon,
+          tabBarIcon: ({ color, focused }) => (
+            <Trophy size={24} color={color} strokeWidth={focused ? 2.5 : 2} />
+          ),
         }}
       />
       <Tabs.Screen
         name="settings"
         options={{
           title: 'Settings',
-          tabBarIcon: SettingsIcon,
+          tabBarIcon: ({ color, focused }) => (
+            <Settings size={24} color={color} strokeWidth={focused ? 2.5 : 2} />
+          ),
         }}
       />
     </Tabs>

@@ -1,8 +1,8 @@
 import React, { useEffect, useRef } from 'react';
 import { View, Text } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { GrowthStage, GROWTH_STAGES } from '../utils/growthStages';
-import { useColorScheme } from '../stores/themeStore';
+import { GrowthStage, GROWTH_STAGES } from '../../utils/growthStages';
+import { useColorScheme } from '../../stores/themeStore';
 
 interface GrowthIconProps {
   stage: GrowthStage;

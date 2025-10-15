@@ -1,5 +1,5 @@
 import { View, Text } from 'react-native';
-import type { Relapse } from '../db/schema';
+import type { Relapse } from '../../db/schema';
 
 interface CalendarRelapseDetailsProps {
   selectedDate: string | null;

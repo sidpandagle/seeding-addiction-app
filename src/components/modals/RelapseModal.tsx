@@ -1,7 +1,7 @@
 import { View, Text, TextInput, Pressable, ScrollView, KeyboardAvoidingView, Platform } from 'react-native';
 import { useState } from 'react';
-import { useRelapseStore } from '../stores/relapseStore';
-import { useColorScheme } from '../stores/themeStore';
+import { useRelapseStore } from '../../stores/relapseStore';
+import { useColorScheme } from '../../stores/themeStore';
 import * as Haptics from 'expo-haptics';
 import { RotateCcw } from 'lucide-react-native';
 

@@ -1,6 +1,6 @@
 import { FlatList, View, Text, Pressable, ScrollView } from 'react-native';
 import { useState, useMemo } from 'react';
-import type { Relapse } from '../db/schema';
+import type { Relapse } from '../../db/schema';
 
 const AVAILABLE_TAGS = ['Stress', 'Trigger', 'Social', 'Boredom', 'Craving', 'Other'];
 

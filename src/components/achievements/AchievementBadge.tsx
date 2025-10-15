@@ -2,7 +2,7 @@ import React from 'react';
 import { View, Text } from 'react-native';
 import Animated, { FadeIn, ZoomInRotate } from 'react-native-reanimated';
 import { LinearGradient } from 'expo-linear-gradient';
-import { useThemeStore } from '../stores/themeStore';
+import { useThemeStore } from '../../stores/themeStore';
 
 export interface Achievement {
   id: string;
@@ -72,7 +72,7 @@ export default function AchievementBadge({
           <>
             <View className="absolute" style={{ width: config.badge, height: config.badge }}>
               <LinearGradient
-                colors={[...colors.gradient, 'transparent']}
+                colors={[colors.gradient[0], colors.gradient[1], 'transparent']}
                 style={{
                   width: '100%',
                   height: '100%',

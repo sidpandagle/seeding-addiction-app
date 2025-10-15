@@ -1,26 +1,25 @@
-import { View, Text, Pressable, Modal, ScrollView } from 'react-native';
+import { View, Text, Pressable, Modal, ScrollView, InteractionManager } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
-import { useState, useEffect, useRef, memo } from 'react';
-import Animated, { FadeInDown, FadeIn, useAnimatedStyle, withSpring, useSharedValue, withRepeat, withSequence } from 'react-native-reanimated';
+import { useState, useEffect, useRef, memo, useMemo } from 'react';
 import { useRelapseStore } from '../../src/stores/relapseStore';
 import { useUrgeStore } from '../../src/stores/urgeStore';
 import { useColorScheme } from '../../src/stores/themeStore';
-import RelapseModal from '../../src/components/RelapseModal';
-import UrgeModal from '../../src/components/UrgeModal';
-import EmergencyHelpModal from '../../src/components/EmergencyHelpModal';
-import CircularProgress from '../../src/components/CircularProgress';
-import { MotivationCard } from '../../src/components/MotivationCard';
-import AchievementCelebration from '../../src/components/AchievementCelebration';
+import RelapseModal from '../../src/components/modals/RelapseModal';
+import UrgeModal from '../../src/components/modals/UrgeModal';
+import EmergencyHelpModal from '../../src/components/modals/EmergencyHelpModal';
+import CircularProgress from '../../src/components/home/CircularProgress';
+import { MotivationCard } from '../../src/components/home/MotivationCard';
+import AchievementCelebration from '../../src/components/achievements/AchievementCelebration';
 import LiveTimer from '../../src/components/home/LiveTimer';
 import { GrowthStage } from '../../src/utils/growthStages';
-import GrowthIcon from '../../src/components/GrowthIcon';
+import GrowthIcon from '../../src/components/home/GrowthIcon';
 import { calculateUserStats } from '../../src/utils/statsHelpers';
-import { getNewlyUnlockedAchievements } from '../../src/data/achievements';
-import { Achievement } from '../../src/components/AchievementBadge';
+import { Achievement } from '../../src/components/achievements/AchievementBadge';
 import { Shield, AlertCircle, RotateCcw, Sparkles, TrendingUp, Award, Heart } from 'lucide-react-native';
 import { useJourneyStats } from '../../src/hooks/useJourneyStats';
-import ErrorBoundary from '../../src/components/ErrorBoundary';
-import ModalErrorFallback from '../../src/components/ModalErrorFallback';
+import { getNewlyUnlockedAchievements } from '../../src/data/achievements';
+import ErrorBoundary from '../../src/components/common/ErrorBoundary';
+import ModalErrorFallback from '../../src/components/common/ModalErrorFallback';
 
 function DashboardScreen() {
   const colorScheme = useColorScheme();
@@ -32,58 +31,60 @@ function DashboardScreen() {
   const loadUrges = useUrgeStore((state) => state.loadUrges);
   const previousStageRef = useRef<GrowthStage | null>(null);
   const [celebrationAchievement, setCelebrationAchievement] = useState<Achievement | null>(null);
-  const previousTimeRef = useRef<number>(0);
-  const lastShownAchievementIdRef = useRef<string | null>(null);
-  const achievementCheckInProgressRef = useRef<boolean>(false);
-  
-  // Use centralized hook for journey stats
+
+  // Use centralized hook for journey stats (now optimized - no continuous updates)
   const stats = useJourneyStats();
+
+  // Track previous elapsed time for achievement detection
+  const previousElapsedRef = useRef<number>(0);
 
   // Removed continuous pulse animation for emergency button
   // Using static button to save battery and CPU resources
   // Animation was causing unnecessary re-renders and battery drain
 
-  // Load urges on mount and when relapses change
+  // Defer urge loading until after screen is fully rendered (performance optimization)
   useEffect(() => {
-    loadUrges();
-    // Reset achievement tracking when relapses change (new relapse recorded)
-    lastShownAchievementIdRef.current = null;
-    previousTimeRef.current = 0;
+    const task = InteractionManager.runAfterInteractions(() => {
+      loadUrges();
+    });
+
+    return () => task.cancel();
   }, [relapses, loadUrges]);
 
-  // Calculate user stats (urges and resistance rate)
-  const userStats = calculateUserStats(relapses, stats.startTime, urges);
+  // Memoize user stats calculation to prevent recalculation on every render
+  const userStats = useMemo(
+    () => calculateUserStats(relapses, stats.startTime, urges),
+    [relapses, stats.startTime, urges]
+  );
 
-  // Check for newly unlocked achievements (debounce to prevent duplicates)
+  // Achievement detection: monitor elapsed time and trigger celebrations
   useEffect(() => {
-    const currentElapsedTime = stats.timeDiff;
+    if (!stats.startTime) return;
 
-    // Skip if check already in progress
-    if (achievementCheckInProgressRef.current) {
-      return;
-    }
+    const checkAchievements = () => {
+      const currentElapsed = Math.max(0, Date.now() - new Date(stats.startTime!).getTime());
+      const previousElapsed = previousElapsedRef.current;
 
-    if (previousTimeRef.current > 0 && currentElapsedTime > previousTimeRef.current) {
-      const newAchievements = getNewlyUnlockedAchievements(currentElapsedTime, previousTimeRef.current);
+      // Check if any new achievements were unlocked
+      const newAchievements = getNewlyUnlockedAchievements(currentElapsed, previousElapsed);
+
       if (newAchievements.length > 0) {
-        const firstNewAchievement = newAchievements[0];
-        // Only show if we haven't already shown this specific achievement
-        if (lastShownAchievementIdRef.current !== firstNewAchievement.id) {
-          achievementCheckInProgressRef.current = true;
-          lastShownAchievementIdRef.current = firstNewAchievement.id;
-          setCelebrationAchievement(firstNewAchievement);
-        }
+        // Show celebration for the first newly unlocked achievement
+        setCelebrationAchievement(newAchievements[0]);
       }
-    }
-    previousTimeRef.current = currentElapsedTime;
-  }, [stats.timeDiff]);
 
-  // Reset achievement check lock when celebration is closed
-  useEffect(() => {
-    if (!celebrationAchievement) {
-      achievementCheckInProgressRef.current = false;
-    }
-  }, [celebrationAchievement]);
+      // Update previous elapsed time
+      previousElapsedRef.current = currentElapsed;
+    };
+
+    // Initial check
+    checkAchievements();
+
+    // Check every second for new achievements
+    const interval = setInterval(checkAchievements, 1000);
+
+    return () => clearInterval(interval);
+  }, [stats.startTime]);
 
   // Handle growth stage transitions
   const handleStageChange = (newStage: GrowthStage) => {
@@ -143,7 +144,9 @@ function DashboardScreen() {
             <CircularProgress
               size={260}
               strokeWidth={16}
-              progress={stats.checkpointProgress?.progress ?? 0}
+              startTime={stats.startTime ?? undefined}
+              currentCheckpointDuration={stats.checkpointProgress?.currentCheckpoint?.duration ?? undefined}
+              nextCheckpointDuration={stats.checkpointProgress?.nextCheckpoint?.duration ?? undefined}
               useGradient={true}
               gradientColors={['#10b981', '#34d399', '#6ee7b7']}
               backgroundColor={colorScheme === 'dark' ? '#1f2937' : '#f0fdf4'}

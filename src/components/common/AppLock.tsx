@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { View, Text, Pressable, AppState, AppStateStatus } from 'react-native';
-import { authenticateUser, isAppLockEnabled } from '../services/security';
+import { authenticateUser, isAppLockEnabled } from '../../services/security';
 
 interface AppLockProps {
   children: React.ReactNode;
