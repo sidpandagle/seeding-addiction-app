@@ -1,12 +1,12 @@
 import { Stack } from 'expo-router';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useLayoutEffect } from 'react';
 import { View } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { enableScreens } from 'react-native-screens';
 import { useRelapseStore } from '../src/stores/relapseStore';
 import { useColorScheme as useColorSchemeStore } from '../src/stores/themeStore';
 import { AppLock } from '../src/components/common/AppLock';
-import ErrorBoundary from '../src/components/common/ErrorBoundary';
+import { ThemeTransitionOverlay } from '../src/components/common/ThemeTransitionOverlay';
 import { initializeEncryptionKey } from '../src/services/security';
 import { initializeDatabase } from '../src/db/schema';
 import { useFonts, Poppins_400Regular, Poppins_500Medium, Poppins_600SemiBold, Poppins_700Bold } from '@expo-google-fonts/poppins';
@@ -35,8 +35,8 @@ export default function RootLayout() {
     Poppins_700Bold,
   });
 
-  // Sync theme with NativeWind
-  useEffect(() => {
+  // Sync theme with NativeWind synchronously (before paint) for instant switching
+  useLayoutEffect(() => {
     setColorScheme(colorScheme);
   }, [colorScheme, setColorScheme]);
 
@@ -106,23 +106,24 @@ export default function RootLayout() {
 
   return (
     <SafeAreaProvider>
-      <ErrorBoundary>
-        <AppLock>
-          <Animated.View
-            entering={FadeIn.duration(150)}
-            style={{
-              flex: 1,
-              backgroundColor: colorScheme === 'dark' ? '#030712' : '#f9fafb'
-            }}
-          >
-            <Stack screenOptions={{ headerShown: false }}>
-              <Stack.Screen name="index" />
-              <Stack.Screen name="onboarding" />
-              <Stack.Screen name="(tabs)" />
-            </Stack>
-          </Animated.View>
-        </AppLock>
-      </ErrorBoundary>
+      <AppLock>
+        <Animated.View
+          entering={FadeIn.duration(150)}
+          style={{
+            flex: 1,
+            backgroundColor: colorScheme === 'dark' ? '#030712' : '#f9fafb'
+          }}
+        >
+          <Stack screenOptions={{ headerShown: false }}>
+            <Stack.Screen name="index" />
+            <Stack.Screen name="onboarding" />
+            <Stack.Screen name="(tabs)" />
+          </Stack>
+
+          {/* Theme transition overlay - masks re-render delay with smooth animation */}
+          <ThemeTransitionOverlay />
+        </Animated.View>
+      </AppLock>
     </SafeAreaProvider>
   );
 }

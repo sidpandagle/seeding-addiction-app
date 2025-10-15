@@ -48,7 +48,7 @@ const HistoryCalendar = React.memo(function HistoryCalendar({
       marks[selectedDate] = {
         ...marks[selectedDate],
         selected: true,
-        selectedColor: isDark ? '#047857' : '#10B981', // emerald-700/emerald-500
+  selectedColor: isDark ? '#047857' : '#3B82F6', // emerald-700 / blue-500
         selectedTextColor: '#FFFFFF',
         marked: isRelapseDate?.marked,
         dotColor: isRelapseDate?.dotColor,
@@ -78,9 +78,9 @@ const HistoryCalendar = React.memo(function HistoryCalendar({
     () => ({
       calendarBackground: isDark ? '#1F2937' : '#FFFFFF', // gray-800/white
       textSectionTitleColor: isDark ? '#9CA3AF' : '#6B7280', // gray-400/gray-500
-      selectedDayBackgroundColor: '#10B981', // emerald-500
+      selectedDayBackgroundColor: '#3B82F6', // blue-500
       selectedDayTextColor: '#FFFFFF',
-      todayTextColor: '#10B981', // emerald-500
+      todayTextColor: '#3B82F6', // blue-500
       dayTextColor: isDark ? '#F9FAFB' : '#111827', // gray-50/gray-900
       textDisabledColor: isDark ? '#4B5563' : '#D1D5DB', // gray-600/gray-300
       monthTextColor: isDark ? '#F9FAFB' : '#111827', // gray-50/gray-900
@@ -88,14 +88,14 @@ const HistoryCalendar = React.memo(function HistoryCalendar({
       textDayFontSize: 18, // Increased from 14
       textMonthFontSize: 20, // Increased from 16
       textDayHeaderFontSize: 14, // Increased from 12
-      arrowColor: '#10B981', // emerald-500
+      arrowColor: '#3B82F6', // blue-500
     }),
     [isDark]
   );
 
   return (
-    <View className="px-6 py-6">
-      <View className="overflow-hidden border border-gray-200 bg-white dark:bg-gray-900 dark:border-gray-700 rounded-2xl">
+    <View className="px-6 py-4">
+      <View className="overflow-hidden bg-white dark:bg-gray-900 rounded-3xl">
         <Calendar
           key={colorScheme} // Force re-render when theme changes
           markingType="custom"
@@ -108,8 +108,8 @@ const HistoryCalendar = React.memo(function HistoryCalendar({
           // Show calendar from journey start or first relapse
           minDate={journeyStart || undefined}
           style={{
-            paddingVertical: 12,
-            paddingHorizontal: 8,
+            paddingVertical: 16,
+            paddingHorizontal: 12,
           }}
         />
       </View>

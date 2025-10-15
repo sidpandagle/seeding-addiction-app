@@ -59,19 +59,19 @@ export default function AchievementsScreen() {
       <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'} />
 
       {/* Elegant Header */}
-      <View className="pt-16 pb-4 bg-amber-50 dark:bg-gray-900">
+      <View className="pt-16 pb-6">
         <View className="px-6">
-          <View className="flex-row items-center justify-between mb-2">
+          <View className="flex-row items-center justify-between">
             <View className="flex-1">
               <Text className="text-3xl font-semibold tracking-widest text-gray-900 dark:text-white">
                 Achievements
               </Text>
-              <Text className="mt-1 text-sm font-medium text-amber-700 dark:text-amber-400">
+              <Text className="mt-1 text-sm font-medium tracking-wide text-amber-700 dark:text-amber-400">
                 Celebrate your journey milestones
               </Text>
             </View>
-            <View className="items-center justify-center w-12 h-12 bg-amber-100 dark:bg-amber-900/30 rounded-2xl">
-              <Trophy size={24} color="#f59e0b" strokeWidth={2.5} />
+            <View className="items-center justify-center w-14 h-14 bg-amber-100 dark:bg-amber-900/30 rounded-2xl">
+              <Trophy size={26} color="#f59e0b" strokeWidth={2.5} />
             </View>
           </View>
         </View>
@@ -100,8 +100,8 @@ export default function AchievementsScreen() {
             {/* Progress Bar */}
             <View className="mb-3">
               <View className="h-3 overflow-hidden bg-gray-100 rounded-full dark:bg-gray-800">
-                <View 
-                  className="h-full rounded-full bg-gradient-to-r from-amber-400 to-amber-600"
+                <View
+                  className="h-full bg-amber-500 rounded-full dark:bg-amber-600"
                   style={{ width: `${progressPercentage}%` }}
                 />
               </View>

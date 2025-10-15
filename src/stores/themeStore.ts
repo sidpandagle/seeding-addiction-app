@@ -1,38 +1,30 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage, StateStorage } from 'zustand/middleware';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { InteractionManager } from 'react-native';
 import { ColorScheme } from '../theme/colors';
 
 interface ThemeState {
   colorScheme: ColorScheme;
   _hasHydrated: boolean;
+  _isTransitioning: boolean;
   setHasHydrated: (state: boolean) => void;
+  setTransitioning: (state: boolean) => void;
   toggleColorScheme: () => void;
   setColorScheme: (scheme: ColorScheme) => void;
 }
 
-// Optimized AsyncStorage wrapper using InteractionManager for instant theme switching
-// Defers persistence until after animations/interactions complete
-let debounceTimer: NodeJS.Timeout | null = null;
+// Optimized AsyncStorage wrapper for instant theme switching
+// UI updates instantly, persistence happens immediately in background (non-blocking)
 const optimizedAsyncStorage: StateStorage = {
   getItem: async (name: string): Promise<string | null> => {
     return await AsyncStorage.getItem(name);
   },
   setItem: (name: string, value: string): void => {
-    // Clear previous timer
-    if (debounceTimer) {
-      clearTimeout(debounceTimer);
-    }
-
-    // Debounce write by 500ms - UI updates instantly, persistence happens after interactions
-    debounceTimer = setTimeout(() => {
-      InteractionManager.runAfterInteractions(() => {
-        AsyncStorage.setItem(name, value).catch((error) => {
-          console.error('Failed to persist theme:', error);
-        });
-      });
-    }, 500);
+    // Write immediately but asynchronously (non-blocking)
+    // UI updates instantly while persistence happens in background
+    AsyncStorage.setItem(name, value).catch((error) => {
+      console.error('Failed to persist theme:', error);
+    });
   },
   removeItem: async (name: string): Promise<void> => {
     return await AsyncStorage.removeItem(name);
@@ -44,12 +36,15 @@ export const useThemeStore = create<ThemeState>()(
     (set) => ({
       colorScheme: 'light',
       _hasHydrated: false,
+      _isTransitioning: false,
       setHasHydrated: (state) => set({ _hasHydrated: state }),
+      setTransitioning: (state) => set({ _isTransitioning: state }),
       toggleColorScheme: () =>
         set((state) => ({
           colorScheme: state.colorScheme === 'light' ? 'dark' : 'light',
+          _isTransitioning: true, // Trigger transition overlay
         })),
-      setColorScheme: (scheme) => set({ colorScheme: scheme }),
+      setColorScheme: (scheme) => set({ colorScheme: scheme, _isTransitioning: true }),
     }),
     {
       name: 'theme-storage',
@@ -57,6 +52,11 @@ export const useThemeStore = create<ThemeState>()(
       onRehydrateStorage: () => (state) => {
         state?.setHasHydrated(true);
       },
+      // Don't persist transition state
+      partialize: (state) => ({
+        colorScheme: state.colorScheme,
+        _hasHydrated: state._hasHydrated,
+      }),
     }
   )
 );

@@ -9,16 +9,16 @@ interface ViewToggleProps {
 
 export default function ViewToggle({ mode, onModeChange }: ViewToggleProps) {
   return (
-    <View className="flex-row p-2 mt-2 bg-gray-200 rounded-lg dark:bg-gray-700">
+    <View className="flex-row p-1.5 bg-white dark:bg-gray-900 rounded-2xl">
       <Pressable
         onPress={() => onModeChange('list')}
-        className={`flex-1 py-2 px-4 rounded-md ${
-          mode === 'list' ? 'bg-white dark:bg-gray-600' : ''
+        className={`flex-1 py-3 px-4 rounded-xl ${
+          mode === 'list' ? 'bg-blue-600 dark:bg-blue-600/20' : ''
         }`}
       >
         <Text
-          className={`text-sm font-medium text-center ${
-            mode === 'list' ? 'text-gray-900 dark:text-white' : 'text-gray-600 dark:text-gray-400'
+          className={`text-sm font-bold text-center ${
+            mode === 'list' ? 'text-white' : 'text-gray-600 dark:text-gray-400'
           }`}
         >
           List
@@ -26,13 +26,13 @@ export default function ViewToggle({ mode, onModeChange }: ViewToggleProps) {
       </Pressable>
       <Pressable
         onPress={() => onModeChange('calendar')}
-        className={`flex-1 py-2 px-4 rounded-md ${
-          mode === 'calendar' ? 'bg-white dark:bg-gray-600' : ''
+        className={`flex-1 py-3 px-4 rounded-xl ${
+          mode === 'calendar' ? 'bg-blue-600 dark:bg-blue-600/20' : ''
         }`}
       >
         <Text
-          className={`text-sm font-medium text-center ${
-            mode === 'calendar' ? 'text-gray-900 dark:text-white' : 'text-gray-600 dark:text-gray-400'
+          className={`text-sm font-bold text-center ${
+            mode === 'calendar' ? 'text-white' : 'text-gray-600 dark:text-gray-400'
           }`}
         >
           Calendar

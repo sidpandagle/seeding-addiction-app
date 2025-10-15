@@ -44,18 +44,18 @@ export default function HistoryList({ relapses }: HistoryListProps) {
         index,
       })}
       ListHeaderComponent={
-        <View className="px-6 py-4 bg-gray-50 dark:bg-gray-950">
-          <Text className="mb-3 text-xs font-bold tracking-widest text-gray-500 uppercase dark:text-gray-400">
+        <View className="px-6 pt-4 pb-5 mb-2 bg-gray-50 dark:bg-gray-950">
+          <Text className="mb-4 text-xs font-bold tracking-widest text-gray-500 uppercase dark:text-gray-400">
             Filter by Tag
           </Text>
           <ScrollView horizontal showsHorizontalScrollIndicator={false}>
             <View className="flex-row gap-2.5">
               <Pressable
                 onPress={() => setSelectedTag(null)}
-                className={`px-4 py-2.5 rounded-full ${
+                className={`px-5 py-3 rounded-2xl ${
                   selectedTag === null
-                    ? 'bg-emerald-600 dark:bg-emerald-600'
-                    : 'bg-white dark:bg-gray-900 border-2 border-gray-200 dark:border-gray-700'
+                    ? 'bg-blue-600 dark:bg-blue-600'
+                    : 'bg-white dark:bg-gray-900'
                 }`}
               >
                 <Text
@@ -72,10 +72,10 @@ export default function HistoryList({ relapses }: HistoryListProps) {
                   <Pressable
                     key={tag}
                     onPress={() => setSelectedTag(tag)}
-                    className={`px-4 py-2.5 rounded-full ${
+                    className={`px-5 py-3 rounded-2xl ${
                       selectedTag === tag
-                        ? 'bg-emerald-600 dark:bg-emerald-600'
-                        : 'bg-white dark:bg-gray-900 border-2 border-gray-200 dark:border-gray-700'
+                        ? 'bg-blue-600 dark:bg-blue-600'
+                        : 'bg-white dark:bg-gray-900'
                     }`}
                   >
                     <Text
@@ -94,8 +94,8 @@ export default function HistoryList({ relapses }: HistoryListProps) {
       }
       ListEmptyComponent={
         <View className="items-center justify-center px-6 py-20">
-          <View className="items-center justify-center w-20 h-20 mb-4 bg-emerald-50 border border-emerald-200 dark:bg-emerald-900/30 dark:border-emerald-800 rounded-3xl">
-            <Text className="text-4xl">✓</Text>
+          <View className="items-center justify-center w-24 h-24 mb-5 bg-blue-50 dark:bg-blue-900/30 rounded-3xl">
+            <Text className="text-5xl">✨</Text>
           </View>
           <Text className="mb-2 text-xl font-bold text-gray-900 dark:text-white">
             {selectedTag ? 'No matches found' : 'No relapses recorded'}
@@ -106,7 +106,10 @@ export default function HistoryList({ relapses }: HistoryListProps) {
         </View>
       }
       renderItem={({ item }) => (
-        <View className="p-6 mx-6 mb-4 bg-white border border-gray-200 dark:bg-gray-900 dark:border-gray-700 rounded-2xl">
+        <View className="relative p-6 mx-6 mb-4 overflow-hidden bg-white dark:bg-gray-900 rounded-3xl">
+          {/* Subtle gradient accent */}
+          <View className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-red-400 to-orange-400" />
+          
           <View className="flex-row items-start justify-between mb-3">
             <View className="flex-1">
               <Text className="mb-1 text-lg font-bold text-gray-900 dark:text-white">
@@ -117,30 +120,35 @@ export default function HistoryList({ relapses }: HistoryListProps) {
                   year: 'numeric',
                 })}
               </Text>
-              <Text className="text-sm font-medium text-gray-500 dark:text-gray-400">
-                {new Date(item.timestamp).toLocaleTimeString('en-US', {
-                  hour: 'numeric',
-                  minute: '2-digit',
-                })}
-              </Text>
+              <View className="flex-row items-center gap-2">
+                <Text className="text-base">🕐</Text>
+                <Text className="text-sm font-medium text-gray-500 dark:text-gray-400">
+                  {new Date(item.timestamp).toLocaleTimeString('en-US', {
+                    hour: 'numeric',
+                    minute: '2-digit',
+                  })}
+                </Text>
+              </View>
             </View>
           </View>
 
           {item.note && (
-            <Text className="mb-3 text-sm leading-6 text-gray-700 dark:text-gray-300">
-              {item.note}
-            </Text>
+            <View className="p-4 mb-3 bg-gray-50 dark:bg-gray-800 rounded-2xl">
+              <Text className="text-sm leading-6 text-gray-700 dark:text-gray-300">
+                {item.note}
+              </Text>
+            </View>
           )}
 
           {item.tags && item.tags.length > 0 && (
-            <View className="flex-row flex-wrap gap-2">
+            <View className="flex-row flex-wrap gap-2 mt-2">
               {item.tags.map((tag: string) => (
                 <View
                   key={tag}
-                  className="px-3 py-1.5 bg-emerald-50 dark:bg-emerald-900/30 rounded-full"
+                  className="px-4 py-2 bg-blue-50 dark:bg-blue-900/30 rounded-xl"
                 >
-                  <Text className="text-xs font-bold text-emerald-700 dark:text-emerald-300">
-                    {tag}
+                  <Text className="text-xs font-bold text-blue-700 dark:text-blue-300">
+                    #{tag}
                   </Text>
                 </View>
               ))}

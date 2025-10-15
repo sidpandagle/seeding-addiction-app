@@ -29,7 +29,8 @@
       "Bash(ren:*)",
       "Bash(call gradlew.bat assembleRelease)",
       "Bash(.\\android\\gradlew.bat assembleRelease:*)",
-      "Bash(./gradlew.bat assembleRelease:*)"
+      "Bash(./gradlew.bat assembleRelease:*)",
+      "Bash(npm start:*)"
     ],
     "deny": [],
     "ask": []

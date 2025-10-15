@@ -1,9 +1,10 @@
 /**
  * Growth stage definitions and utilities
- * Maps checkpoint milestones to visual growth metaphors
+ * Represents broader emotional/metaphorical phases of the recovery journey
+ * These complement the detailed checkpoint system with meaningful visual metaphors
  */
 
-export type GrowthStage = '5min' | '15min' | '30min' | '1hr' | '2hr' | '3hr' | '6hr' | '12hr' | '1d' | '2d' | '3d' | '7d' | '14d' | '21d';
+export type GrowthStage = 'seedling' | 'sprout' | 'young-plant' | 'sapling' | 'tree' | 'forest' | 'ancient';
 
 export interface GrowthStageConfig {
   id: GrowthStage;
@@ -16,115 +17,59 @@ export interface GrowthStageConfig {
 
 export const GROWTH_STAGES: GrowthStageConfig[] = [
   {
-    id: '5min',
-    label: '5 minutes',
+    id: 'seedling',
+    label: 'Seedling',
     emoji: '🌱',
     minMinutes: 0,
     description: 'Just planted. The journey begins.',
     color: '#E8F5E9',
   },
   {
-    id: '15min',
-    label: '15 minutes',
-    emoji: '🌾',
-    minMinutes: 5,
-    description: 'Taking the first step.',
-    color: '#C8E6C9',
-  },
-  {
-    id: '30min',
-    label: '30 minutes',
+    id: 'sprout',
+    label: 'Sprout',
     emoji: '🌿',
-    minMinutes: 15,
-    description: 'Half an hour of strength.',
+    minMinutes: 60, // 1 hour
+    description: 'Breaking through. Building momentum.',
     color: '#A5D6A7',
   },
   {
-    id: '1hr',
-    label: '1 hour',
-    emoji: '☘️',
-    minMinutes: 30,
-    description: 'One hour conquered.',
-    color: '#81C784',
-  },
-  {
-    id: '2hr',
-    label: '2 hours',
-    emoji: '🍀',
-    minMinutes: 60,
-    description: 'Building momentum.',
+    id: 'young-plant',
+    label: 'Young Plant',
+    emoji: '🪴',
+    minMinutes: 360, // 6 hours
+    description: 'Growing strong. Taking shape.',
     color: '#66BB6A',
   },
   {
-    id: '3hr',
-    label: '3 hours',
-    emoji: '🌿',
-    minMinutes: 120,
-    description: 'Three hours strong.',
-    color: '#4CAF50',
-  },
-  {
-    id: '6hr',
-    label: '6 hours',
-    emoji: '🪴',
-    minMinutes: 180,
-    description: 'Half a day resilient.',
+    id: 'sapling',
+    label: 'Sapling',
+    emoji: '🌳',
+    minMinutes: 1440, // 1 day
+    description: 'Taking root. Standing firm.',
     color: '#43A047',
   },
   {
-    id: '12hr',
-    label: '12 hours',
-    emoji: '🌳',
-    minMinutes: 360,
-    description: 'Twelve hours standing tall.',
-    color: '#388E3C',
-  },
-  {
-    id: '1d',
-    label: '1 day',
+    id: 'tree',
+    label: 'Tree',
     emoji: '🌲',
-    minMinutes: 720,
-    description: 'One day victorious.',
+    minMinutes: 4320, // 3 days
+    description: 'Standing tall. Growing resilient.',
     color: '#2E7D32',
   },
   {
-    id: '2d',
-    label: '2 days',
-    emoji: '🎋',
-    minMinutes: 1440,
-    description: 'Two days thriving.',
+    id: 'forest',
+    label: 'Forest',
+    emoji: '🏔️',
+    minMinutes: 10080, // 7 days
+    description: 'Unshakeable. Deeply rooted.',
     color: '#1B5E20',
   },
   {
-    id: '3d',
-    label: '3 days',
-    emoji: '🌴',
-    minMinutes: 2880,
-    description: 'Three days deep-rooted.',
-    color: '#0D5E1F',
-  },
-  {
-    id: '7d',
-    label: '1 week',
-    emoji: '🌳',
-    minMinutes: 4320,
-    description: 'One week unshakeable.',
-    color: '#0A4D18',
-  },
-  {
-    id: '14d',
-    label: '2 weeks',
-    emoji: '🏔️',
-    minMinutes: 10080,
-    description: 'Two weeks unwavering.',
-    color: '#083C12',
-  },
-  {
-    id: '21d',
-    label: '3 weeks',
+    id: 'ancient',
+    label: 'Ancient',
     emoji: '🏆',
-    minMinutes: 20160,
-    description: 'Three weeks legendary.',
+    minMinutes: 30240, // 21 days
+    description: 'Legendary. Timeless strength.',
     color: '#FFD700',
   },
 ];

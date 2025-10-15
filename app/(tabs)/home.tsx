@@ -18,8 +18,6 @@ import { Achievement } from '../../src/components/achievements/AchievementBadge'
 import { Shield, AlertCircle, RotateCcw, Sparkles, TrendingUp, Award, Heart } from 'lucide-react-native';
 import { useJourneyStats } from '../../src/hooks/useJourneyStats';
 import { getNewlyUnlockedAchievements } from '../../src/data/achievements';
-import ErrorBoundary from '../../src/components/common/ErrorBoundary';
-import ModalErrorFallback from '../../src/components/common/ModalErrorFallback';
 
 function DashboardScreen() {
   const colorScheme = useColorScheme();
@@ -77,10 +75,11 @@ function DashboardScreen() {
       previousElapsedRef.current = currentElapsed;
     };
 
-    // Initial check
-    checkAchievements();
+    // Initialize previousElapsedRef on mount to prevent false triggers
+    const initialElapsed = Math.max(0, Date.now() - new Date(stats.startTime!).getTime());
+    previousElapsedRef.current = initialElapsed;
 
-    // Check every second for new achievements
+    // Check every second for new achievements (no immediate check on mount)
     const interval = setInterval(checkAchievements, 1000);
 
     return () => clearInterval(interval);
@@ -109,13 +108,13 @@ function DashboardScreen() {
       <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'} />
 
       {/* Elegant Header */}
-      <View className="pt-16 pb-4 ml-1">
+      <View className="pt-16 pb-2 ml-1">
         <View className="flex-row items-center justify-between px-6">
           <View className="flex-1">
             <Text className="text-3xl font-semibold tracking-widest text-gray-900 dark:text-white">
               Seeding
             </Text>
-            <Text className="mt-0 text-sm font-medium text-emerald-700 dark:text-emerald-400">
+            <Text className="mt-0 text-sm font-medium tracking-widest text-emerald-700 dark:text-emerald-400">
               {stats.growthStage.description}
             </Text>
           </View>
@@ -123,7 +122,7 @@ function DashboardScreen() {
           {/* Emergency Help Button */}
           <Pressable
             onPress={handleHelpPress}
-            className="items-center justify-center bg-white border border-gray-200 w-14 h-14 dark:bg-gray-800 dark:border-gray-700 rounded-2xl active:scale-95"
+            className="items-center justify-center bg-white w-14 h-14 dark:bg-red-800/30 rounded-2xl active:scale-95"
           >
             <AlertCircle size={28} color="#ef4444" strokeWidth={2.5} />
           </Pressable>
@@ -136,9 +135,9 @@ function DashboardScreen() {
         contentContainerClassName="pb-8"
       >
         {/* Hero Section - Circular Progress with Timer */}
-        <View className="items-center px-6 py-8 -mt-4">
+        <View className="items-center px-6 pt-8 pb-6 -mt-4">
           {/* Floating Card Effect */}
-          <View className="items-center w-full p-8 bg-white border border-gray-200 dark:bg-gray-900 dark:border-gray-700 rounded-3xl">
+          <View className="items-center w-full p-8 bg-white border border-gray-200 shadow-sm dark:border-gray-800 dark:bg-gray-900 rounded-3xl">
 
             {/* Circular Progress */}
             <CircularProgress
@@ -170,7 +169,7 @@ function DashboardScreen() {
             </CircularProgress>
 
             {/* Merged: Growth Stage + Next Checkpoint */}
-            <View className="px-6 py-3 mt-6 border-2 bg-emerald-50 dark:bg-emerald-950/40 rounded-2xl border-emerald-200 dark:border-emerald-800">
+            <View className="px-6 py-3 mt-6 border bg-emerald-50 dark:bg-emerald-950/40 rounded-2xl border-emerald-200 dark:border-emerald-800">
               <View className="flex-row items-center justify-center gap-2">
                 <Text className="text-xl">{stats.growthStage.emoji}</Text>
                 <Text className="text-sm font-semibold text-emerald-700 dark:text-emerald-300">
@@ -192,11 +191,11 @@ function DashboardScreen() {
 
         {/* Quick Actions */}
         <View className="px-6 mb-6">
-          <View className="flex-row gap-3">
+          <View className="flex-row gap-6">
             {/* Resisted Urge - Primary Action */}
             <Pressable
               onPress={handleUrgePress}
-              className="flex-1 bg-blue-600/90 dark:bg-blue-900/40 rounded-2xl"
+              className="flex-1 border border-gray-200 shadow-sm bg-blue-600/90 dark:border-blue-800 dark:bg-blue-600/20 rounded-2xl"
             >
               <View className="items-center px-4 py-6">
                 <View className="items-center justify-center mb-3 w-14 h-14 bg-white/20 rounded-2xl">
@@ -214,7 +213,7 @@ function DashboardScreen() {
             {/* Record Relapse - Secondary Action */}
             <Pressable
               onPress={handleRelapsePress}
-              className="flex-1 bg-white border border-gray-200 dark:bg-gray-900 dark:border-gray-700 rounded-2xl active:scale-95"
+              className="flex-1 bg-white border border-gray-200 shadow-sm dark:bg-gray-900 dark:border-gray-800 rounded-2xl"
             >
               <View className="items-center px-4 py-6">
                 <View className="items-center justify-center mb-3 w-14 h-14 rounded-2xl bg-emerald-50 dark:bg-emerald-950/30">
@@ -233,7 +232,7 @@ function DashboardScreen() {
 
         {/* Stats Grid - Redesigned with Icons */}
         <View className="px-6 mb-6">
-          <View className="flex-row items-center justify-between mb-4">
+          <View className="flex-row items-center justify-between mb-6">
             <Text className="text-lg font-semibold text-gray-800 dark:text-gray-200">
               Your Progress
             </Text>
@@ -246,9 +245,9 @@ function DashboardScreen() {
           </View>
 
           {/* First Row */}
-          <View className="flex-row gap-3 mb-3">
+          <View className="flex-row gap-6 mb-6">
             {/* Total Attempts */}
-            <View className="relative flex-1 overflow-hidden bg-white border border-gray-200 dark:bg-gray-900 dark:border-gray-700 rounded-2xl">
+            <View className="relative flex-1 overflow-hidden bg-white border border-gray-200 shadow-sm dark:bg-gray-900 rounded-2xl dark:border-gray-800">
               <View className="p-4">
                 <Text className="mb-2 text-xs font-medium tracking-wide text-gray-600 uppercase dark:text-gray-400">
                   Total Attempts
@@ -264,7 +263,7 @@ function DashboardScreen() {
             </View>
 
             {/* Best Streak */}
-            <View className="relative flex-1 overflow-hidden bg-white border border-gray-200 dark:bg-gray-900 dark:border-gray-700 rounded-2xl">
+            <View className="relative flex-1 overflow-hidden bg-white border border-gray-200 shadow-sm dark:bg-gray-900 rounded-2xl dark:border-gray-800">
               <View className="p-4">
                 <Text className="mb-2 text-xs font-medium tracking-wide text-gray-600 uppercase dark:text-gray-400">
                   Best Streak
@@ -286,9 +285,9 @@ function DashboardScreen() {
           </View>
 
           {/* Second Row */}
-          <View className="flex-row gap-3">
+          <View className="flex-row gap-6">
             {/* Urges Resisted */}
-            <View className="relative flex-1 overflow-hidden bg-white border border-gray-200 dark:bg-gray-900 dark:border-gray-700 rounded-2xl">
+            <View className="relative flex-1 overflow-hidden bg-white border border-gray-200 shadow-sm dark:bg-gray-900 rounded-2xl dark:border-gray-800">
               <View className="p-4">
                 <Text className="mb-2 text-xs font-medium tracking-wide text-gray-600 uppercase dark:text-gray-400">
                   Urges Resisted
@@ -304,7 +303,7 @@ function DashboardScreen() {
             </View>
 
             {/* Success Rate */}
-            <View className="relative flex-1 overflow-hidden bg-white border border-gray-200 dark:bg-gray-900 dark:border-gray-700 rounded-2xl">
+            <View className="relative flex-1 overflow-hidden bg-white border border-gray-200 shadow-sm dark:bg-gray-900 rounded-2xl dark:border-gray-800">
               <View className="p-4">
                 <Text className="mb-2 text-xs font-medium tracking-wide text-gray-600 uppercase dark:text-gray-400">
                   Success Rate
@@ -336,9 +335,7 @@ function DashboardScreen() {
           presentationStyle="pageSheet"
           onRequestClose={() => setShowModal(false)}
         >
-          <ErrorBoundary fallback={<ModalErrorFallback onClose={() => setShowModal(false)} />}>
-            <RelapseModal onClose={() => setShowModal(false)} />
-          </ErrorBoundary>
+          <RelapseModal onClose={() => setShowModal(false)} />
         </Modal>
 
         {/* Urge Modal */}
@@ -348,9 +345,7 @@ function DashboardScreen() {
           presentationStyle="pageSheet"
           onRequestClose={() => setShowUrgeModal(false)}
         >
-          <ErrorBoundary fallback={<ModalErrorFallback onClose={() => setShowUrgeModal(false)} />}>
-            <UrgeModal onClose={() => setShowUrgeModal(false)} />
-          </ErrorBoundary>
+          <UrgeModal onClose={() => setShowUrgeModal(false)} />
         </Modal>
 
         {/* Emergency Help Modal */}
@@ -360,9 +355,7 @@ function DashboardScreen() {
           presentationStyle="pageSheet"
           onRequestClose={() => setShowHelpModal(false)}
         >
-          <ErrorBoundary fallback={<ModalErrorFallback onClose={() => setShowHelpModal(false)} />}>
-            <EmergencyHelpModal onClose={() => setShowHelpModal(false)} />
-          </ErrorBoundary>
+          <EmergencyHelpModal onClose={() => setShowHelpModal(false)} />
         </Modal>
 
         {/* Achievement Celebration Modal */}

@@ -1,19 +1,18 @@
 import { View, Text, TouchableOpacity, ScrollView, Modal, Pressable } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
-import { useState, useEffect, memo } from 'react';
+import { useState, useEffect, memo, useMemo } from 'react';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 import { useRelapseStore } from '../../src/stores/relapseStore';
 import { useColorScheme } from '../../src/stores/themeStore';
 import { getJourneyStart } from '../../src/db/helpers';
 import { useJourneyStats } from '../../src/hooks/useJourneyStats';
+import { calculateUserStats } from '../../src/utils/statsHelpers';
 import ViewToggle from '../../src/components/history/ViewToggle';
 import HistoryList from '../../src/components/history/HistoryList';
 import HistoryCalendar from '../../src/components/history/HistoryCalendar';
 import CalendarRelapseDetails from '../../src/components/history/CalendarRelapseDetails';
 import InsightsModal from '../../src/components/history/InsightsModal';
-import ErrorBoundary from '../../src/components/common/ErrorBoundary';
-import ModalErrorFallback from '../../src/components/common/ModalErrorFallback';
-import { BarChart3, BookOpen, TrendingUp } from 'lucide-react-native';
+import { BarChart3 } from 'lucide-react-native';
 
 type ViewMode = 'list' | 'calendar';
 
@@ -35,49 +34,65 @@ function HistoryScreen() {
     loadJourneyStart();
   }, []);
 
+  // Calculate user stats for current streak
+  const userStats = useMemo(
+    () => calculateUserStats(relapses, stats.startTime),
+    [relapses, stats.startTime]
+  );
+
   return (
     <View className="flex-1 bg-gray-50 dark:bg-gray-950">
       <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'} />
 
       {/* Elegant Header */}
-      <View className="pt-16 pb-4 bg-blue-50 dark:bg-gray-900">
+      <View className="pt-16 pb-2">
         <View className="px-6">
-          <View className="flex-row items-center justify-between mb-3">
+          <View className="flex-row items-center justify-between mb-4">
             <View className="flex-1">
               <Text className="text-3xl font-semibold tracking-widest text-gray-900 dark:text-white">
                 History
               </Text>
-              <Text className="mt-1 text-sm font-medium text-blue-700 dark:text-blue-400">
+              <Text className="mt-1 text-sm font-medium tracking-wide text-blue-700 dark:text-blue-400">
                 Track your journey & insights
               </Text>
             </View>
-            <View className="items-center justify-center w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-2xl">
-              <BookOpen size={24} color="#3b82f6" strokeWidth={2.5} />
+
+            {/* Insights Button */}
+            <Pressable
+              onPress={() => setShowInsightsModal(true)}
+              className="items-center justify-center bg-blue-100 w-14 h-14 dark:bg-blue-900/30 rounded-2xl active:scale-95"
+            >
+              <BarChart3 size={26} color="#3b82f6" strokeWidth={2.5} />
+            </Pressable>
+          </View>
+
+          {/* Stats Summary Cards */}
+          <View className="flex-row gap-3 mt-4">
+            <View className="flex-1 p-4 bg-white dark:bg-gray-900 rounded-2xl">
+              <Text className="mb-1 text-xs font-medium tracking-wide text-gray-500 uppercase dark:text-gray-400">
+                Total Events
+              </Text>
+              <Text className="text-2xl font-bold text-gray-900 dark:text-white">
+                {relapses.length}
+              </Text>
+            </View>
+            <View className="flex-1 p-4 bg-white dark:bg-gray-900 rounded-2xl">
+              <Text className="mb-1 text-xs font-medium tracking-wide text-gray-500 uppercase dark:text-gray-400">
+                Current Streak
+              </Text>
+              <View className="flex-row items-baseline gap-1">
+                <Text className="text-2xl font-bold text-blue-600 dark:text-blue-400">
+                  {userStats.currentStreak}
+                </Text>
+                <Text className="text-sm font-medium text-blue-500">days</Text>
+              </View>
             </View>
           </View>
         </View>
       </View>
 
-      {/* Insights Button */}
-      <View className="px-6 mt-4">
-        <Pressable
-          onPress={() => setShowInsightsModal(true)}
-          className="flex-row items-center justify-center px-4 py-4 border bg-gradient-to-r from-emerald-50 to-teal-50 dark:from-emerald-950/40 dark:to-teal-950/40 border-emerald-200 dark:border-emerald-800 rounded-2xl active:scale-95"
-        >
-          <View className="items-center justify-center w-10 h-10 mr-3 bg-white border rounded-full border-emerald-200 dark:bg-gray-800 dark:border-emerald-700">
-            <BarChart3 size={20} color="#10b981" strokeWidth={2.5} />
-          </View>
-          <Text className="text-base font-bold text-emerald-700 dark:text-emerald-300">
-            View Advanced Insights
-          </Text>
-          <View className="flex-row items-center ml-2">
-            <TrendingUp size={16} color="#10b981" strokeWidth={2.5} />
-          </View>
-        </Pressable>
-      </View>
-
       {/* View Toggle */}
-      <View className="px-6 mt-4">
+      <View className="px-6 mt-6 mb-2">
         <ViewToggle mode={viewMode} onModeChange={setViewMode} />
       </View>
 
@@ -102,7 +117,6 @@ function HistoryScreen() {
         )}
       </View>
 
-
       {/* Insights Modal */}
       <Modal
         visible={showInsightsModal}
@@ -110,9 +124,7 @@ function HistoryScreen() {
         presentationStyle="pageSheet"
         onRequestClose={() => setShowInsightsModal(false)}
       >
-        <ErrorBoundary fallback={<ModalErrorFallback onClose={() => setShowInsightsModal(false)} />}>
-          <InsightsModal onClose={() => setShowInsightsModal(false)} />
-        </ErrorBoundary>
+        <InsightsModal onClose={() => setShowInsightsModal(false)} />
       </Modal>
     </View>
   );

@@ -2,7 +2,8 @@ import { View, Text, Pressable, Alert, ScrollView, Switch } from 'react-native';
 import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useState, useEffect } from 'react';
-import Animated, { FadeInDown } from 'react-native-reanimated';
+import Animated, { FadeInDown, useSharedValue, useAnimatedStyle, withSpring } from 'react-native-reanimated';
+import * as Haptics from 'expo-haptics';
 import {
   isBiometricAvailable,
   isAppLockEnabled,
@@ -21,6 +22,34 @@ export default function SettingsScreen() {
   const [appLockEnabled, setAppLockEnabledState] = useState(false);
   const [biometricAvailable, setBiometricAvailable] = useState(false);
   const [authMethodName, setAuthMethodName] = useState('Biometric');
+
+  // Animation values for theme buttons
+  const lightButtonScale = useSharedValue(1);
+  const darkButtonScale = useSharedValue(1);
+
+  // Animated styles for theme buttons
+  const lightButtonStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: lightButtonScale.value }],
+  }));
+
+  const darkButtonStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: darkButtonScale.value }],
+  }));
+
+  // Handle theme change with haptic feedback and animation
+  const handleThemeChange = (theme: 'light' | 'dark') => {
+    // Immediate haptic feedback
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+
+    // Scale animation on pressed button
+    const scaleValue = theme === 'light' ? lightButtonScale : darkButtonScale;
+    scaleValue.value = withSpring(0.95, { damping: 15, stiffness: 300 }, () => {
+      scaleValue.value = withSpring(1, { damping: 10, stiffness: 200 });
+    });
+
+    // Change theme (triggers transition overlay)
+    useThemeStore.getState().setColorScheme(theme);
+  };
 
   useEffect(() => {
     const loadSecuritySettings = async () => {
@@ -109,19 +138,19 @@ export default function SettingsScreen() {
       <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'} />
 
       {/* Elegant Header */}
-      <View className="pt-16 pb-4 bg-purple-50 dark:bg-gray-900">
+      <View className="pt-16 pb-6">
         <View className="px-6">
           <View className="flex-row items-center justify-between">
             <View className="flex-1">
               <Text className="text-3xl font-semibold tracking-widest text-gray-900 dark:text-white">
                 Settings
               </Text>
-              <Text className="mt-1 text-sm font-medium text-purple-700 dark:text-purple-400">
+              <Text className="mt-1 text-sm font-medium tracking-wide text-purple-700 dark:text-purple-400">
                 Customize your experience
               </Text>
             </View>
-            <View className="items-center justify-center w-12 h-12 bg-purple-100 dark:bg-purple-900/30 rounded-2xl">
-              <Settings2 size={24} color="#a855f7" strokeWidth={2.5} />
+            <View className="items-center justify-center w-14 h-14 bg-purple-100 dark:bg-purple-900/30 rounded-2xl">
+              <Settings2 size={26} color="#a855f7" strokeWidth={2.5} />
             </View>
           </View>
         </View>
@@ -147,44 +176,48 @@ export default function SettingsScreen() {
             </Text>
 
             {/* Light Theme Option */}
-            <Pressable
-              onPress={() => useThemeStore.getState().setColorScheme('light')}
-              className="flex-row items-center p-3 mb-2 rounded-xl bg-gray-50 dark:bg-gray-800/50 active:opacity-70"
-            >
-              <View className="items-center justify-center w-10 h-10 mr-3 bg-white border border-gray-200 rounded-full dark:bg-gray-800 dark:border-gray-700">
-                <Sun size={20} color="#f59e0b" strokeWidth={2.5} />
-              </View>
-              <Text className="flex-1 text-base font-semibold text-gray-900 dark:text-white">
-                Light Mode
-              </Text>
-              <View className={`w-6 h-6 rounded-full border-2 items-center justify-center ${
-                colorScheme === 'light' ? 'border-emerald-500' : 'border-gray-300 dark:border-gray-600'
-              }`}>
-                {colorScheme === 'light' && (
-                  <View className="w-3 h-3 rounded-full bg-emerald-500" />
-                )}
-              </View>
-            </Pressable>
+            <Animated.View style={lightButtonStyle}>
+              <Pressable
+                onPress={() => handleThemeChange('light')}
+                className="flex-row items-center p-3 mb-2 rounded-xl bg-gray-50 dark:bg-gray-800/50"
+              >
+                <View className="items-center justify-center w-10 h-10 mr-3 bg-white border border-gray-200 rounded-full dark:bg-gray-800 dark:border-gray-700">
+                  <Sun size={20} color="#f59e0b" strokeWidth={2.5} />
+                </View>
+                <Text className="flex-1 text-base font-semibold text-gray-900 dark:text-white">
+                  Light Mode
+                </Text>
+                <View className={`w-6 h-6 rounded-full border-2 items-center justify-center ${
+                  colorScheme === 'light' ? 'border-emerald-500' : 'border-gray-300 dark:border-gray-600'
+                }`}>
+                  {colorScheme === 'light' && (
+                    <View className="w-3 h-3 rounded-full bg-emerald-500" />
+                  )}
+                </View>
+              </Pressable>
+            </Animated.View>
 
             {/* Dark Theme Option */}
-            <Pressable
-              onPress={() => useThemeStore.getState().setColorScheme('dark')}
-              className="flex-row items-center p-3 rounded-xl bg-gray-50 dark:bg-gray-800/50 active:opacity-70"
-            >
-              <View className="items-center justify-center w-10 h-10 mr-3 bg-white border border-gray-200 rounded-full dark:bg-gray-800 dark:border-gray-700">
-                <Moon size={20} color="#6366f1" strokeWidth={2.5} />
-              </View>
-              <Text className="flex-1 text-base font-semibold text-gray-900 dark:text-white">
-                Dark Mode
-              </Text>
-              <View className={`w-6 h-6 rounded-full border-2 items-center justify-center ${
-                colorScheme === 'dark' ? 'border-emerald-500' : 'border-gray-300 dark:border-gray-600'
-              }`}>
-                {colorScheme === 'dark' && (
-                  <View className="w-3 h-3 rounded-full bg-emerald-500" />
-                )}
-              </View>
-            </Pressable>
+            <Animated.View style={darkButtonStyle}>
+              <Pressable
+                onPress={() => handleThemeChange('dark')}
+                className="flex-row items-center p-3 rounded-xl bg-gray-50 dark:bg-gray-800/50"
+              >
+                <View className="items-center justify-center w-10 h-10 mr-3 bg-white border border-gray-200 rounded-full dark:bg-gray-800 dark:border-gray-700">
+                  <Moon size={20} color="#6366f1" strokeWidth={2.5} />
+                </View>
+                <Text className="flex-1 text-base font-semibold text-gray-900 dark:text-white">
+                  Dark Mode
+                </Text>
+                <View className={`w-6 h-6 rounded-full border-2 items-center justify-center ${
+                  colorScheme === 'dark' ? 'border-emerald-500' : 'border-gray-300 dark:border-gray-600'
+                }`}>
+                  {colorScheme === 'dark' && (
+                    <View className="w-3 h-3 rounded-full bg-emerald-500" />
+                  )}
+                </View>
+              </Pressable>
+            </Animated.View>
           </View>
         </View>
 
