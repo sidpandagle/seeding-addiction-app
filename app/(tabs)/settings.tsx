@@ -149,7 +149,7 @@ export default function SettingsScreen() {
                 Customize your experience
               </Text>
             </View>
-            <View className="items-center justify-center w-14 h-14 bg-purple-100 dark:bg-purple-900/30 rounded-2xl">
+            <View className="items-center justify-center bg-purple-100 w-14 h-14 dark:bg-purple-900/30 rounded-2xl">
               <Settings2 size={26} color="#a855f7" strokeWidth={2.5} />
             </View>
           </View>

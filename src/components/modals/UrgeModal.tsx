@@ -52,22 +52,24 @@ export default function UrgeModal({ onClose }: UrgeModalProps) {
     >
       <ScrollView className="flex-1">
         {/* Modern Header */}
-        <View className="px-6 pt-16 pb-6 bg-blue-50 dark:bg-gray-900">
+        <View className="px-6 pt-16 pb-4 bg-blue-50 dark:bg-gray-900">
           <View className="flex-row items-center justify-between mb-2">
-            <Text className="text-3xl font-semibold tracking-wide text-gray-900 dark:text-white">
-              Urge Resisted! 💪
-            </Text>
-            <View className="items-center justify-center w-12 h-12 bg-white rounded-2xl dark:bg-gray-800">
-              <Shield size={24} color="#3b82f6" strokeWidth={2.5} />
+            <View className="flex">
+              <Text className="text-3xl font-semibold tracking-wide text-gray-900 dark:text-white">
+                Urge Resisted! 💪
+              </Text>
+              <Text className="mt-1 text-sm font-medium text-blue-700 dark:text-blue-400">
+                Great job resisting buddy!
+              </Text>
+            </View>
+            <View className="items-center justify-center w-16 h-16 bg-white rounded-2xl dark:bg-gray-800">
+              <Shield size={34} color="#3b82f6" strokeWidth={2.5} />
             </View>
           </View>
-          <Text className="mt-1 text-sm font-medium text-blue-700 dark:text-blue-400">
-            Great job resisting! Track it here to see your progress.
-          </Text>
         </View>
 
         {/* Content Card */}
-        <View className="px-6 mt-6">
+        <View className="px-4 mt-6">
           <View className="p-6 bg-white border border-gray-200 dark:bg-gray-900 dark:border-gray-700 rounded-2xl">
             {/* Note Input */}
             <View className="mb-6">
@@ -96,18 +98,16 @@ export default function UrgeModal({ onClose }: UrgeModalProps) {
                   <Pressable
                     key={context}
                     onPress={() => toggleContext(context)}
-                    className={`px-4 py-2.5 rounded-full ${
-                      selectedContext.includes(context)
-                        ? 'bg-blue-600 dark:bg-blue-700'
-                        : 'bg-gray-100 dark:bg-gray-700'
-                    }`}
+                    className={`px-4 py-2.5 rounded-full ${selectedContext.includes(context)
+                      ? 'bg-blue-600 dark:bg-blue-700'
+                      : 'bg-gray-100 dark:bg-gray-700'
+                      }`}
                   >
                     <Text
-                      className={`text-sm font-semibold ${
-                        selectedContext.includes(context)
-                          ? 'text-white'
-                          : 'text-gray-700 dark:text-gray-300'
-                      }`}
+                      className={`text-sm font-semibold ${selectedContext.includes(context)
+                        ? 'text-white'
+                        : 'text-gray-700 dark:text-gray-300'
+                        }`}
                     >
                       {context}
                     </Text>
@@ -119,15 +119,14 @@ export default function UrgeModal({ onClose }: UrgeModalProps) {
         </View>
 
         {/* Action Buttons */}
-        <View className="gap-3 px-6 mt-6 mb-8">
+        <View className="gap-4 px-4 mt-4 mb-8">
           <Pressable
             onPress={handleSave}
             disabled={isSubmitting}
-            className={`rounded-2xl py-4 ${
-              isSubmitting
-                ? 'bg-blue-400 dark:bg-blue-600'
-                : 'bg-blue-600 dark:bg-blue-700 active:bg-blue-700 dark:active:bg-blue-800'
-            }`}
+            className={`rounded-2xl py-4 ${isSubmitting
+              ? 'bg-blue-400 dark:bg-blue-600'
+              : 'bg-blue-600 dark:bg-blue-700 active:bg-blue-700 dark:active:bg-blue-800'
+              }`}
           >
             <Text className="text-lg font-bold text-center text-white">
               {isSubmitting ? 'Saving...' : 'Log Victory'}
@@ -137,16 +136,14 @@ export default function UrgeModal({ onClose }: UrgeModalProps) {
           <Pressable
             onPress={onClose}
             disabled={isSubmitting}
-            className={`rounded-2xl py-4 ${
-              isSubmitting
-                ? 'bg-gray-100 dark:bg-gray-800'
-                : 'bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 active:bg-gray-50 dark:active:bg-gray-700'
-            }`}
+            className={`rounded-2xl py-4 ${isSubmitting
+              ? 'bg-gray-100 dark:bg-gray-800'
+              : 'bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 active:bg-gray-50 dark:active:bg-gray-700'
+              }`}
           >
             <Text
-              className={`text-center font-bold text-lg ${
-                isSubmitting ? 'text-gray-400 dark:text-gray-500' : 'text-gray-700 dark:text-gray-300'
-              }`}
+              className={`text-center font-bold text-lg ${isSubmitting ? 'text-gray-400 dark:text-gray-500' : 'text-gray-700 dark:text-gray-300'
+                }`}
             >
               Cancel
             </Text>

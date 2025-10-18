@@ -16,10 +16,10 @@ import { useThemeStore } from '../../stores/themeStore';
  * Creates an intentional, premium feel by covering re-render jank with elegant animation.
  *
  * Animation Flow:
- * 1. Theme change triggered → overlay fades in (150ms)
- * 2. Overlay stays visible (100ms) while components re-render
- * 3. Overlay fades out (150ms) → new theme fully applied
- * Total: ~400ms smooth transition (masks the 500-600ms re-render delay)
+ * 1. Theme change triggered → overlay fades in (100ms)
+ * 2. Overlay stays visible (50ms) while components re-render
+ * 3. Overlay fades out (100ms) → new theme fully applied
+ * Total: ~250ms smooth transition (optimized for snappier feel)
  */
 export function ThemeTransitionOverlay() {
   const opacity = useSharedValue(0);
@@ -29,11 +29,11 @@ export function ThemeTransitionOverlay() {
 
   useEffect(() => {
     if (isTransitioning) {
-      // Fade in → hold → fade out sequence
+      // Fade in → hold → fade out sequence (optimized timing for snappier feel)
       opacity.value = withSequence(
-        withTiming(1, { duration: 150 }), // Fade in
-        withTiming(1, { duration: 100 }), // Hold (while components re-render)
-        withTiming(0, { duration: 150 }, (finished) => {
+        withTiming(1, { duration: 100 }), // Fade in
+        withTiming(1, { duration: 50 }), // Hold while components re-render
+        withTiming(0, { duration: 100 }, (finished) => {
           // Animation complete - clear transitioning state
           if (finished) {
             runOnJS(setTransitioning)(false);
@@ -57,7 +57,7 @@ export function ThemeTransitionOverlay() {
       style={[
         styles.overlay,
         {
-          backgroundColor: colorScheme === 'dark' ? '#000000' : '#ffffff',
+          backgroundColor: colorScheme === 'dark' ? '#030712' : '#f9fafb',
         },
         animatedStyle,
       ]}

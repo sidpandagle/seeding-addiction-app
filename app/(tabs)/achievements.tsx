@@ -101,7 +101,7 @@ export default function AchievementsScreen() {
             <View className="mb-3">
               <View className="h-3 overflow-hidden bg-gray-100 rounded-full dark:bg-gray-800">
                 <View
-                  className="h-full bg-amber-500 rounded-full dark:bg-amber-600"
+                  className="h-full rounded-full bg-amber-500 dark:bg-amber-600"
                   style={{ width: `${progressPercentage}%` }}
                 />
               </View>

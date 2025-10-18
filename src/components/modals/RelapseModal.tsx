@@ -66,24 +66,28 @@ export default function RelapseModal({ onClose, existingRelapse }: RelapseModalP
     >
       <ScrollView className="flex-1">
         {/* Modern Header */}
-        <View className="px-6 pt-16 pb-6 bg-rose-50 dark:bg-gray-900">
+        <View className="px-6 pt-16 pb-4 bg-rose-50 dark:bg-gray-900">
           <View className="flex-row items-center justify-between mb-2">
-            <Text className="text-3xl font-semibold tracking-wide text-gray-900 dark:text-white">
-              {existingRelapse ? 'Edit Relapse' : 'Log Relapse'}
-            </Text>
-            <View className="items-center justify-center w-12 h-12 bg-white rounded-2xl dark:bg-gray-800">
-              <RotateCcw size={24} color="#f43f5e" strokeWidth={2.5} />
+            <View className="flex">
+              <Text className="text-3xl font-semibold tracking-wide text-gray-900 dark:text-white">
+                {existingRelapse ? 'Edit Relapse' : 'Log Relapse'}
+              </Text>
+              {!existingRelapse && (
+                <Text className="mt-1 text-sm font-medium whitespace-pre-line text-rose-700 dark:text-rose-400">
+                  {`Every journey has setbacks.
+What matters is getting back up.`}
+                </Text>
+
+              )}
+            </View>
+            <View className="items-center justify-center w-16 h-16 bg-white rounded-2xl dark:bg-gray-800">
+              <RotateCcw size={34} color="#f43f5e" strokeWidth={2.5} />
             </View>
           </View>
-          {!existingRelapse && (
-            <Text className="mt-1 text-sm font-medium text-rose-700 dark:text-rose-400">
-              Every journey has setbacks. What matters is getting back up.
-            </Text>
-          )}
         </View>
 
         {/* Content Card */}
-        <View className="px-6 mt-6">
+        <View className="px-4 mt-6">
           <View className="p-6 bg-white border border-gray-200 dark:bg-gray-900 dark:border-gray-700 rounded-2xl">
             {/* Timestamp Display (only for editing existing relapse) */}
             {existingRelapse && (
@@ -102,11 +106,11 @@ export default function RelapseModal({ onClose, existingRelapse }: RelapseModalP
 
             {/* Note Input */}
             <View className="mb-6">
-              <Text className="mb-2 text-xs font-semibold tracking-wide text-gray-500 uppercase dark:text-gray-400">Note (Optional)</Text>
+              <Text className="mb-2 text-xs font-semibold tracking-wide text-gray-500 uppercase dark:text-gray-400">How did you overcome it? (Optional)</Text>
               <TextInput
                 value={note}
                 onChangeText={setNote}
-                placeholder="Add any notes about this relapse..."
+                placeholder="e.g., Went for a walk, called a friend..."
                 placeholderTextColor={colorScheme === 'dark' ? '#9CA3AF' : '#6B7280'}
                 multiline
                 numberOfLines={4}
@@ -117,21 +121,21 @@ export default function RelapseModal({ onClose, existingRelapse }: RelapseModalP
 
             {/* Tags */}
             <View>
-              <Text className="mb-3 text-xs font-semibold tracking-wide text-gray-500 uppercase dark:text-gray-400">Tags (Optional)</Text>
+              <Text className="mb-3 text-xs font-semibold tracking-wide text-gray-500 uppercase dark:text-gray-400">What triggered the urge? (Optional)</Text>
               <View className="flex-row flex-wrap gap-2">
                 {AVAILABLE_TAGS.map((tag) => (
                   <Pressable
                     key={tag}
                     onPress={() => toggleTag(tag)}
                     className={`px-4 py-2.5 rounded-full ${selectedTags.includes(tag)
-                        ? 'bg-emerald-600 dark:bg-emerald-700'
-                        : 'bg-gray-100 dark:bg-gray-700'
+                      ? 'bg-emerald-600 dark:bg-emerald-700'
+                      : 'bg-gray-100 dark:bg-gray-700'
                       }`}
                   >
                     <Text
                       className={`text-sm font-semibold ${selectedTags.includes(tag)
-                          ? 'text-white'
-                          : 'text-gray-700 dark:text-gray-300'
+                        ? 'text-white'
+                        : 'text-gray-700 dark:text-gray-300'
                         }`}
                     >
                       {tag}
@@ -144,11 +148,14 @@ export default function RelapseModal({ onClose, existingRelapse }: RelapseModalP
         </View>
 
         {/* Action Buttons */}
-        <View className="gap-3 px-6 mt-6 mb-8">
+        <View className="gap-4 px-4 mt-4 mb-8">
           <Pressable
             onPress={handleSave}
             disabled={isSubmitting}
-            className={`rounded-2xl py-4 ${isSubmitting ? 'bg-emerald-400 dark:bg-emerald-600' : 'bg-emerald-600 dark:bg-emerald-700 active:bg-emerald-700 dark:active:bg-emerald-800'}`}
+            className={`rounded-2xl py-4 ${isSubmitting
+              ? 'bg-emerald-400 dark:bg-emerald-600'
+              : 'bg-emerald-600 dark:bg-emerald-700 active:bg-emerald-700 dark:active:bg-emerald-800'
+              }`}
           >
             <Text className="text-lg font-bold text-center text-white">
               {isSubmitting ? 'Saving...' : existingRelapse ? 'Update' : 'Save'}
@@ -158,7 +165,10 @@ export default function RelapseModal({ onClose, existingRelapse }: RelapseModalP
           <Pressable
             onPress={onClose}
             disabled={isSubmitting}
-            className={`rounded-2xl py-4 ${isSubmitting ? 'bg-gray-100 dark:bg-gray-800' : 'bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 active:bg-gray-50 dark:active:bg-gray-700'}`}
+            className={`rounded-2xl py-4 ${isSubmitting
+              ? 'bg-gray-100 dark:bg-gray-800'
+              : 'bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 active:bg-gray-50 dark:active:bg-gray-700'
+              }`}
           >
             <Text className={`text-center font-bold text-lg ${isSubmitting ? 'text-gray-400 dark:text-gray-500' : 'text-gray-700 dark:text-gray-300'}`}>
               Cancel

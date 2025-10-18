@@ -21,7 +21,7 @@ const MotivationCardComponent: React.FC = () => {
   }, []);
 
   return (
-    <View className="px-6 mb-6">
+    <View className="px-6">
       {/* Header */}
       <View className="flex-row items-center justify-between mb-3">
         <Text className="text-lg font-semibold text-gray-800 dark:text-gray-200">
@@ -31,7 +31,7 @@ const MotivationCardComponent: React.FC = () => {
       </View>
 
       {/* Card with Background Icon */}
-      <View className="relative overflow-hidden bg-white border-1 border-emerald-200 dark:border-emerald-800/50 dark:bg-gray-900 rounded-2xl">
+  <View className="relative overflow-hidden bg-white shadow-md border-1 border-emerald-200 dark:border-emerald-800/50 dark:bg-gray-900 rounded-2xl">
         <View className="p-6">
           {/* Decorative Background Icon - Bottom Right */}
           <View className="absolute bottom-[-20px] right-[-20px] opacity-10 dark:opacity-5">

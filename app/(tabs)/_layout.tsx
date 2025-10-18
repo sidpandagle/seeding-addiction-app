@@ -34,8 +34,9 @@ export default function TabsLayout() {
       marginTop: 2,
     },
     // Set background color for screen container to prevent white flash
+    // Using Tailwind gray-950 (dark) and gray-50 (light) via RGB values
     sceneStyle: {
-      backgroundColor: colorScheme === 'dark' ? '#030712' : '#f9fafb',
+      backgroundColor: colorScheme === 'dark' ? 'rgb(3, 7, 18)' : 'rgb(249, 250, 251)',
     },
     // Performance optimizations for faster tab switching
     lazy: false, // Preload all tabs to eliminate mounting delays

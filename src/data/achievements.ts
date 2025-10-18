@@ -15,6 +15,20 @@ export const ACHIEVEMENTS: Omit<Achievement, 'isUnlocked' | 'unlockedAt'>[] = [
     threshold: 5 * 60 * 1000, // 5 minutes
   },
   {
+    id: 'first_15min',
+    title: 'Quarter Hour Champion',
+    description: 'Fifteen minutes of strength',
+    emoji: '🌿',
+    threshold: 15 * 60 * 1000, // 15 minutes
+  },
+  {
+    id: 'first_30min',
+    title: 'Half Hour Hero',
+    description: 'Half an hour of pure focus',
+    emoji: '🍃',
+    threshold: 30 * 60 * 1000, // 30 minutes
+  },
+  {
     id: 'first_hour',
     title: 'One Hour Warrior',
     description: 'Conquered your first hour',
@@ -22,11 +36,46 @@ export const ACHIEVEMENTS: Omit<Achievement, 'isUnlocked' | 'unlockedAt'>[] = [
     threshold: 1 * 60 * 60 * 1000, // 1 hour
   },
   {
+    id: 'first_2hr',
+    title: 'Two Hour Titan',
+    description: 'Two hours of unwavering resolve',
+    emoji: '⚡',
+    threshold: 2 * 60 * 60 * 1000, // 2 hours
+  },
+  {
+    id: 'first_3hr',
+    title: 'Three Hour Guardian',
+    description: 'Three hours of determination',
+    emoji: '🛡️',
+    threshold: 3 * 60 * 60 * 1000, // 3 hours
+  },
+  {
+    id: 'first_6hr',
+    title: 'Six Hour Sentinel',
+    description: 'Six hours standing strong',
+    emoji: '⚔️',
+    threshold: 6 * 60 * 60 * 1000, // 6 hours
+  },
+  {
+    id: 'first_12hr',
+    title: 'Half Day Hero',
+    description: 'Twelve hours of incredible strength',
+    emoji: '🌟',
+    threshold: 12 * 60 * 60 * 1000, // 12 hours
+  },
+  {
     id: 'first_day',
     title: 'Daily Champion',
     description: 'Made it through a full day',
     emoji: '🌅',
     threshold: 1 * 24 * 60 * 60 * 1000, // 1 day
+  },
+  {
+    id: 'two_days',
+    title: 'Two Day Warrior',
+    description: 'Two days of solid determination',
+    emoji: '💎',
+    threshold: 2 * 24 * 60 * 60 * 1000, // 2 days
   },
   {
     id: 'three_days',
@@ -83,6 +132,13 @@ export const ACHIEVEMENTS: Omit<Achievement, 'isUnlocked' | 'unlockedAt'>[] = [
     description: 'Six months of incredible resilience',
     emoji: '🦸',
     threshold: 180 * 24 * 60 * 60 * 1000, // 180 days
+  },
+  {
+    id: 'nine_months',
+    title: 'Nine Month Master',
+    description: 'Nine months of unwavering commitment',
+    emoji: '🌠',
+    threshold: 270 * 24 * 60 * 60 * 1000, // 270 days
   },
   {
     id: 'one_year',

@@ -7,11 +7,6 @@
     "orientation": "portrait",
     "icon": "./assets/app-icon.png",
     "userInterfaceStyle": "light",
-    "splash": {
-      "image": "./assets/splash.png",
-      "resizeMode": "cover",
-      "backgroundColor": "#E8E4DB"
-    },
     "jsEngine": "hermes",
     "assetBundlePatterns": [
       "assets/fonts/**",
@@ -41,7 +36,20 @@
       }
     },
     "plugins": [
-      "expo-font"
+      "expo-font",
+      [
+        "expo-splash-screen",
+        {
+          "backgroundColor": "#f9fafb",
+          "image": "./assets/splash.png",
+          "resizeMode": "contain",
+          "dark": {
+            "image": "./assets/splash-dark.png",
+            "backgroundColor": "#395141"
+          },
+          "imageWidth": 350
+        }
+      ]
     ]
   }
 }

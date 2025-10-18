@@ -115,7 +115,7 @@ const InsightsModal = React.memo(function InsightsModal({ onClose }: InsightsMod
       </View>
 
       {/* Content */}
-      <ScrollView className="flex-1 px-6 py-6">
+      <ScrollView className="flex-1 px-4 py-6">
         {/* Journey Overview */}
         <View className="p-5 mb-4 border bg-emerald-50 border-emerald-200 dark:bg-emerald-900/20 dark:border-emerald-800 rounded-2xl">
           <View className="flex-row items-center mb-3">

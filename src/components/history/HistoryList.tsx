@@ -44,7 +44,7 @@ export default function HistoryList({ relapses }: HistoryListProps) {
         index,
       })}
       ListHeaderComponent={
-        <View className="px-6 pt-4 pb-5 mb-2 bg-gray-50 dark:bg-gray-950">
+        <View className="px-6 pt-4 pb-5 mb-2 bg-gray-50 dark:bg-gray-900/40">
           <Text className="mb-4 text-xs font-bold tracking-widest text-gray-500 uppercase dark:text-gray-400">
             Filter by Tag
           </Text>

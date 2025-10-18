@@ -28,7 +28,6 @@ export const colors = {
   // Light theme
   light: {
     background: '#FAFAFA',     // Off-white
-    surface: '#FFFFFF',
     text: {
       primary: '#212121',
       secondary: '#757575',
@@ -40,7 +39,6 @@ export const colors = {
   // Dark theme
   dark: {
     background: '#1C1C1E',     // Deep charcoal
-    surface: '#2C2C2E',
     text: {
       primary: '#FFFFFF',
       secondary: '#ABABAB',

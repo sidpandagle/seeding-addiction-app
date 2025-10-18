@@ -57,7 +57,7 @@ export default function EmergencyHelpModal({ onClose }: EmergencyHelpModalProps)
           <View className="flex-row items-center justify-between mb-2">
             <View className="flex-1">
               <Text className="text-3xl font-semibold tracking-wide text-gray-900 dark:text-white">You've Got This</Text>
-              <Text className="mt-1 text-sm font-medium text-rose-700 dark:text-rose-400">
+              <Text className="mt-1 text-sm font-medium text-emerald-700 dark:text-emerald-400">
                 This urge will pass. You are stronger.
               </Text>
             </View>
@@ -71,7 +71,7 @@ export default function EmergencyHelpModal({ onClose }: EmergencyHelpModalProps)
         </View>
 
         {/* Stoic Teaching */}
-        <View className="px-6 py-6">
+        <View className="px-5 py-6">
           <View className="mb-4">
             <View className="flex-row items-center justify-between mb-4">
               <View className="flex-row items-center gap-2">
@@ -110,7 +110,7 @@ export default function EmergencyHelpModal({ onClose }: EmergencyHelpModalProps)
         </View>
 
         {/* Quick Actions */}
-        <View className="px-6 pb-6">
+        <View className="px-5 pb-6">
           <Text className="mb-4 text-lg font-bold text-gray-900 dark:text-white">Take Action Now</Text>
           <View className="gap-3">
             <View className="p-5 border border-blue-200 bg-blue-50 dark:bg-blue-950/30 dark:border-blue-800 rounded-xl">
@@ -135,8 +135,8 @@ export default function EmergencyHelpModal({ onClose }: EmergencyHelpModalProps)
         </View>
 
         {/* Reminder */}
-        <View className="px-6 pb-12">
-          <View className="p-6 bg-white border border-gray-200 dark:bg-gray-900 dark:border-gray-700 rounded-2xl">
+        <View className="px-5 pb-12">
+          <View className="p-6 bg-white border border-gray-200 border-dashed dark:bg-gray-900 dark:border-gray-700 rounded-2xl">
             <Text className="mb-2 text-xl font-bold text-center text-gray-900 dark:text-white">
               This feeling is temporary
             </Text>

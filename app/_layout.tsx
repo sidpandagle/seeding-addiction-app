@@ -35,8 +35,9 @@ export default function RootLayout() {
     Poppins_700Bold,
   });
 
-  // Sync theme with NativeWind synchronously (before paint) for instant switching
-  useLayoutEffect(() => {
+  // Sync theme with NativeWind asynchronously to reduce blocking during theme changes
+  // Note: useEffect instead of useLayoutEffect allows UI to update faster
+  useEffect(() => {
     setColorScheme(colorScheme);
   }, [colorScheme, setColorScheme]);
 
