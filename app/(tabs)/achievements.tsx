@@ -5,8 +5,7 @@ import Animated, { FadeInDown } from 'react-native-reanimated';
 import { useColorScheme } from '../../src/stores/themeStore';
 import AchievementsGrid from '../../src/components/achievements/AchievementsGrid';
 import AchievementDetailModal from '../../src/components/achievements/AchievementDetailModal';
-import { getAchievements } from '../../src/data/achievements';
-import { Achievement } from '../../src/components/achievements/AchievementBadge';
+import { getAchievements, Achievement } from '../../src/utils/growthStages';
 import { useJourneyStats } from '../../src/hooks/useJourneyStats';
 import { Trophy } from 'lucide-react-native';
 

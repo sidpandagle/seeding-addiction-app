@@ -3,16 +3,10 @@ import { View, Text } from 'react-native';
 import Animated, { FadeIn, ZoomInRotate } from 'react-native-reanimated';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useThemeStore } from '../../stores/themeStore';
+import type { Achievement } from '../../utils/growthStages';
 
-export interface Achievement {
-  id: string;
-  title: string;
-  description: string;
-  emoji: string;
-  threshold: number; // in milliseconds
-  isUnlocked: boolean;
-  unlockedAt?: string;
-}
+// Re-export Achievement type from growthStages for backward compatibility
+export type { Achievement } from '../../utils/growthStages';
 
 interface AchievementBadgeProps {
   achievement: Achievement;

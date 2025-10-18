@@ -11,13 +11,11 @@ import CircularProgress from '../../src/components/home/CircularProgress';
 import { MotivationCard } from '../../src/components/home/MotivationCard';
 import AchievementCelebration from '../../src/components/achievements/AchievementCelebration';
 import LiveTimer from '../../src/components/home/LiveTimer';
-import { GrowthStage } from '../../src/utils/growthStages';
+import { GrowthStage, getNewlyUnlockedAchievements, Achievement } from '../../src/utils/growthStages';
 import GrowthIcon from '../../src/components/home/GrowthIcon';
 import { calculateUserStats } from '../../src/utils/statsHelpers';
-import { Achievement } from '../../src/components/achievements/AchievementBadge';
 import { Shield, AlertCircle, RotateCcw, Sparkles, TrendingUp, Award, Heart } from 'lucide-react-native';
 import { useJourneyStats } from '../../src/hooks/useJourneyStats';
-import { getNewlyUnlockedAchievements } from '../../src/data/achievements';
 
 function DashboardScreen() {
   const colorScheme = useColorScheme();
@@ -144,8 +142,8 @@ function DashboardScreen() {
               size={260}
               strokeWidth={16}
               startTime={stats.startTime ?? undefined}
-              currentCheckpointDuration={stats.checkpointProgress?.currentCheckpoint?.duration ?? undefined}
-              nextCheckpointDuration={stats.checkpointProgress?.nextCheckpoint?.duration ?? undefined}
+              currentCheckpointMinDuration={stats.checkpointProgress?.currentCheckpoint?.minDuration ?? undefined}
+              nextCheckpointMinDuration={stats.checkpointProgress?.nextCheckpoint?.minDuration ?? undefined}
               useGradient={true}
               gradientColors={['#10b981', '#34d399', '#6ee7b7']}
               backgroundColor={colorScheme === 'dark' ? '#1f2937' : '#f0fdf4'}
@@ -171,9 +169,9 @@ function DashboardScreen() {
             {/* Merged: Growth Stage + Next Checkpoint */}
             <View className="px-6 py-3 mt-6 border bg-emerald-50 dark:bg-emerald-950/40 rounded-2xl border-emerald-200 dark:border-emerald-800">
               <View className="flex-row items-center justify-center gap-2">
-                <Text className="text-xl">{stats.growthStage.emoji}</Text>
+                {/* <Text className="text-xl">{stats.growthStage.emoji}</Text> */}
                 <Text className="text-sm font-semibold text-emerald-700 dark:text-emerald-300">
-                  {stats.growthStage.label}
+                  {stats.growthStage.achievementTitle}
                 </Text>
                 <Text className="mx-1 text-emerald-400 dark:text-emerald-500">•</Text>
                 <Text className="text-base">🎯</Text>
@@ -181,7 +179,7 @@ function DashboardScreen() {
                   {stats.checkpointProgress?.isCompleted
                     ? 'All milestones achieved!'
                     : stats.checkpointProgress?.nextCheckpoint
-                      ? `${stats.checkpointProgress.nextCheckpoint.label}`
+                      ? `${stats.growthStage.shortLabel}`
                       : 'Starting your journey...'}
                 </Text>
               </View>

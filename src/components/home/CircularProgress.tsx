@@ -19,8 +19,8 @@ interface CircularProgressProps {
   gradientColors?: string[]; // Array of colors for gradient (default: green to gold)
   // Live progress mode (calculates progress internally)
   startTime?: string; // ISO timestamp - when the current streak started
-  currentCheckpointDuration?: number; // Milliseconds of current checkpoint (start of range)
-  nextCheckpointDuration?: number; // Milliseconds to next checkpoint (end of range)
+  currentCheckpointMinDuration?: number; // Cumulative milliseconds from start to current checkpoint
+  nextCheckpointMinDuration?: number; // Cumulative milliseconds from start to next checkpoint
 }
 
 export default function CircularProgress({
@@ -36,19 +36,19 @@ export default function CircularProgress({
   useGradient = false,
   gradientColors = ['#1B5E20', '#A5D6A7', '#FFD54F'], // Green → Lime → Gold
   startTime,
-  currentCheckpointDuration,
-  nextCheckpointDuration,
+  currentCheckpointMinDuration,
+  nextCheckpointMinDuration,
 }: CircularProgressProps) {
   const radius = (size - strokeWidth) / 2;
   const circumference = 2 * Math.PI * radius;
 
   // Live progress mode: calculate progress internally based on elapsed time
   const [liveProgress, setLiveProgress] = useState(0);
-  const [internalCurrentCheckpoint, setInternalCurrentCheckpoint] = useState<number | undefined>(currentCheckpointDuration);
-  const [internalNextCheckpoint, setInternalNextCheckpoint] = useState<number | undefined>(nextCheckpointDuration);
+  const [internalCurrentCheckpoint, setInternalCurrentCheckpoint] = useState<number | undefined>(currentCheckpointMinDuration);
+  const [internalNextCheckpoint, setInternalNextCheckpoint] = useState<number | undefined>(nextCheckpointMinDuration);
 
   // Use live progress if startTime and checkpoint durations are provided, otherwise use prop
-  const currentProgress = startTime && nextCheckpointDuration !== undefined ? liveProgress : (progress ?? 0);
+  const currentProgress = startTime && nextCheckpointMinDuration !== undefined ? liveProgress : (progress ?? 0);
 
   // Animated value for smooth progress transitions
   const animatedProgress = useRef(new Animated.Value(currentProgress)).current;
@@ -80,13 +80,13 @@ export default function CircularProgress({
 
       // Recalculate checkpoint progress internally to detect milestone crossings
       const checkpointProgress = getCheckpointProgress(elapsed);
-      
-      // Update internal checkpoint values
-      const newCurrentDuration = checkpointProgress.currentCheckpoint?.duration;
-      const newNextDuration = checkpointProgress.nextCheckpoint?.duration;
-      
-      setInternalCurrentCheckpoint(newCurrentDuration);
-      setInternalNextCheckpoint(newNextDuration);
+
+      // Update internal checkpoint values (minDuration represents cumulative time thresholds)
+      const newCurrentMinDuration = checkpointProgress.currentCheckpoint?.minDuration;
+      const newNextMinDuration = checkpointProgress.nextCheckpoint?.minDuration;
+
+      setInternalCurrentCheckpoint(newCurrentMinDuration);
+      setInternalNextCheckpoint(newNextMinDuration);
 
       // If all checkpoints completed, show 100%
       if (checkpointProgress.isCompleted) {
@@ -95,11 +95,12 @@ export default function CircularProgress({
       }
 
       // Calculate progress between current checkpoint and next checkpoint
-      if (newNextDuration !== undefined) {
-        const startDuration = newCurrentDuration ?? 0;
-        const endDuration = newNextDuration;
-        const timeInCurrentRange = elapsed - startDuration;
-        const totalRangeTime = endDuration - startDuration;
+      // Using minDuration which represents cumulative thresholds from journey start
+      if (newNextMinDuration !== undefined) {
+        const startThreshold = newCurrentMinDuration ?? 0; // Start of current checkpoint range
+        const endThreshold = newNextMinDuration; // End of current checkpoint range (start of next)
+        const timeInCurrentRange = elapsed - startThreshold;
+        const totalRangeTime = endThreshold - startThreshold;
 
         const calculatedProgress = Math.min(Math.max(timeInCurrentRange / totalRangeTime, 0), 1);
         setLiveProgress(calculatedProgress);

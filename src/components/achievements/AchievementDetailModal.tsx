@@ -46,8 +46,8 @@ export default function AchievementDetailModal({
       onRequestClose={onClose}
     >
       <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'} />
-      <View className="flex-1 items-center justify-center bg-black/50 px-6">
-        <View className="w-full max-w-md bg-white dark:bg-gray-800 rounded-3xl overflow-hidden shadow-2xl">
+      <View className="items-center justify-center flex-1 px-6 bg-black/50">
+        <View className="w-full max-w-md overflow-hidden bg-white shadow-2xl dark:bg-gray-800 rounded-3xl">
           {/* Header */}
           <View className="relative">
             {achievement.isUnlocked ? (
@@ -59,16 +59,16 @@ export default function AchievementDetailModal({
               >
                 <Pressable
                   onPress={onClose}
-                  className="absolute top-4 right-4 w-10 h-10 items-center justify-center bg-black/10 rounded-full active:bg-black/20"
+                  className="absolute items-center justify-center w-10 h-10 rounded-full top-4 right-4 bg-black/10 active:bg-black/20"
                 >
                   <X size={24} color="#FFFFFF" />
                 </Pressable>
                 <View className="items-center">
                   <Text style={{ fontSize: 80 }}>{achievement.emoji}</Text>
-                  <Text className="mt-3 text-2xl font-bold text-white text-center">
+                  <Text className="mt-3 text-2xl font-bold text-center text-white">
                     {achievement.title}
                   </Text>
-                  <View className="mt-2 px-3 py-1 bg-white/20 rounded-full">
+                  <View className="px-3 py-1 mt-2 rounded-full bg-white/20">
                     <Text className="text-sm font-semibold text-white">Unlocked</Text>
                   </View>
                 </View>
@@ -77,7 +77,7 @@ export default function AchievementDetailModal({
               <View className="px-6 pt-8 pb-6 bg-gray-100 dark:bg-gray-700">
                 <Pressable
                   onPress={onClose}
-                  className="absolute top-4 right-4 w-10 h-10 items-center justify-center bg-black/10 dark:bg-white/10 rounded-full active:bg-black/20 dark:active:bg-white/20"
+                  className="absolute items-center justify-center w-10 h-10 rounded-full top-4 right-4 bg-black/10 dark:bg-white/10 active:bg-black/20 dark:active:bg-white/20"
                 >
                   <X size={24} color={colorScheme === 'dark' ? '#FFFFFF' : '#000000'} />
                 </Pressable>
@@ -88,10 +88,10 @@ export default function AchievementDetailModal({
                       <Text style={{ fontSize: 40 }}>🔒</Text>
                     </View>
                   </View>
-                  <Text className="mt-3 text-2xl font-bold text-gray-600 dark:text-gray-300 text-center">
+                  <Text className="mt-3 text-2xl font-bold text-center text-gray-600 dark:text-gray-300">
                     {achievement.title}
                   </Text>
-                  <View className="mt-2 px-3 py-1 bg-gray-300 dark:bg-gray-600 rounded-full">
+                  <View className="px-3 py-1 mt-2 bg-gray-300 rounded-full dark:bg-gray-600">
                     <Text className="text-sm font-semibold text-gray-700 dark:text-gray-300">Locked</Text>
                   </View>
                 </View>
@@ -103,7 +103,7 @@ export default function AchievementDetailModal({
           <ScrollView className="px-6 py-6 max-h-80">
             {/* Description */}
             <View className="mb-6">
-              <Text className="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2">
+              <Text className="mb-2 text-sm font-medium tracking-wide text-gray-500 uppercase dark:text-gray-400">
                 Description
               </Text>
               <Text className="text-base text-gray-900 dark:text-white">
@@ -113,18 +113,18 @@ export default function AchievementDetailModal({
 
             {/* Requirement */}
             <View className="mb-6">
-              <Text className="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2">
+              <Text className="mb-2 text-sm font-medium tracking-wide text-gray-500 uppercase dark:text-gray-400">
                 Requirement
               </Text>
               <Text className="text-base text-gray-900 dark:text-white">
-                Maintain a streak of {formatThreshold(achievement.threshold)}
+                {achievement.threshold ? `Maintain a streak of ${formatThreshold(achievement.threshold)}` : 'Start your journey to unlock this achievement!'}
               </Text>
             </View>
 
             {/* Unlocked Date (if unlocked) */}
             {achievement.isUnlocked && achievement.unlockedAt && (
               <View className="mb-6">
-                <Text className="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2">
+                <Text className="mb-2 text-sm font-medium tracking-wide text-gray-500 uppercase dark:text-gray-400">
                   Unlocked On
                 </Text>
                 <Text className="text-base text-gray-900 dark:text-white">
