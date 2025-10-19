@@ -85,7 +85,7 @@ export default function AchievementCelebration({
 
                   {/* Badge Circle */}
                   <View
-                    className="items-center justify-center bg-white rounded-full border-4 border-yellow-500 dark:bg-gray-800"
+                    className="items-center justify-center bg-white rounded-full dark:bg-gray-800"
                     style={{ width: 120, height: 120 }}
                   >
                     <Text style={{ fontSize: 56 }}>{achievement.emoji}</Text>

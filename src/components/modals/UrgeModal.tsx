@@ -70,7 +70,7 @@ export default function UrgeModal({ onClose }: UrgeModalProps) {
 
         {/* Content Card */}
         <View className="px-4 mt-6">
-          <View className="p-6 bg-white border border-gray-200 dark:bg-gray-900 dark:border-gray-700 rounded-2xl">
+          <View className="p-6 bg-white dark:bg-gray-900 rounded-2xl">
             {/* Note Input */}
             <View className="mb-6">
               <Text className="mb-2 text-xs font-semibold tracking-wide text-gray-500 uppercase dark:text-gray-400">
@@ -138,7 +138,7 @@ export default function UrgeModal({ onClose }: UrgeModalProps) {
             disabled={isSubmitting}
             className={`rounded-2xl py-4 ${isSubmitting
               ? 'bg-gray-100 dark:bg-gray-800'
-              : 'bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 active:bg-gray-50 dark:active:bg-gray-700'
+              : 'bg-white dark:bg-gray-800 active:bg-gray-50 dark:active:bg-gray-700'
               }`}
           >
             <Text

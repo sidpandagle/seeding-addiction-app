@@ -1,7 +1,8 @@
 import React, { memo } from 'react';
 import { View, Text, ScrollView } from 'react-native';
-import { Dumbbell, Wind, Brain, Zap } from 'lucide-react-native';
+import { Zap } from 'lucide-react-native';
 import { useColorScheme } from '../../stores/themeStore';
+import { QUICK_ACTIONS, getActionColorClasses } from '../../data/quickActionData';
 
 /**
  * Quick action cards to help users resist urges
@@ -28,49 +29,20 @@ const QuickActionsComponent: React.FC = () => {
         showsHorizontalScrollIndicator={false}
         contentContainerClassName="gap-3"
       >
-        {/* Physical Reset */}
-        <View className="p-4 border w-72 border-blue-200 bg-blue-50 dark:bg-blue-950/30 dark:border-blue-800 rounded-2xl">
-          <View className="flex-row items-center gap-2 mb-2">
-            <Dumbbell size={20} color="#3b82f6" strokeWidth={2.5} />
-            <Text className="text-base font-bold text-gray-900 dark:text-white">Physical Reset</Text>
+        {QUICK_ACTIONS.map((action) => (
+          <View 
+            key={action.id}
+            className={`p-4 w-72 rounded-2xl ${getActionColorClasses(action.colorScheme)}`}
+          >
+            <View className="flex-row items-center gap-2 mb-2">
+              <Text className="text-xl">{action.icon}</Text>
+              <Text className="text-base font-bold text-gray-900 dark:text-white">{action.title}</Text>
+            </View>
+            <Text className="text-sm leading-5 text-gray-700 dark:text-gray-300">
+              {action.description}
+            </Text>
           </View>
-          <Text className="text-sm leading-5 text-gray-700 dark:text-gray-300">
-            Do 10 push-ups, take a cold shower, go for a walk, or sprint. Your body needs to remember who's boss.
-          </Text>
-        </View>
-
-        {/* Breathe */}
-        <View className="p-4 border w-72 border-cyan-200 bg-cyan-50 dark:bg-cyan-950/30 dark:border-cyan-800 rounded-2xl">
-          <View className="flex-row items-center gap-2 mb-2">
-            <Wind size={20} color="#06b6d4" strokeWidth={2.5} />
-            <Text className="text-base font-bold text-gray-900 dark:text-white">Breathe, Seriously</Text>
-          </View>
-          <Text className="text-sm leading-5 text-gray-700 dark:text-gray-300">
-            Breathe in for 4, hold for 4, out for 4. Repeat 5 times. Trick your nervous system into calming down.
-          </Text>
-        </View>
-
-        {/* Mental Distraction */}
-        <View className="p-4 border w-72 bg-emerald-50 border-emerald-200 dark:bg-emerald-950/30 dark:border-emerald-800 rounded-2xl">
-          <View className="flex-row items-center gap-2 mb-2">
-            <Brain size={20} color="#10b981" strokeWidth={2.5} />
-            <Text className="text-base font-bold text-gray-900 dark:text-white">Mental Distraction</Text>
-          </View>
-          <Text className="text-sm leading-5 text-gray-700 dark:text-gray-300">
-            Call a friend, work on that hobby you keep postponing, watch a documentary, or meditate.
-          </Text>
-        </View>
-
-        {/* Remember Your Why */}
-        <View className="p-4 border w-72 bg-amber-50 border-amber-200 dark:bg-amber-950/30 dark:border-amber-800 rounded-2xl">
-          <View className="flex-row items-center gap-2 mb-2">
-            <Text className="text-xl">🎯</Text>
-            <Text className="text-base font-bold text-gray-900 dark:text-white">Remember Your Why</Text>
-          </View>
-          <Text className="text-sm leading-5 text-gray-700 dark:text-gray-300">
-            Think about your goals. Why did you start this journey? Future you is rooting for present you.
-          </Text>
-        </View>
+        ))}
       </ScrollView>
     </View>
   );

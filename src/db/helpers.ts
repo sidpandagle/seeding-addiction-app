@@ -23,7 +23,6 @@ export const getJourneyStart = async (): Promise<string | null> => {
   const db = await getDatabase();
 
   const result = await db.getFirstAsync<{ value: string }>(
-    // 'SELECT value FROM app_settings WHERE key = ?',
     'SELECT value FROM app_settings WHERE key = ?',
     ['journey_start']
   );

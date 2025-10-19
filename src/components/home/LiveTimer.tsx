@@ -1,6 +1,6 @@
 import { useState, useEffect, memo } from 'react';
 import { View, Text } from 'react-native';
-import { millisecondsToTimeBreakdown } from '../../utils/checkpointHelpers';
+import { millisecondsToTimeBreakdown } from '../../utils/growthStages';
 
 interface LiveTimerProps {
   startTime: string; // ISO timestamp

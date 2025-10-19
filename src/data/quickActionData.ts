@@ -1,0 +1,93 @@
+/**
+ * Quick action data for urge resistance
+ * Shared between QuickActions component and EmergencyHelpModal
+ */
+
+export interface QuickAction {
+  id: string;
+  icon: string;
+  title: string;
+  description: string;
+  colorScheme: 'blue' | 'cyan' | 'emerald' | 'amber' | 'purple' | 'rose' | 'indigo' | 'teal';
+}
+
+export const QUICK_ACTIONS: QuickAction[] = [
+  {
+    id: 'physical-reset',
+    icon: '💪',
+    title: 'Physical Reset',
+    description: 'Do 10 push-ups, take a cold shower, go for a walk, or sprint. Your body needs to remember who\'s boss.',
+    colorScheme: 'blue',
+  },
+  {
+    id: 'breathe',
+    icon: '🌬️',
+    title: 'Breathe, Seriously',
+    description: 'Breathe in for 4, hold for 4, out for 4. Repeat 5 times. Trick your nervous system into calming down.',
+    colorScheme: 'cyan',
+  },
+  {
+    id: 'mental-distraction',
+    icon: '🧘',
+    title: 'Mental Distraction',
+    description: 'Call a friend, work on that hobby you keep postponing, watch a documentary, or meditate.',
+    colorScheme: 'emerald',
+  },
+  {
+    id: 'remember-why',
+    icon: '🎯',
+    title: 'Remember Your Why',
+    description: 'Think about your goals. Why did you start this journey? Future you is rooting for present you.',
+    colorScheme: 'amber',
+  },
+];
+
+export const EMERGENCY_ACTIONS: QuickAction[] = [
+  ...QUICK_ACTIONS,
+  {
+    id: 'redirect-energy',
+    icon: '🎮',
+    title: 'Redirect the Energy',
+    description: 'Play a quick game, clean your room, organize your desk, or learn 5 words in a new language. Channel that chaos into something productive.',
+    colorScheme: 'purple',
+  },
+  {
+    id: 'fuel-brain',
+    icon: '🍎',
+    title: 'Fuel Your Brain',
+    description: 'Drink a full glass of water, eat an apple, have some nuts. Sometimes your brain is just hangry.',
+    colorScheme: 'rose',
+  },
+  {
+    id: 'write-it-out',
+    icon: '📝',
+    title: 'Write It Out',
+    description: 'Journal about how you feel right now. Write angry. Write grateful. Just get it out of your head and onto paper.',
+    colorScheme: 'indigo',
+  },
+  {
+    id: 'change-soundtrack',
+    icon: '🎵',
+    title: 'Change the Soundtrack',
+    description: 'Put on your favorite pump-up song and dance like nobody\'s watching. Music changes moods faster than you think.',
+    colorScheme: 'teal',
+  },
+];
+
+/**
+ * Get Tailwind color classes for a given color scheme
+ */
+export function getActionColorClasses(colorScheme: QuickAction['colorScheme']) {
+  const colorMap = {
+    blue: 'bg-blue-100 dark:bg-blue-950/30',
+    cyan: 'bg-cyan-100 dark:bg-cyan-950/30',
+    emerald: 'bg-emerald-100 dark:bg-emerald-950/30',
+    amber: 'bg-amber-100 dark:bg-amber-950/30',
+    purple: 'bg-purple-100 dark:bg-purple-950/30',
+    rose: 'bg-rose-100 dark:bg-rose-950/30',
+    indigo: 'bg-indigo-100 dark:bg-indigo-950/30',
+    teal: 'bg-teal-100 dark:bg-teal-950/30',
+  };
+
+  return colorMap[colorScheme];
+}

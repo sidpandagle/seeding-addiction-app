@@ -7,14 +7,11 @@ import { useColorScheme } from '../../src/stores/themeStore';
 import RelapseModal from '../../src/components/modals/RelapseModal';
 import UrgeModal from '../../src/components/modals/UrgeModal';
 import EmergencyHelpModal from '../../src/components/modals/EmergencyHelpModal';
-import CircularProgress from '../../src/components/home/CircularProgress';
-import { MotivationCard } from '../../src/components/home/MotivationCard';
+import { JourneyTimerCard } from '../../src/components/home/JourneyTimerCard';
 import { QuickActions } from '../../src/components/home/QuickActions';
 import { EducationalTips } from '../../src/components/home/EducationalTips';
 import AchievementCelebration from '../../src/components/achievements/AchievementCelebration';
-import LiveTimer from '../../src/components/home/LiveTimer';
-import { GrowthStage, getNewlyUnlockedAchievements, Achievement } from '../../src/utils/growthStages';
-import GrowthIcon from '../../src/components/home/GrowthIcon';
+import { getNewlyUnlockedAchievements, Achievement } from '../../src/utils/growthStages';
 import { calculateUserStats } from '../../src/utils/statsHelpers';
 import { Shield, AlertCircle, RotateCcw, Sparkles, TrendingUp, Award, Heart, BarChart3 } from 'lucide-react-native';
 import { useJourneyStats } from '../../src/hooks/useJourneyStats';
@@ -29,7 +26,6 @@ function DashboardScreen() {
   const relapses = useRelapseStore((state) => state.relapses);
   const urges = useUrgeStore((state) => state.urges);
   const loadUrges = useUrgeStore((state) => state.loadUrges);
-  const previousStageRef = useRef<GrowthStage | null>(null);
   const [celebrationAchievement, setCelebrationAchievement] = useState<Achievement | null>(null);
 
   // Use centralized hook for journey stats (now optimized - no continuous updates)
@@ -87,12 +83,6 @@ function DashboardScreen() {
     return () => clearInterval(interval);
   }, [stats.startTime]);
 
-  // Handle growth stage transitions
-  const handleStageChange = (newStage: GrowthStage) => {
-    previousStageRef.current = newStage;
-  };
-
-
   const handleRelapsePress = () => {
     setShowModal(true);
   };
@@ -113,10 +103,13 @@ function DashboardScreen() {
       <View className="pt-16 pb-4 ml-1">
         <View className="flex-row items-center justify-between px-6">
           <View className="flex-1">
-            <Text className="text-3xl font-semibold tracking-widest text-gray-900 dark:text-white">
-              Seeding
-            </Text>
-            <Text className="mt-0 text-sm tracking-widest font-regular text-emerald-700 dark:text-emerald-400">
+            <View className="flex-row items-center gap-2 mb-0">
+              <Text className="text-2xl font-semibold tracking-widest text-gray-900 dark:text-white">
+                {stats.growthStage.achievementTitle}
+              </Text>
+              <Text className="text-2xl">{stats.growthStage.emoji}</Text>
+            </View>
+            <Text className="mt-0 text-sm tracking-wide font-regular text-emerald-700 dark:text-emerald-400">
               {stats.growthStage.description}
             </Text>
           </View>
@@ -132,67 +125,24 @@ function DashboardScreen() {
         </View>
       </View>
 
-      <ScrollView 
+      <ScrollView
         className="flex-1"
         showsVerticalScrollIndicator={false}
         contentContainerClassName="pb-8"
       >
-        {/* Hero Section - Circular Progress with Timer */}
-        <View className="items-center px-6 pt-8 pb-6 -mt-4">
-          {/* Floating Card Effect */}
-          <View
-            style={{ backgroundColor: colorScheme === 'dark' ? '#111827' : '#ffffff' }}
-            className="items-center w-full p-8 border border-gray-200 shadow-sm dark:border-gray-800 rounded-3xl"
-          >
-
-            {/* Circular Progress */}
-            <CircularProgress
-              size={260}
-              strokeWidth={16}
-              startTime={stats.startTime ?? undefined}
-              currentCheckpointMinDuration={stats.checkpointProgress?.currentCheckpoint?.minDuration ?? undefined}
-              nextCheckpointMinDuration={stats.checkpointProgress?.nextCheckpoint?.minDuration ?? undefined}
-              useGradient={true}
-              gradientColors={['#10b981', '#34d399', '#6ee7b7']}
-              backgroundColor={colorScheme === 'dark' ? '#1f2937' : '#f0fdf4'}
-              showCheckpoint={false}
-            >
-              <View className="items-center">
-                {/* Growth Icon with Glow Effect */}
-                <View className="mb-4">
-                  <GrowthIcon
-                    stage={stats.growthStage.id}
-                    size={70}
-                    animated={true}
-                    glowing={true}
-                    onStageChange={handleStageChange}
-                  />
-                </View>
-
-                {/* Live Timer */}
-                {stats.startTime && <LiveTimer startTime={stats.startTime} showDays={true} />}
-              </View>
-            </CircularProgress>
-
-            {/* Merged: Growth Stage + Next Checkpoint */}
-            <View className="px-6 py-3 mt-6 border bg-emerald-50 dark:bg-emerald-950/40 rounded-2xl border-emerald-200 dark:border-emerald-800">
-              <View className="flex-row items-center justify-center gap-2">
-                {/* <Text className="text-xl">{stats.growthStage.emoji}</Text> */}
-                <Text className="text-sm font-semibold text-emerald-700 dark:text-emerald-300">
-                  {stats.growthStage.achievementTitle}
-                </Text>
-                <Text className="mx-1 text-emerald-400 dark:text-emerald-500">•</Text>
-                <Text className="text-base">🎯</Text>
-                <Text className="text-sm font-medium text-emerald-600 dark:text-emerald-400">
-                  {stats.checkpointProgress?.isCompleted
-                    ? 'All milestones achieved!'
-                    : stats.checkpointProgress?.nextCheckpoint
-                      ? `${stats.growthStage.shortLabel}`
-                      : 'Starting your journey...'}
-                </Text>
-              </View>
-            </View>
-          </View>
+        {/* Hero Section - Journey Timer Card */}
+        <View className="py-6 -mt-4">
+          {stats.startTime && (
+            <JourneyTimerCard
+              startTime={stats.startTime}
+              growthStage={{
+                emoji: stats.growthStage.emoji,
+                achievementTitle: stats.growthStage.achievementTitle,
+                description: stats.growthStage.description,
+              }}
+              nextCheckpoint={stats.checkpointProgress?.nextCheckpoint}
+            />
+          )}
         </View>
 
         {/* Quick Actions */}
@@ -201,7 +151,7 @@ function DashboardScreen() {
             {/* Resisted Urge - Primary Action */}
             <Pressable
               onPress={handleUrgePress}
-              className="flex-1 border border-gray-200 shadow-sm bg-blue-600/90 dark:border-blue-800 dark:bg-blue-600/20 rounded-2xl"
+              className="flex-1 shadow-sm bg-blue-600/90 dark:bg-blue-600/20 rounded-2xl"
             >
               <View className="items-center px-4 py-6">
                 <View className="items-center justify-center mb-3 w-14 h-14 bg-white/20 rounded-2xl">
@@ -220,7 +170,7 @@ function DashboardScreen() {
             <Pressable
               onPress={handleRelapsePress}
               style={{ backgroundColor: colorScheme === 'dark' ? '#111827' : '#ffffff' }}
-              className="flex-1 border border-gray-200 shadow-sm dark:border-gray-800 rounded-2xl"
+              className="flex-1 shadow-sm rounded-2xl"
             >
               <View className="items-center px-4 py-6">
                 <View className="items-center justify-center mb-3 w-14 h-14 rounded-2xl bg-emerald-50 dark:bg-emerald-950/30">
@@ -256,7 +206,7 @@ function DashboardScreen() {
             {/* Total Attempts */}
             <View
               style={{ backgroundColor: colorScheme === 'dark' ? '#111827' : '#ffffff' }}
-              className="relative flex-1 overflow-hidden border border-gray-200 shadow-sm rounded-2xl dark:border-gray-800"
+              className="relative flex-1 overflow-hidden shadow-sm rounded-2xl"
             >
               <View className="p-4">
                 <Text className="mb-2 text-xs font-medium tracking-wide text-gray-600 uppercase dark:text-gray-400">
@@ -275,7 +225,7 @@ function DashboardScreen() {
             {/* Best Streak */}
             <View
               style={{ backgroundColor: colorScheme === 'dark' ? '#111827' : '#ffffff' }}
-              className="relative flex-1 overflow-hidden border border-gray-200 shadow-sm rounded-2xl dark:border-gray-800"
+              className="relative flex-1 overflow-hidden shadow-sm rounded-2xl"
             >
               <View className="p-4">
                 <Text className="mb-2 text-xs font-medium tracking-wide text-gray-600 uppercase dark:text-gray-400">
@@ -302,7 +252,7 @@ function DashboardScreen() {
             {/* Urges Resisted */}
             <View
               style={{ backgroundColor: colorScheme === 'dark' ? '#111827' : '#ffffff' }}
-              className="relative flex-1 overflow-hidden border border-gray-200 shadow-sm rounded-2xl dark:border-gray-800"
+              className="relative flex-1 overflow-hidden shadow-sm rounded-2xl"
             >
               <View className="p-4">
                 <Text className="mb-2 text-xs font-medium tracking-wide text-gray-600 uppercase dark:text-gray-400">
@@ -321,7 +271,7 @@ function DashboardScreen() {
             {/* Success Rate */}
             <View
               style={{ backgroundColor: colorScheme === 'dark' ? '#111827' : '#ffffff' }}
-              className="relative flex-1 overflow-hidden border border-gray-200 shadow-sm rounded-2xl dark:border-gray-800"
+              className="relative flex-1 overflow-hidden shadow-sm rounded-2xl"
             >
               <View className="p-4">
                 <Text className="mb-2 text-xs font-medium tracking-wide text-gray-600 uppercase dark:text-gray-400">
@@ -350,9 +300,6 @@ function DashboardScreen() {
 
         {/* Educational Tips */}
         <EducationalTips />
-
-        {/* Motivation Card */}
-        <MotivationCard />
 
         {/* Relapse Modal */}
         <Modal

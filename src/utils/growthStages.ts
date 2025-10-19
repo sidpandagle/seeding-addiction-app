@@ -456,37 +456,36 @@ export function getCheckpointProgress(elapsedTime: number): CheckpointProgress {
 
   const minutes = elapsedTime / (1000 * 60);
 
-  // Find the current checkpoint (the last one that's been passed)
-  let currentCheckpointIndex = -1;
+  // Find the current stage (the stage the user is currently in)
+  let currentStageIndex = -1;
   for (let i = 0; i < GROWTH_STAGES.length; i++) {
     if (minutes >= GROWTH_STAGES[i].minMinutes) {
-      currentCheckpointIndex = i;
+      currentStageIndex = i;
     } else {
       break;
     }
   }
 
-  // If beyond all checkpoints
-  if (currentCheckpointIndex === GROWTH_STAGES.length - 1) {
-    const lastCheckpoint = GROWTH_STAGES[GROWTH_STAGES.length - 1];
+  // If beyond all stages
+  if (currentStageIndex === GROWTH_STAGES.length - 1) {
+    const lastStage = GROWTH_STAGES[GROWTH_STAGES.length - 1];
     return {
-      currentCheckpoint: lastCheckpoint,
+      currentCheckpoint: lastStage,
       nextCheckpoint: null,
       progress: 1,
       isCompleted: true,
     };
   }
 
-  // Normal case: between checkpoints
-  const currentCheckpoint = currentCheckpointIndex >= 0 ? GROWTH_STAGES[currentCheckpointIndex] : null;
-  const nextCheckpoint = GROWTH_STAGES[currentCheckpointIndex + 1];
+  // Normal case: user is in a current stage working towards its goal
+  const currentCheckpoint = GROWTH_STAGES[currentStageIndex];
+  const nextCheckpoint = currentCheckpoint; // The next checkpoint is the current stage's goal
 
-  // Calculate progress between current and next checkpoint
-  const startMinutes = currentCheckpoint ? currentCheckpoint.minMinutes : 0;
-  const endMinutes = nextCheckpoint.minMinutes;
-  const minutesInCurrentRange = minutes - startMinutes;
-  const totalRangeMinutes = endMinutes - startMinutes;
-  const progress = Math.min(Math.max(minutesInCurrentRange / totalRangeMinutes, 0), 1);
+  // Calculate progress within the current stage
+  const stageStartMinutes = currentCheckpoint.minMinutes;
+  const stageDurationMinutes = currentCheckpoint.duration / (60 * 1000); // Convert duration from ms to minutes
+  const minutesInCurrentStage = minutes - stageStartMinutes;
+  const progress = Math.min(Math.max(minutesInCurrentStage / stageDurationMinutes, 0), 1);
 
   return {
     currentCheckpoint,

@@ -1,7 +1,6 @@
 import { View, Text, ScrollView } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { useState, useEffect } from 'react';
-import Animated, { FadeInDown } from 'react-native-reanimated';
 import { useColorScheme } from '../../src/stores/themeStore';
 import AchievementsGrid from '../../src/components/achievements/AchievementsGrid';
 import AchievementDetailModal from '../../src/components/achievements/AchievementDetailModal';

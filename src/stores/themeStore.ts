@@ -1,7 +1,8 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage, StateStorage } from 'zustand/middleware';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { ColorScheme } from '../theme/colors';
+
+export type ColorScheme = 'light' | 'dark';
 
 interface ThemeState {
   colorScheme: ColorScheme;

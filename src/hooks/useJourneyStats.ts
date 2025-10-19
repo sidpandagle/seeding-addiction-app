@@ -1,6 +1,6 @@
 import { useMemo, useState, useEffect, useRef } from 'react';
 import { getJourneyStart } from '../db/helpers';
-import { getCheckpointProgress } from '../utils/checkpointHelpers';
+import { getCheckpointProgress } from '../utils/growthStages';
 import { getGrowthStage } from '../utils/growthStages';
 import { useLatestRelapseTimestamp } from '../stores/relapseStore';
 

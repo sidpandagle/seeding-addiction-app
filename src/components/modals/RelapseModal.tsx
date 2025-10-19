@@ -66,14 +66,14 @@ export default function RelapseModal({ onClose, existingRelapse }: RelapseModalP
     >
       <ScrollView className="flex-1">
         {/* Modern Header */}
-        <View className="px-6 pt-16 pb-4 bg-rose-50 dark:bg-gray-900">
+        <View className="px-6 pt-16 pb-0">
           <View className="flex-row items-center justify-between mb-2">
             <View className="flex">
               <Text className="text-3xl font-semibold tracking-wide text-gray-900 dark:text-white">
                 {existingRelapse ? 'Edit Relapse' : 'Log Relapse'}
               </Text>
               {!existingRelapse && (
-                <Text className="mt-1 text-sm font-medium whitespace-pre-line text-rose-700 dark:text-rose-400">
+                <Text className="mt-1 text-sm font-medium whitespace-pre-line text-emerald-700 dark:text-emerald-400">
                   {`Every journey has setbacks.
 What matters is getting back up.`}
                 </Text>
@@ -81,14 +81,14 @@ What matters is getting back up.`}
               )}
             </View>
             <View className="items-center justify-center w-16 h-16 bg-white rounded-2xl dark:bg-gray-800">
-              <RotateCcw size={34} color="#f43f5e" strokeWidth={2.5} />
+              <RotateCcw size={34} color="#34d399" strokeWidth={2.5} />
             </View>
           </View>
         </View>
 
         {/* Content Card */}
-        <View className="px-4 mt-6">
-          <View className="p-6 bg-white border border-gray-200 dark:bg-gray-900 dark:border-gray-700 rounded-2xl">
+        <View className="px-4 mt-2">
+          <View className="p-6 bg-white dark:bg-gray-900 rounded-2xl">
             {/* Timestamp Display (only for editing existing relapse) */}
             {existingRelapse && (
               <View className="mb-6">
@@ -158,7 +158,7 @@ What matters is getting back up.`}
               }`}
           >
             <Text className="text-lg font-bold text-center text-white">
-              {isSubmitting ? 'Saving...' : existingRelapse ? 'Update' : 'Save'}
+              {isSubmitting ? 'Alright then...' : existingRelapse ? 'Update' : 'Are you sure?'}
             </Text>
           </Pressable>
 
@@ -167,11 +167,11 @@ What matters is getting back up.`}
             disabled={isSubmitting}
             className={`rounded-2xl py-4 ${isSubmitting
               ? 'bg-gray-100 dark:bg-gray-800'
-              : 'bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 active:bg-gray-50 dark:active:bg-gray-700'
+              : 'bg-white dark:bg-gray-800 active:bg-gray-50 dark:active:bg-gray-700'
               }`}
           >
             <Text className={`text-center font-bold text-lg ${isSubmitting ? 'text-gray-400 dark:text-gray-500' : 'text-gray-700 dark:text-gray-300'}`}>
-              Cancel
+              Just Kidding
             </Text>
           </Pressable>
         </View>
