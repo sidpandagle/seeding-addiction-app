@@ -14,7 +14,7 @@ export default function TabsLayout() {
     tabBarActiveTintColor: '#10b981',
     tabBarInactiveTintColor: colorScheme === 'dark' ? '#6b7280' : '#9ca3af',
     tabBarStyle: {
-      backgroundColor: colorScheme === 'dark' ? '#030712 ' : '#ffffff',
+      backgroundColor: colorScheme === 'dark' ? '#030712' : '#ffffff',
       borderTopColor: colorScheme === 'dark' ? '#374151' : '#e5e7eb',
       height: 70 + insets.bottom,
       paddingBottom: Math.max(insets.bottom, 10),
@@ -42,7 +42,7 @@ export default function TabsLayout() {
     lazy: false, // Preload all tabs to eliminate mounting delays
     unmountOnBlur: false, // Keep screens mounted for instant switching
     freezeOnBlur: true, // Freeze inactive screens to save resources
-    // animation: 'fade' as const, // Fade transition is smoother and less prone to white flashes
+    animation: 'fade' as const, // Fade transition is smoother and less prone to white flashes
   }), [colorScheme, insets.bottom]);
 
   return (
