@@ -116,19 +116,49 @@ export default function EmergencyHelpModal({ onClose }: EmergencyHelpModalProps)
             <View className="p-5 border border-blue-200 bg-blue-50 dark:bg-blue-950/30 dark:border-blue-800 rounded-xl">
               <Text className="mb-2 text-base font-bold text-gray-900 dark:text-white">💪 Physical Reset</Text>
               <Text className="text-sm leading-5 text-gray-700 dark:text-gray-300">
-                Do 10 push-ups, take a cold shower, go for a walk, or exercise for 5 minutes.
+                Do 10 push-ups, take a cold shower, go for a walk, or sprint like you're being chased by a really slow zombie. Your body needs to remember who's boss.
               </Text>
             </View>
             <View className="p-5 border bg-emerald-50 border-emerald-200 dark:bg-emerald-950/30 dark:border-emerald-800 rounded-xl">
               <Text className="mb-2 text-base font-bold text-gray-900 dark:text-white">🧘 Mental Distraction</Text>
               <Text className="text-sm leading-5 text-gray-700 dark:text-gray-300">
-                Call a friend, work on a hobby, watch an educational video, or meditate for 2 minutes.
+                Call a friend (yes, actual voice), work on that hobby you keep postponing, watch a documentary about something ridiculously specific, or meditate (even if you're bad at it—we all are).
               </Text>
             </View>
             <View className="p-5 border bg-amber-50 border-amber-200 dark:bg-amber-950/30 dark:border-amber-800 rounded-xl">
               <Text className="mb-2 text-base font-bold text-gray-900 dark:text-white">🎯 Remember Your Why</Text>
               <Text className="text-sm leading-5 text-gray-700 dark:text-gray-300">
-                Think about your goals. Why did you start this journey? What's at stake? You've come too far to quit now.
+                Think about your goals. Why did you start this journey? What's at stake? You've come too far to quit now. Future you is rooting for present you.
+              </Text>
+            </View>
+            <View className="p-5 border bg-purple-50 border-purple-200 dark:bg-purple-950/30 dark:border-purple-800 rounded-xl">
+              <Text className="mb-2 text-base font-bold text-gray-900 dark:text-white">🎮 Redirect the Energy</Text>
+              <Text className="text-sm leading-5 text-gray-700 dark:text-gray-300">
+                Play a quick game, clean your room (yes, really), organize your desk, or learn 5 words in a new language. Channel that chaos into something productive—or at least mildly entertaining.
+              </Text>
+            </View>
+            <View className="p-5 border bg-rose-50 border-rose-200 dark:bg-rose-950/30 dark:border-rose-800 rounded-xl">
+              <Text className="mb-2 text-base font-bold text-gray-900 dark:text-white">🍎 Fuel Your Brain</Text>
+              <Text className="text-sm leading-5 text-gray-700 dark:text-gray-300">
+                Drink a full glass of water, eat an apple, have some nuts, or make yourself a proper snack. Sometimes your brain is just hangry. Don't negotiate with a hungry brain.
+              </Text>
+            </View>
+            <View className="p-5 border bg-cyan-50 border-cyan-200 dark:bg-cyan-950/30 dark:border-cyan-800 rounded-xl">
+              <Text className="mb-2 text-base font-bold text-gray-900 dark:text-white">🌬️ Breathe, Seriously</Text>
+              <Text className="text-sm leading-5 text-gray-700 dark:text-gray-300">
+                Breathe in for 4, hold for 4, out for 4. Repeat 5 times. It sounds too simple to work, but your nervous system doesn't know that. Trick it into calming down.
+              </Text>
+            </View>
+            <View className="p-5 border bg-indigo-50 border-indigo-200 dark:bg-indigo-950/30 dark:border-indigo-800 rounded-xl">
+              <Text className="mb-2 text-base font-bold text-gray-900 dark:text-white">📝 Write It Out</Text>
+              <Text className="text-sm leading-5 text-gray-700 dark:text-gray-300">
+                Journal about how you feel right now. Write angry. Write grateful. Write confused. Just get it out of your head and onto paper. Your brain will thank you for the eviction notice.
+              </Text>
+            </View>
+            <View className="p-5 border bg-teal-50 border-teal-200 dark:bg-teal-950/30 dark:border-teal-800 rounded-xl">
+              <Text className="mb-2 text-base font-bold text-gray-900 dark:text-white">🎵 Change the Soundtrack</Text>
+              <Text className="text-sm leading-5 text-gray-700 dark:text-gray-300">
+                Put on your favorite pump-up song and dance like nobody's watching (because they're not). Music changes moods faster than you think. Make it loud. Make it ridiculous. Make it yours.
               </Text>
             </View>
           </View>

@@ -36,13 +36,13 @@ export default function TabsLayout() {
     // Set background color for screen container to prevent white flash
     // Using Tailwind gray-950 (dark) and gray-50 (light) via RGB values
     sceneStyle: {
-      backgroundColor: colorScheme === 'dark' ? 'rgb(3, 7, 18)' : 'rgb(249, 250, 251)',
+      backgroundColor: colorScheme === 'dark' ? '#000000' : 'rgb(249, 250, 251)',
     },
     // Performance optimizations for faster tab switching
     lazy: false, // Preload all tabs to eliminate mounting delays
     unmountOnBlur: false, // Keep screens mounted for instant switching
     freezeOnBlur: true, // Freeze inactive screens to save resources
-    // animation: 'fade' as const, // Fade transition is smoother and less prone to white flashes
+    animation: 'none' as const, // Disable animation to prevent potential white flashes during transitions
   }), [colorScheme, insets.bottom]);
 
   return (

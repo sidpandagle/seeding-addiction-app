@@ -1,6 +1,6 @@
 import { Stack } from 'expo-router';
 import { useEffect, useState, useLayoutEffect } from 'react';
-import { View } from 'react-native';
+import { View, LogBox } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { enableScreens } from 'react-native-screens';
 import { useRelapseStore } from '../src/stores/relapseStore';
@@ -14,6 +14,12 @@ import { useColorScheme } from 'nativewind';
 import * as SplashScreen from 'expo-splash-screen';
 import Animated, { FadeIn } from 'react-native-reanimated';
 import "../global.css";
+
+// Suppress deprecation warnings from third-party libraries
+LogBox.ignoreLogs([
+  'SafeAreaView has been deprecated', // From react-native-calendars dependency
+  'setLayoutAnimationEnabledExperimental', // From React Native's New Architecture
+]);
 
 // Enable native screens for better performance
 enableScreens(true);

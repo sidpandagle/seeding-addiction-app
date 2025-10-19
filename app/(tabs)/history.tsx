@@ -1,7 +1,7 @@
 import { View, Text, TouchableOpacity, ScrollView, Modal, Pressable } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { useState, useEffect, memo, useMemo } from 'react';
-import Animated, { FadeInDown } from 'react-native-reanimated';
+import { History } from 'lucide-react-native';
 import { useRelapseStore } from '../../src/stores/relapseStore';
 import { useColorScheme } from '../../src/stores/themeStore';
 import { getJourneyStart } from '../../src/db/helpers';
@@ -11,8 +11,6 @@ import ViewToggle from '../../src/components/history/ViewToggle';
 import HistoryList from '../../src/components/history/HistoryList';
 import HistoryCalendar from '../../src/components/history/HistoryCalendar';
 import CalendarRelapseDetails from '../../src/components/history/CalendarRelapseDetails';
-import InsightsModal from '../../src/components/history/InsightsModal';
-import { BarChart3 } from 'lucide-react-native';
 
 type ViewMode = 'list' | 'calendar';
 
@@ -23,7 +21,6 @@ function HistoryScreen() {
   const [journeyStart, setJourneyStart] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<ViewMode>('list');
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
-  const [showInsightsModal, setShowInsightsModal] = useState(false);
 
   // Load journey start timestamp for calendar
   useEffect(() => {
@@ -52,18 +49,13 @@ function HistoryScreen() {
               <Text className="text-3xl font-semibold tracking-widest text-gray-900 dark:text-white">
                 History
               </Text>
-              <Text className="mt-1 text-sm font-medium tracking-wide text-blue-700 dark:text-blue-400">
-                Track your journey & insights
+              <Text className="mt-1 text-sm font-medium tracking-wide text-emerald-700 dark:text-emerald-400">
+                Track your journey
               </Text>
             </View>
-
-            {/* Insights Button */}
-            <Pressable
-              onPress={() => setShowInsightsModal(true)}
-              className="items-center justify-center bg-blue-100 w-14 h-14 dark:bg-blue-900/30 rounded-2xl active:scale-95"
-            >
-              <BarChart3 size={26} color="#3b82f6" strokeWidth={2.5} />
-            </Pressable>
+            <View className="items-center justify-center w-14 h-14 bg-emerald-100 dark:bg-emerald-900/30 rounded-2xl">
+              <History size={26} color="#10b981" strokeWidth={2.5} />
+            </View>
           </View>
 
           {/* Stats Summary Cards */}
@@ -116,16 +108,6 @@ function HistoryScreen() {
           </ScrollView>
         )}
       </View>
-
-      {/* Insights Modal */}
-      <Modal
-        visible={showInsightsModal}
-        animationType="slide"
-        presentationStyle="pageSheet"
-        onRequestClose={() => setShowInsightsModal(false)}
-      >
-        <InsightsModal onClose={() => setShowInsightsModal(false)} />
-      </Modal>
     </View>
   );
 }

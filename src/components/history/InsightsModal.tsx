@@ -5,6 +5,8 @@ import { useRelapses } from '../../stores/relapseStore';
 import { useColorScheme } from '../../stores/themeStore';
 import { getJourneyStart } from '../../db/helpers';
 import { calculateUserStats } from '../../utils/statsHelpers';
+import WeeklyPatternChart from '../charts/WeeklyPatternChart';
+import MonthlyTrendChart from '../charts/MonthlyTrendChart';
 
 interface InsightsModalProps {
   onClose: () => void;
@@ -184,11 +186,11 @@ const InsightsModal = React.memo(function InsightsModal({ onClose }: InsightsMod
                   : 'bg-gray-100 dark:bg-gray-700'
             }`}>
               {insights.trend === 'improving' ? (
-                <TrendingDown size={20} color="#10b981" />
+                <TrendingUp size={20} color="#10b981" />
               ) : insights.trend === 'declining' ? (
-                <TrendingUp size={20} color="#ef4444" />
+                <TrendingDown size={20} color="#ef4444" />
               ) : (
-                <TrendingUp size={20} color="#6b7280" />
+                <TrendingDown size={20} color="#6b7280" />
               )}
             </View>
             <Text
@@ -222,21 +224,20 @@ const InsightsModal = React.memo(function InsightsModal({ onClose }: InsightsMod
           </Text>
         </View>
 
+        {/* Weekly Pattern Chart */}
+        <WeeklyPatternChart relapses={relapses} />
+
+        {/* Monthly Trend Chart */}
+        <MonthlyTrendChart relapses={relapses} />
+
         {/* Motivational Message */}
-        <View className="p-5 mb-6 bg-white border border-gray-200 dark:bg-gray-900 dark:border-gray-700 rounded-2xl">
+        <View className="p-5 mb-12 bg-white border border-gray-200 dark:bg-gray-900 dark:border-gray-700 rounded-2xl">
           <Text className="mb-2 text-base font-bold text-gray-900 dark:text-white">
             💪 Remember: Progress isn't linear
           </Text>
           <Text className="text-sm leading-5 text-gray-600 dark:text-gray-400">
             Every day is a new opportunity to grow stronger. Your journey is unique, and these insights are
             here to help you understand your patterns and celebrate your progress.
-          </Text>
-        </View>
-
-        {/* Placeholder for future analytics */}
-        <View className="p-5 mb-12 border-2 border-gray-300 border-dashed dark:border-gray-700 rounded-2xl">
-          <Text className="text-sm font-semibold text-center text-gray-500 dark:text-gray-400">
-            More analytics coming soon...
           </Text>
         </View>
       </ScrollView>

@@ -14,14 +14,16 @@ import LiveTimer from '../../src/components/home/LiveTimer';
 import { GrowthStage, getNewlyUnlockedAchievements, Achievement } from '../../src/utils/growthStages';
 import GrowthIcon from '../../src/components/home/GrowthIcon';
 import { calculateUserStats } from '../../src/utils/statsHelpers';
-import { Shield, AlertCircle, RotateCcw, Sparkles, TrendingUp, Award, Heart } from 'lucide-react-native';
+import { Shield, AlertCircle, RotateCcw, Sparkles, TrendingUp, Award, Heart, BarChart3 } from 'lucide-react-native';
 import { useJourneyStats } from '../../src/hooks/useJourneyStats';
+import InsightsModal from '../../src/components/history/InsightsModal';
 
 function DashboardScreen() {
   const colorScheme = useColorScheme();
   const [showModal, setShowModal] = useState(false);
   const [showUrgeModal, setShowUrgeModal] = useState(false);
   const [showHelpModal, setShowHelpModal] = useState(false);
+  const [showInsightsModal, setShowInsightsModal] = useState(false);
   const relapses = useRelapseStore((state) => state.relapses);
   const urges = useUrgeStore((state) => state.urges);
   const loadUrges = useUrgeStore((state) => state.loadUrges);
@@ -106,13 +108,13 @@ function DashboardScreen() {
       <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'} />
 
       {/* Elegant Header */}
-      <View className="pt-16 pb-2 ml-1">
+      <View className="pt-16 pb-4 ml-1">
         <View className="flex-row items-center justify-between px-6">
           <View className="flex-1">
             <Text className="text-3xl font-semibold tracking-widest text-gray-900 dark:text-white">
               Seeding
             </Text>
-            <Text className="mt-0 text-sm font-medium tracking-widest text-emerald-700 dark:text-emerald-400">
+            <Text className="mt-0 text-sm tracking-widest font-regular text-emerald-700 dark:text-emerald-400">
               {stats.growthStage.description}
             </Text>
           </View>
@@ -120,7 +122,8 @@ function DashboardScreen() {
           {/* Emergency Help Button */}
           <Pressable
             onPress={handleHelpPress}
-            className="items-center justify-center bg-white w-14 h-14 dark:bg-red-800/30 rounded-2xl active:scale-95"
+            style={{ backgroundColor: colorScheme === 'dark' ? 'rgba(153, 27, 27, 0.3)' : '#f9fafb' }}
+            className="items-center justify-center w-14 h-14 rounded-2xl active:scale-95"
           >
             <AlertCircle size={28} color="#ef4444" strokeWidth={2.5} />
           </Pressable>
@@ -135,7 +138,10 @@ function DashboardScreen() {
         {/* Hero Section - Circular Progress with Timer */}
         <View className="items-center px-6 pt-8 pb-6 -mt-4">
           {/* Floating Card Effect */}
-          <View className="items-center w-full p-8 bg-white border border-gray-200 shadow-sm dark:border-gray-800 dark:bg-gray-900 rounded-3xl">
+          <View
+            style={{ backgroundColor: colorScheme === 'dark' ? '#111827' : '#ffffff' }}
+            className="items-center w-full p-8 border border-gray-200 shadow-sm dark:border-gray-800 rounded-3xl"
+          >
 
             {/* Circular Progress */}
             <CircularProgress
@@ -211,7 +217,8 @@ function DashboardScreen() {
             {/* Record Relapse - Secondary Action */}
             <Pressable
               onPress={handleRelapsePress}
-              className="flex-1 bg-white border border-gray-200 shadow-sm dark:bg-gray-900 dark:border-gray-800 rounded-2xl"
+              style={{ backgroundColor: colorScheme === 'dark' ? '#111827' : '#ffffff' }}
+              className="flex-1 border border-gray-200 shadow-sm dark:border-gray-800 rounded-2xl"
             >
               <View className="items-center px-4 py-6">
                 <View className="items-center justify-center mb-3 w-14 h-14 rounded-2xl bg-emerald-50 dark:bg-emerald-950/30">
@@ -245,7 +252,10 @@ function DashboardScreen() {
           {/* First Row */}
           <View className="flex-row gap-6 mb-6">
             {/* Total Attempts */}
-            <View className="relative flex-1 overflow-hidden bg-white border border-gray-200 shadow-sm dark:bg-gray-900 rounded-2xl dark:border-gray-800">
+            <View
+              style={{ backgroundColor: colorScheme === 'dark' ? '#111827' : '#ffffff' }}
+              className="relative flex-1 overflow-hidden border border-gray-200 shadow-sm rounded-2xl dark:border-gray-800"
+            >
               <View className="p-4">
                 <Text className="mb-2 text-xs font-medium tracking-wide text-gray-600 uppercase dark:text-gray-400">
                   Total Attempts
@@ -261,7 +271,10 @@ function DashboardScreen() {
             </View>
 
             {/* Best Streak */}
-            <View className="relative flex-1 overflow-hidden bg-white border border-gray-200 shadow-sm dark:bg-gray-900 rounded-2xl dark:border-gray-800">
+            <View
+              style={{ backgroundColor: colorScheme === 'dark' ? '#111827' : '#ffffff' }}
+              className="relative flex-1 overflow-hidden border border-gray-200 shadow-sm rounded-2xl dark:border-gray-800"
+            >
               <View className="p-4">
                 <Text className="mb-2 text-xs font-medium tracking-wide text-gray-600 uppercase dark:text-gray-400">
                   Best Streak
@@ -285,7 +298,10 @@ function DashboardScreen() {
           {/* Second Row */}
           <View className="flex-row gap-6">
             {/* Urges Resisted */}
-            <View className="relative flex-1 overflow-hidden bg-white border border-gray-200 shadow-sm dark:bg-gray-900 rounded-2xl dark:border-gray-800">
+            <View
+              style={{ backgroundColor: colorScheme === 'dark' ? '#111827' : '#ffffff' }}
+              className="relative flex-1 overflow-hidden border border-gray-200 shadow-sm rounded-2xl dark:border-gray-800"
+            >
               <View className="p-4">
                 <Text className="mb-2 text-xs font-medium tracking-wide text-gray-600 uppercase dark:text-gray-400">
                   Urges Resisted
@@ -301,7 +317,10 @@ function DashboardScreen() {
             </View>
 
             {/* Success Rate */}
-            <View className="relative flex-1 overflow-hidden bg-white border border-gray-200 shadow-sm dark:bg-gray-900 rounded-2xl dark:border-gray-800">
+            <View
+              style={{ backgroundColor: colorScheme === 'dark' ? '#111827' : '#ffffff' }}
+              className="relative flex-1 overflow-hidden border border-gray-200 shadow-sm rounded-2xl dark:border-gray-800"
+            >
               <View className="p-4">
                 <Text className="mb-2 text-xs font-medium tracking-wide text-gray-600 uppercase dark:text-gray-400">
                   Success Rate
@@ -321,6 +340,29 @@ function DashboardScreen() {
               </View>
             </View>
           </View>
+
+          {/* View More Insights Button */}
+          <Pressable
+            onPress={() => setShowInsightsModal(true)}
+            style={{ backgroundColor: colorScheme === 'dark' ? '#111827' : '#ffffff' }}
+            className="flex-row items-center justify-between p-5 mt-6 border border-gray-200 shadow-sm dark:border-gray-800 rounded-2xl"
+          >
+            <View className="flex-row items-center gap-3">
+              <View className="items-center justify-center w-12 h-12 bg-blue-100 rounded-full dark:bg-blue-900/30">
+                <BarChart3 size={22} color="#3b82f6" strokeWidth={2.5} />
+              </View>
+              <View className="flex-1">
+                <Text className="text-base font-bold text-gray-900 dark:text-white">
+                  View Advanced Insights
+                </Text>
+                <Text className="text-sm text-gray-500 dark:text-gray-400">
+                  {relapses.length >= 2
+                    ? 'Detailed patterns & analytics'
+                    : 'Start tracking to see insights'}
+                </Text>
+              </View>
+            </View>
+          </Pressable>
         </View>
 
         {/* Motivation Card */}
@@ -362,6 +404,16 @@ function DashboardScreen() {
           visible={!!celebrationAchievement}
           onClose={() => setCelebrationAchievement(null)}
         />
+
+        {/* Insights Modal */}
+        <Modal
+          visible={showInsightsModal}
+          animationType="slide"
+          presentationStyle="pageSheet"
+          onRequestClose={() => setShowInsightsModal(false)}
+        >
+          <InsightsModal onClose={() => setShowInsightsModal(false)} />
+        </Modal>
       </ScrollView>
     </View>
   );
