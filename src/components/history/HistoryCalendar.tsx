@@ -48,7 +48,7 @@ const HistoryCalendar = React.memo(function HistoryCalendar({
       marks[selectedDate] = {
         ...marks[selectedDate],
         selected: true,
-  selectedColor: isDark ? '#047857' : '#3B82F6', // emerald-700 / blue-500
+        selectedColor: isDark ? '#1d4ed8' : '#3B82F6', // blue-700 / blue-500
         selectedTextColor: '#FFFFFF',
         marked: isRelapseDate?.marked,
         dotColor: isRelapseDate?.dotColor,
