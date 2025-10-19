@@ -42,7 +42,7 @@ export default function TabsLayout() {
     lazy: false, // Preload all tabs to eliminate mounting delays
     unmountOnBlur: false, // Keep screens mounted for instant switching
     freezeOnBlur: true, // Freeze inactive screens to save resources
-    animation: 'fade' as const, // Fade transition is smoother and less prone to white flashes
+    // animation: 'fade' as const, // Fade transition is smoother and less prone to white flashes
   }), [colorScheme, insets.bottom]);
 
   return (
