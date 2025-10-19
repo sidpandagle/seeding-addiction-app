@@ -1,9 +1,9 @@
 import { View, Text, TextInput, Pressable, ScrollView, KeyboardAvoidingView, Platform } from 'react-native';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useUrgeStore } from '../../stores/urgeStore';
 import { useColorScheme } from '../../stores/themeStore';
-import * as Haptics from 'expo-haptics';
-import { Shield } from 'lucide-react-native';
+import { Shield, Sparkles } from 'lucide-react-native';
+import { getRandomTip, type EducationalTip } from '../../data/educationalContent';
 
 interface UrgeModalProps {
   onClose: () => void;
@@ -18,12 +18,15 @@ export default function UrgeModal({ onClose }: UrgeModalProps) {
   const [note, setNote] = useState('');
   const [selectedContext, setSelectedContext] = useState<string[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [victoryTip, setVictoryTip] = useState<EducationalTip>(getRandomTip('victory'));
 
   const toggleContext = (context: string) => {
     setSelectedContext((prev) =>
       prev.includes(context) ? prev.filter((c) => c !== context) : [...prev, context]
     );
   };
+
+
 
   const handleSave = async () => {
     try {
@@ -52,7 +55,7 @@ export default function UrgeModal({ onClose }: UrgeModalProps) {
     >
       <ScrollView className="flex-1">
         {/* Modern Header */}
-        <View className="px-6 pt-16 pb-4 bg-blue-50 dark:bg-gray-900">
+        <View className="px-6 pt-16 pb-0">
           <View className="flex-row items-center justify-between mb-2">
             <View className="flex">
               <Text className="text-3xl font-semibold tracking-wide text-gray-900 dark:text-white">
@@ -65,6 +68,19 @@ export default function UrgeModal({ onClose }: UrgeModalProps) {
             <View className="items-center justify-center w-16 h-16 bg-white rounded-2xl dark:bg-gray-800">
               <Shield size={34} color="#3b82f6" strokeWidth={2.5} />
             </View>
+          </View>
+        </View>
+
+        {/* Victory Celebration Section */}
+        <View className="px-5 mt-6">
+          {/* Victory Tip Card */}
+          <View className="p-4 mb-3 bg-blue-100 dark:bg-blue-900/30 rounded-xl">
+            <Text className="mb-2 text-lg font-bold text-blue-900 dark:text-blue-100">
+              {victoryTip.emoji} {victoryTip.title}
+            </Text>
+            <Text className="text-sm leading-6 text-blue-800 dark:text-blue-200">
+              {victoryTip.content}
+            </Text>
           </View>
         </View>
 

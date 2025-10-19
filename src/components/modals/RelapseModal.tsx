@@ -3,7 +3,8 @@ import { useState } from 'react';
 import { useRelapseStore } from '../../stores/relapseStore';
 import { useColorScheme } from '../../stores/themeStore';
 import * as Haptics from 'expo-haptics';
-import { RotateCcw } from 'lucide-react-native';
+import { RotateCcw, Heart } from 'lucide-react-native';
+import { getRandomTip, type EducationalTip } from '../../data/educationalContent';
 
 interface RelapseModalProps {
   onClose: () => void;
@@ -25,12 +26,15 @@ export default function RelapseModal({ onClose, existingRelapse }: RelapseModalP
   const [selectedTags, setSelectedTags] = useState<string[]>(existingRelapse?.tags || []);
   const [timestamp] = useState(existingRelapse?.timestamp);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [recoveryTip, setRecoveryTip] = useState<EducationalTip>(getRandomTip('relapse'));
 
   const toggleTag = (tag: string) => {
     setSelectedTags((prev) =>
       prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag]
     );
   };
+
+
 
   const handleSave = async () => {
     try {
@@ -69,15 +73,16 @@ export default function RelapseModal({ onClose, existingRelapse }: RelapseModalP
         <View className="px-6 pt-16 pb-0">
           <View className="flex-row items-center justify-between mb-2">
             <View className="flex">
-              <Text className="text-3xl font-semibold tracking-wide text-gray-900 dark:text-white">
+              <Text className="mb-1 text-3xl font-semibold tracking-wide text-gray-900 dark:text-white">
                 {existingRelapse ? 'Edit Relapse' : 'Log Relapse'}
               </Text>
               {!existingRelapse && (
-                <Text className="mt-1 text-sm font-medium whitespace-pre-line text-emerald-700 dark:text-emerald-400">
-                  {`Every journey has setbacks.
-What matters is getting back up.`}
-                </Text>
-
+                <View className="flex-row items-center gap-2">
+                  <Heart size={20} color="#10b981" strokeWidth={2.5} />
+                  <Text className="text-base tracking-widest text-emerald-800 dark:text-emerald-300">
+                    This Is Not Failure
+                  </Text>
+                </View>
               )}
             </View>
             <View className="items-center justify-center w-16 h-16 bg-white rounded-2xl dark:bg-gray-800">
@@ -86,8 +91,23 @@ What matters is getting back up.`}
           </View>
         </View>
 
+        {/* Recovery & Compassion Section - Only for new relapses */}
+        {!existingRelapse && (
+          <View className="px-5 mt-6">
+            {/* Recovery Tip Card */}
+            <View className="p-4 bg-emerald-50 dark:bg-emerald-950/30 rounded-xl">
+              <Text className="mb-2 text-lg font-bold text-emerald-900 dark:text-emerald-100">
+                {recoveryTip.emoji} {recoveryTip.title}
+              </Text>
+              <Text className="text-sm leading-6 text-emerald-800 dark:text-emerald-200">
+                {recoveryTip.content}
+              </Text>
+            </View>
+          </View>
+        )}
+
         {/* Content Card */}
-        <View className="px-4 mt-2">
+        <View className={`px-4 ${existingRelapse ? 'mt-2' : 'mt-6'}`}>
           <View className="p-6 bg-white dark:bg-gray-900 rounded-2xl">
             {/* Timestamp Display (only for editing existing relapse) */}
             {existingRelapse && (

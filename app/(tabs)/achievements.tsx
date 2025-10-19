@@ -2,7 +2,7 @@ import { View, Text, ScrollView } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { useState, useEffect } from 'react';
 import { useColorScheme } from '../../src/stores/themeStore';
-import AchievementsGrid from '../../src/components/achievements/AchievementsGrid';
+import AchievementRoadmap from '../../src/components/achievements/AchievementRoadmap';
 import AchievementDetailModal from '../../src/components/achievements/AchievementDetailModal';
 import { getAchievements, Achievement } from '../../src/utils/growthStages';
 import { useJourneyStats } from '../../src/hooks/useJourneyStats';
@@ -117,9 +117,9 @@ export default function AchievementsScreen() {
           </View>
         </View>
 
-        {/* Achievements Grid */}
+        {/* Achievements Roadmap */}
         <View className="px-6 mt-6">
-          <AchievementsGrid
+          <AchievementRoadmap
             achievements={achievements}
             onAchievementPress={(achievement) => setSelectedAchievement(achievement)}
           />

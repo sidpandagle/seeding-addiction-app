@@ -9,7 +9,7 @@ import UrgeModal from '../../src/components/modals/UrgeModal';
 import EmergencyHelpModal from '../../src/components/modals/EmergencyHelpModal';
 import { JourneyTimerCard } from '../../src/components/home/JourneyTimerCard';
 import { QuickActions } from '../../src/components/home/QuickActions';
-import { EducationalTips } from '../../src/components/home/EducationalTips';
+import { StoicWisdomCard } from '../../src/components/home/StoicWisdomCard';
 import AchievementCelebration from '../../src/components/achievements/AchievementCelebration';
 import { getNewlyUnlockedAchievements, Achievement } from '../../src/utils/growthStages';
 import { calculateUserStats } from '../../src/utils/statsHelpers';
@@ -190,12 +190,9 @@ function DashboardScreen() {
         {/* Stats Grid - Redesigned with Icons */}
         <View className="px-6 mb-6">
           <View className="flex-row items-center justify-between mb-6">
-            <Text className="text-lg font-semibold text-gray-800 dark:text-gray-200">
-              Your Progress
-            </Text>
-            <View className="flex-row items-center gap-1">
-              <TrendingUp size={18} color={colorScheme === 'dark' ? '#6ee7b7' : '#10b981'} />
-              <Text className="text-sm font-medium text-emerald-600 dark:text-emerald-400">
+            <View className="flex-row items-center gap-3">
+              <TrendingUp size={20} strokeWidth={2.5} color={colorScheme === 'dark' ? '#6ee7b7' : '#10b981'} />
+              <Text className="text-lg font-semibold text-gray-800 dark:text-gray-200">
                 Keep growing
               </Text>
             </View>
@@ -206,7 +203,7 @@ function DashboardScreen() {
             {/* Total Attempts */}
             <View
               style={{ backgroundColor: colorScheme === 'dark' ? '#111827' : '#ffffff' }}
-              className="relative flex-1 overflow-hidden shadow-sm rounded-2xl"
+              className="relative flex-1 overflow-hidden shadow-sm shadow-black rounded-2xl"
             >
               <View className="p-4">
                 <Text className="mb-2 text-xs font-medium tracking-wide text-gray-600 uppercase dark:text-gray-400">
@@ -298,8 +295,8 @@ function DashboardScreen() {
         {/* Quick Actions */}
         <QuickActions />
 
-        {/* Educational Tips */}
-        <EducationalTips />
+        {/* Stoic Wisdom */}
+        <StoicWisdomCard />
 
         {/* Relapse Modal */}
         <Modal

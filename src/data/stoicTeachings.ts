@@ -707,6 +707,41 @@ export const stoicTeachings: StoicTeaching[] = [
     explanation: 'Don’t look at the whole journey. Just take the next right step — one stone at a time.',
     category: 'resilience',
   },
+  {
+    id: '101',
+    quote: 'Like an athlete training for competition, practice self-control in all things, not just abstaining from pleasure but from unnecessary desire.',
+    author: 'Epictetus',
+    explanation: 'Self-control is a skill that grows stronger with practice. Every urge resisted is practice for the next challenge.',
+    category: 'discipline',
+  },
+  {
+    id: '102',
+    quote: 'The body is not master, the soul is master. The body may crave, but reason must rule.',
+    author: 'Seneca',
+    explanation: 'Your body sends signals, but your mind decides the response. Don\'t let temporary physical impulses override your rational will.',
+    category: 'control',
+  },
+  {
+    id: '103',
+    quote: 'Pleasure, when it comes too readily and excessively, corrupts the character. True pleasure comes from virtue.',
+    author: 'Marcus Aurelius',
+    explanation: 'Easy pleasures weaken you; earned satisfaction strengthens you. Choose the path of virtue over instant gratification.',
+    category: 'virtue',
+  },
+  {
+    id: '104',
+    quote: 'He who conquers his desires conquers more than he who conquers cities.',
+    author: 'Ancient Proverb',
+    explanation: 'Victory over yourself is the greatest victory of all. Every empire falls, but self-mastery lasts forever.',
+    category: 'resilience',
+  },
+  {
+    id: '105',
+    quote: 'The chains of habit are too weak to be felt until they are too strong to be broken.',
+    author: 'Samuel Johnson',
+    explanation: 'Break the chain now while you still can. Small compromises today become unbreakable patterns tomorrow.',
+    category: 'discipline',
+  },
 ];
 
 export const getRandomTeaching = (): StoicTeaching => {

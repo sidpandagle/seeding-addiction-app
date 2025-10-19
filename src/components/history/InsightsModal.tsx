@@ -102,7 +102,7 @@ const InsightsModal = React.memo(function InsightsModal({ onClose }: InsightsMod
   return (
     <View className="flex-1 pb-0 bg-gray-50 dark:bg-gray-950">
       {/* Modern Header */}
-      <View className="px-6 pt-16 pb-6 bg-emerald-50 dark:bg-gray-900">
+      <View className="px-6 pt-16 pb-6">
         <View className="flex-row items-center justify-between mb-2">
           <View className="flex-1">
             <Text className="text-3xl font-semibold tracking-wide text-gray-900 dark:text-white">Advanced Insights</Text>
@@ -226,7 +226,7 @@ const InsightsModal = React.memo(function InsightsModal({ onClose }: InsightsMod
                 : 'Your frequency has been consistent. If you\'re maintaining a healthy resistance rate (40-60%+), this stability is actually a sign of sustainable progress.'}
           </Text>
           {insights.trend === 'stable' && (
-            <View className="p-2 mt-2 border border-gray-300 bg-gray-100 dark:bg-gray-800 dark:border-gray-600 rounded-lg">
+            <View className="p-2 mt-2 bg-gray-100 border border-gray-300 rounded-lg dark:bg-gray-800 dark:border-gray-600">
               <Text className="text-xs leading-5 text-gray-600 dark:text-gray-400">
                 <Text className="font-bold">Research Note:</Text> Stable patterns with good resistance rates are common in long-term recovery. Focus on maintaining your wins rather than chasing perfection.
               </Text>

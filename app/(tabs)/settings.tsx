@@ -1,4 +1,4 @@
-import { View, Text, Pressable, Alert, ScrollView, Switch } from 'react-native';
+import { View, Text, Pressable, Alert, ScrollView, Switch, Modal } from 'react-native';
 import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useState, useEffect } from 'react';
@@ -13,7 +13,8 @@ import {
 } from '../../src/services/security';
 import { useRelapseStore } from '../../src/stores/relapseStore';
 import { useColorScheme, useThemeStore } from '../../src/stores/themeStore';
-import { Settings2, Palette, Lock, Database, Sun, Moon, Shield, Trash2, Info } from 'lucide-react-native';
+import { Settings2, Palette, Lock, Database, Sun, Moon, Shield, Trash2, Info, Brain } from 'lucide-react-native';
+import RecoveryEducationModal from '../../src/components/modals/RecoveryEducationModal';
 
 export default function SettingsScreen() {
   const router = useRouter();
@@ -22,6 +23,7 @@ export default function SettingsScreen() {
   const [appLockEnabled, setAppLockEnabledState] = useState(false);
   const [biometricAvailable, setBiometricAvailable] = useState(false);
   const [authMethodName, setAuthMethodName] = useState('Biometric');
+  const [showEducationModal, setShowEducationModal] = useState(false);
 
   // Animation values for theme buttons
   const lightButtonScale = useSharedValue(1);
@@ -258,6 +260,38 @@ export default function SettingsScreen() {
           </View>
         </View>
 
+        {/* Education Section */}
+        <View className="px-6 mt-6">
+          <View className="flex-row items-center gap-2 mb-3">
+            <Brain size={18} color={colorScheme === 'dark' ? '#a855f7' : '#9333ea'} strokeWidth={2.5} />
+            <Text className="text-sm font-bold tracking-wider text-gray-600 uppercase dark:text-gray-400">
+              Education
+            </Text>
+          </View>
+
+          <Pressable
+            onPress={() => setShowEducationModal(true)}
+            className="p-5 bg-white border border-gray-200 dark:bg-gray-900 dark:border-gray-700 rounded-2xl active:opacity-70"
+          >
+            <View className="flex-row items-center justify-between">
+              <View className="flex-row items-center flex-1">
+                <View className="items-center justify-center w-10 h-10 mr-3 rounded-full bg-purple-50 dark:bg-purple-900/30">
+                  <Brain size={20} color="#a855f7" strokeWidth={2.5} />
+                </View>
+                <View className="flex-1">
+                  <Text className="text-base font-bold text-gray-900 dark:text-white">
+                    Understanding Recovery
+                  </Text>
+                  <Text className="mt-0.5 text-sm text-gray-500 dark:text-gray-400">
+                    Learn about dopamine science
+                  </Text>
+                </View>
+              </View>
+              <Text className="text-xl font-medium text-purple-600 dark:text-purple-400">→</Text>
+            </View>
+          </Pressable>
+        </View>
+
         {/* Data Section */}
         <View className="px-6 mt-6">
           <View className="flex-row items-center gap-2 mb-3">
@@ -311,6 +345,16 @@ export default function SettingsScreen() {
           </View>
         </View>
       </ScrollView>
+
+      {/* Recovery Education Modal */}
+      <Modal
+        visible={showEducationModal}
+        animationType="slide"
+        presentationStyle="pageSheet"
+        onRequestClose={() => setShowEducationModal(false)}
+      >
+        <RecoveryEducationModal onClose={() => setShowEducationModal(false)} />
+      </Modal>
     </View>
   );
 }
