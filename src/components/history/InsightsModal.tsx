@@ -2,11 +2,13 @@ import React, { useMemo, useEffect, useState } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, Pressable } from 'react-native';
 import { ChevronLeft, TrendingUp, TrendingDown, Calendar, Target, X } from 'lucide-react-native';
 import { useRelapses } from '../../stores/relapseStore';
+import { useUrgeStore } from '../../stores/urgeStore';
 import { useColorScheme } from '../../stores/themeStore';
 import { getJourneyStart } from '../../db/helpers';
 import { calculateUserStats } from '../../utils/statsHelpers';
 import WeeklyPatternChart from '../charts/WeeklyPatternChart';
 import MonthlyTrendChart from '../charts/MonthlyTrendChart';
+import ResistanceRatioChart from '../charts/ResistanceRatioChart';
 
 interface InsightsModalProps {
   onClose: () => void;
@@ -17,6 +19,7 @@ const InsightsModal = React.memo(function InsightsModal({ onClose }: InsightsMod
   const colorScheme = useColorScheme();
   // Phase 2 Optimization: Use granular selector to only subscribe to relapses array
   const relapses = useRelapses();
+  const urges = useUrgeStore((state) => state.urges);
   const [journeyStart, setJourneyStart] = useState<string | null>(null);
 
   useEffect(() => {
@@ -179,10 +182,10 @@ const InsightsModal = React.memo(function InsightsModal({ onClose }: InsightsMod
         >
           <View className="flex-row items-center mb-3">
             <View className={`items-center justify-center w-10 h-10 mr-3 rounded-full ${
-              insights.trend === 'improving' 
-                ? 'bg-green-100 dark:bg-green-900/40' 
-                : insights.trend === 'declining' 
-                  ? 'bg-red-100 dark:bg-red-900/40' 
+              insights.trend === 'improving'
+                ? 'bg-green-100 dark:bg-green-900/40'
+                : insights.trend === 'declining'
+                  ? 'bg-red-100 dark:bg-red-900/40'
                   : 'bg-gray-100 dark:bg-gray-700'
             }`}>
               {insights.trend === 'improving' ? (
@@ -204,12 +207,12 @@ const InsightsModal = React.memo(function InsightsModal({ onClose }: InsightsMod
               {insights.trend === 'improving'
                 ? 'Improving Trend 🎉'
                 : insights.trend === 'declining'
-                  ? 'Declining Trend'
-                  : 'Stable Trend'}
+                  ? 'Needs Attention'
+                  : 'Stable Progress'}
             </Text>
           </View>
           <Text
-            className={`text-sm leading-5 ${insights.trend === 'improving'
+            className={`text-sm leading-6 mb-2 ${insights.trend === 'improving'
               ? 'text-green-700 dark:text-green-300'
               : insights.trend === 'declining'
                 ? 'text-red-700 dark:text-red-300'
@@ -217,12 +220,22 @@ const InsightsModal = React.memo(function InsightsModal({ onClose }: InsightsMod
               }`}
           >
             {insights.trend === 'improving'
-              ? 'Your relapse frequency has decreased over time. Keep it up!'
+              ? 'Your relapse frequency is decreasing—this means longer gaps between relapses. You\'re rewiring your brain\'s reward system with each passing day. This is excellent progress!'
               : insights.trend === 'declining'
-                ? 'Your relapse frequency has increased recently. Stay focused!'
-                : 'Your progress has been consistent.'}
+                ? 'Your relapse frequency has increased recently. Remember: recovery isn\'t linear. Even with setbacks, you\'re still learning. Consider what triggers are most challenging right now.'
+                : 'Your frequency has been consistent. If you\'re maintaining a healthy resistance rate (40-60%+), this stability is actually a sign of sustainable progress.'}
           </Text>
+          {insights.trend === 'stable' && (
+            <View className="p-2 mt-2 border border-gray-300 bg-gray-100 dark:bg-gray-800 dark:border-gray-600 rounded-lg">
+              <Text className="text-xs leading-5 text-gray-600 dark:text-gray-400">
+                <Text className="font-bold">Research Note:</Text> Stable patterns with good resistance rates are common in long-term recovery. Focus on maintaining your wins rather than chasing perfection.
+              </Text>
+            </View>
+          )}
         </View>
+
+        {/* Resistance Ratio Chart */}
+        <ResistanceRatioChart relapses={relapses} urges={urges} />
 
         {/* Weekly Pattern Chart */}
         <WeeklyPatternChart relapses={relapses} />

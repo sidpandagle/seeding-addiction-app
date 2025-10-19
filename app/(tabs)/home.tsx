@@ -9,6 +9,8 @@ import UrgeModal from '../../src/components/modals/UrgeModal';
 import EmergencyHelpModal from '../../src/components/modals/EmergencyHelpModal';
 import CircularProgress from '../../src/components/home/CircularProgress';
 import { MotivationCard } from '../../src/components/home/MotivationCard';
+import { QuickActions } from '../../src/components/home/QuickActions';
+import { EducationalTips } from '../../src/components/home/EducationalTips';
 import AchievementCelebration from '../../src/components/achievements/AchievementCelebration';
 import LiveTimer from '../../src/components/home/LiveTimer';
 import { GrowthStage, getNewlyUnlockedAchievements, Achievement } from '../../src/utils/growthStages';
@@ -341,29 +343,13 @@ function DashboardScreen() {
             </View>
           </View>
 
-          {/* View More Insights Button */}
-          <Pressable
-            onPress={() => setShowInsightsModal(true)}
-            style={{ backgroundColor: colorScheme === 'dark' ? '#111827' : '#ffffff' }}
-            className="flex-row items-center justify-between p-5 mt-6 border border-gray-200 shadow-sm dark:border-gray-800 rounded-2xl"
-          >
-            <View className="flex-row items-center gap-3">
-              <View className="items-center justify-center w-12 h-12 bg-blue-100 rounded-full dark:bg-blue-900/30">
-                <BarChart3 size={22} color="#3b82f6" strokeWidth={2.5} />
-              </View>
-              <View className="flex-1">
-                <Text className="text-base font-bold text-gray-900 dark:text-white">
-                  View Advanced Insights
-                </Text>
-                <Text className="text-sm text-gray-500 dark:text-gray-400">
-                  {relapses.length >= 2
-                    ? 'Detailed patterns & analytics'
-                    : 'Start tracking to see insights'}
-                </Text>
-              </View>
-            </View>
-          </Pressable>
         </View>
+
+        {/* Quick Actions */}
+        <QuickActions />
+
+        {/* Educational Tips */}
+        <EducationalTips />
 
         {/* Motivation Card */}
         <MotivationCard />

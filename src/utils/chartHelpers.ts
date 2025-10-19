@@ -1,4 +1,4 @@
-import type { Relapse } from '../db/schema';
+import type { Relapse, Urge } from '../db/schema';
 
 export interface WeeklyPatternData {
   day: string;
@@ -12,6 +12,15 @@ export interface MonthlyTrendData {
   monthShort: string;
   year: number;
   count: number;
+}
+
+export interface ResistanceRatioData {
+  urgeCount: number;
+  relapseCount: number;
+  totalEvents: number;
+  urgePercentage: number;
+  relapsePercentage: number;
+  successRate: number;
 }
 
 /**
@@ -114,4 +123,41 @@ export function formatShortDate(timestamp: string): string {
   const date = new Date(timestamp);
   const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
   return `${months[date.getMonth()]} ${date.getDate()}`;
+}
+
+/**
+ * Calculate resistance ratio data
+ * Shows success rate in resisting urges vs relapses
+ *
+ * Research-based interpretation thresholds:
+ * - 80%+: Exceptional recovery progress (top tier)
+ * - 60-79%: Above average, exceeding healthy baseline
+ * - 40-59%: Normal/healthy recovery range (baseline per NIDA research)
+ * - <40%: Early recovery or challenging period (brain rewiring in progress)
+ *
+ * Note: A 40-60% success rate is considered normal in addiction recovery.
+ * Progress is measured by increasing gaps between relapses over time,
+ * not absolute perfection. Studies show success rates improve significantly
+ * over 5 years (from 15% in year 1 to 85% by year 5).
+ */
+export function calculateResistanceRatio(relapses: Relapse[], urges: Urge[]): ResistanceRatioData {
+  const urgeCount = urges.length;
+  const relapseCount = relapses.length;
+  const totalEvents = urgeCount + relapseCount;
+
+  // Calculate percentages
+  const urgePercentage = totalEvents > 0 ? Math.round((urgeCount / totalEvents) * 100) : 0;
+  const relapsePercentage = totalEvents > 0 ? Math.round((relapseCount / totalEvents) * 100) : 0;
+
+  // Success rate is the same as urge percentage
+  const successRate = urgePercentage;
+
+  return {
+    urgeCount,
+    relapseCount,
+    totalEvents,
+    urgePercentage,
+    relapsePercentage,
+    successRate,
+  };
 }

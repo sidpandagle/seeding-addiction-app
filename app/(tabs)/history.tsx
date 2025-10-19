@@ -1,7 +1,7 @@
 import { View, Text, TouchableOpacity, ScrollView, Modal, Pressable } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { useState, useEffect, memo, useMemo } from 'react';
-import { History } from 'lucide-react-native';
+import { History, BarChart3 } from 'lucide-react-native';
 import { useRelapseStore } from '../../src/stores/relapseStore';
 import { useColorScheme } from '../../src/stores/themeStore';
 import { getJourneyStart } from '../../src/db/helpers';
@@ -11,6 +11,7 @@ import ViewToggle from '../../src/components/history/ViewToggle';
 import HistoryList from '../../src/components/history/HistoryList';
 import HistoryCalendar from '../../src/components/history/HistoryCalendar';
 import CalendarRelapseDetails from '../../src/components/history/CalendarRelapseDetails';
+import InsightsModal from '../../src/components/history/InsightsModal';
 
 type ViewMode = 'list' | 'calendar';
 
@@ -21,6 +22,7 @@ function HistoryScreen() {
   const [journeyStart, setJourneyStart] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<ViewMode>('list');
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
+  const [showInsightsModal, setShowInsightsModal] = useState(false);
 
   // Load journey start timestamp for calendar
   useEffect(() => {
@@ -57,30 +59,32 @@ function HistoryScreen() {
               <History size={26} color="#10b981" strokeWidth={2.5} />
             </View>
           </View>
+        </View>
+      </View>
 
-          {/* Stats Summary Cards */}
-          <View className="flex-row gap-3 mt-4">
-            <View className="flex-1 p-4 bg-white dark:bg-gray-900 rounded-2xl">
-              <Text className="mb-1 text-xs font-medium tracking-wide text-gray-500 uppercase dark:text-gray-400">
-                Total Events
-              </Text>
-              <Text className="text-2xl font-bold text-gray-900 dark:text-white">
-                {relapses.length}
-              </Text>
+      {/* View Advanced Insights Button */}
+      <View className="px-6 pb-0">
+        <Pressable
+          onPress={() => setShowInsightsModal(true)}
+          style={{ backgroundColor: colorScheme === 'dark' ? '#111827' : '#ffffff' }}
+          className="flex-row items-center justify-between p-5 border border-gray-200 shadow-sm dark:border-gray-800 rounded-2xl"
+        >
+          <View className="flex-row items-center gap-3">
+            <View className="items-center justify-center w-12 h-12 bg-blue-100 rounded-full dark:bg-blue-900/30">
+              <BarChart3 size={22} color="#3b82f6" strokeWidth={2.5} />
             </View>
-            <View className="flex-1 p-4 bg-white dark:bg-gray-900 rounded-2xl">
-              <Text className="mb-1 text-xs font-medium tracking-wide text-gray-500 uppercase dark:text-gray-400">
-                Current Streak
+            <View className="flex-1">
+              <Text className="text-base font-bold text-gray-900 dark:text-white">
+                View Advanced Insights
               </Text>
-              <View className="flex-row items-baseline gap-1">
-                <Text className="text-2xl font-bold text-blue-600 dark:text-blue-400">
-                  {userStats.currentStreak}
-                </Text>
-                <Text className="text-sm font-medium text-blue-500">days</Text>
-              </View>
+              <Text className="text-sm text-gray-500 dark:text-gray-400">
+                {relapses.length >= 2
+                  ? 'Detailed patterns & analytics'
+                  : 'Start tracking to see insights'}
+              </Text>
             </View>
           </View>
-        </View>
+        </Pressable>
       </View>
 
       {/* View Toggle */}
@@ -108,6 +112,18 @@ function HistoryScreen() {
           </ScrollView>
         )}
       </View>
+
+      
+
+      {/* Insights Modal */}
+      <Modal
+        visible={showInsightsModal}
+        animationType="slide"
+        presentationStyle="pageSheet"
+        onRequestClose={() => setShowInsightsModal(false)}
+      >
+        <InsightsModal onClose={() => setShowInsightsModal(false)} />
+      </Modal>
     </View>
   );
 }
