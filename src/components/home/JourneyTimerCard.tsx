@@ -46,7 +46,7 @@ const JourneyTimerCardComponent: React.FC<JourneyTimerCardProps> = ({
       {/* Card with Background Icon - Same style as Daily Inspiration */}
       <View
         style={{ backgroundColor: colorScheme === 'dark' ? '#111827' : '#ffffff' }}
-        className="relative overflow-hidden shadow-md rounded-2xl border border-gray-200 dark:border-gray-700"
+        className="relative overflow-hidden border border-gray-200 shadow-md rounded-2xl dark:border-gray-700"
       >
         <View className="p-6">
           {/* Decorative Background Icon - Bottom Right */}
@@ -61,7 +61,7 @@ const JourneyTimerCardComponent: React.FC<JourneyTimerCardProps> = ({
               {/* Days (only show if > 0) */}
               {days > 0 && (
                 <>
-                  <View className="items-center min-w-[70px]">
+                  <View className="items-center min-w-[60px]">
                     <Text className={`font-extrabold tracking-tight text-emerald-600 dark:text-emerald-400 ${ days > 0 ? 'text-4xl' : 'text-5xl'}`}>
                       {days}
                     </Text>
@@ -74,7 +74,7 @@ const JourneyTimerCardComponent: React.FC<JourneyTimerCardProps> = ({
               )}
 
               {/* Hours */}
-              <View className="items-center min-w-[70px]">
+              <View className="items-center min-w-[60px]">
                 <Text className={`font-extrabold tracking-tight text-emerald-600 dark:text-emerald-400 ${ days > 0 ? 'text-4xl' : 'text-5xl'}`}>
                   {hours.toString().padStart(2, '0')}
                 </Text>
@@ -87,7 +87,7 @@ const JourneyTimerCardComponent: React.FC<JourneyTimerCardProps> = ({
               <Text className="pt-2 text-4xl font-extrabold text-emerald-600/30 dark:text-emerald-400/30">:</Text>
 
               {/* Minutes */}
-              <View className="items-center min-w-[70px]">
+              <View className="items-center min-w-[60px]">
                 <Text className={`font-extrabold tracking-tight text-emerald-600 dark:text-emerald-400 ${ days > 0 ? 'text-4xl' : 'text-5xl'}`}>
                   {minutes.toString().padStart(2, '0')}
                 </Text>
@@ -100,7 +100,7 @@ const JourneyTimerCardComponent: React.FC<JourneyTimerCardProps> = ({
               <Text className="pt-2 text-4xl font-extrabold text-emerald-600/30 dark:text-emerald-400/30">:</Text>
 
               {/* Seconds */}
-              <View className="items-center min-w-[70px]">
+              <View className="items-center min-w-[60px]">
                 <Text className={`font-extrabold tracking-tight text-emerald-600 dark:text-emerald-400 ${ days > 0 ? 'text-4xl' : 'text-5xl'}`}>
                   {seconds.toString().padStart(2, '0')}
                 </Text>

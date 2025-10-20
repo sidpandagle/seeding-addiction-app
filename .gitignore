@@ -26,3 +26,6 @@ web-build/
 
 # Android
 android/
+
+aab.bat
+apk.bat
