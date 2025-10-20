@@ -79,7 +79,7 @@ export default function RelapseModal({ onClose, existingRelapse }: RelapseModalP
               {!existingRelapse && (
                 <View className="flex-row items-center gap-2">
                   <Heart size={20} color="#10b981" strokeWidth={2.5} />
-                  <Text className="text-base tracking-widest text-emerald-800 dark:text-emerald-300">
+                  <Text className="text-base tracking-wide text-emerald-800 dark:text-emerald-300">
                     This Is Not Failure
                   </Text>
                 </View>
@@ -126,11 +126,11 @@ export default function RelapseModal({ onClose, existingRelapse }: RelapseModalP
 
             {/* Note Input */}
             <View className="mb-6">
-              <Text className="mb-2 text-xs font-semibold tracking-wide text-gray-500 uppercase dark:text-gray-400">How did you overcome it? (Optional)</Text>
+              <Text className="mb-2 text-xs font-semibold tracking-wide text-gray-500 uppercase dark:text-gray-400">What happened? (Optional)</Text>
               <TextInput
                 value={note}
                 onChangeText={setNote}
-                placeholder="e.g., Went for a walk, called a friend..."
+                placeholder="Describe what led to this moment, how you're feeling..."
                 placeholderTextColor={colorScheme === 'dark' ? '#9CA3AF' : '#6B7280'}
                 multiline
                 numberOfLines={4}
@@ -185,7 +185,7 @@ export default function RelapseModal({ onClose, existingRelapse }: RelapseModalP
           <Pressable
             onPress={onClose}
             disabled={isSubmitting}
-            className={`rounded-2xl py-4 ${isSubmitting
+            className={`rounded-2xl py-4 border border-gray-200 dark:border-gray-700 ${isSubmitting
               ? 'bg-gray-100 dark:bg-gray-800'
               : 'bg-white dark:bg-gray-800 active:bg-gray-50 dark:active:bg-gray-700'
               }`}

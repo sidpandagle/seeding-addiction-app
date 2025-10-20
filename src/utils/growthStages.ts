@@ -67,7 +67,7 @@ export const GROWTH_STAGES: GrowthStageConfig[] = [
     color: '#F3F4F6',
     achievementTitle: 'The Beginning',
     achievementDescription: "You planted the seed of growth.",
-    shortLabel: '5 min',
+    shortLabel: '5 minutes',
     duration: 5 * 60 * 1000, // 5 minutes
     minDuration: 0, // 0 minutes cumulative
   },
@@ -80,7 +80,7 @@ export const GROWTH_STAGES: GrowthStageConfig[] = [
     color: '#E8F5E9',
     achievementTitle: 'First Light',
     achievementDescription: "The first green pierces through the soil.",
-    shortLabel: '1 hr',
+    shortLabel: '1 hour',
     duration: 55 * 60 * 1000, // 55 minutes
     minDuration: 5 * 60 * 1000, // 5 minutes cumulative
   },
@@ -93,7 +93,7 @@ export const GROWTH_STAGES: GrowthStageConfig[] = [
     color: '#D0F0C0',
     achievementTitle: 'Emerging Life',
     achievementDescription: "Growth becomes visible and steady.",
-    shortLabel: '6 hr',
+    shortLabel: '6 hours',
     duration: 5 * 60 * 60 * 1000, // 5 hours
     minDuration: 60 * 60 * 1000, // 1 hour cumulative
   },
@@ -119,7 +119,7 @@ export const GROWTH_STAGES: GrowthStageConfig[] = [
     color: '#A5D6A7',
     achievementTitle: 'Healthy Spirit',
     achievementDescription: "You've entered a steady rhythm of growth.",
-    shortLabel: '1 wk',
+    shortLabel: '1 week',
     duration: 6 * 24 * 60 * 60 * 1000, // 6 days
     minDuration: 24 * 60 * 60 * 1000, // 1 day cumulative
   },
@@ -132,7 +132,7 @@ export const GROWTH_STAGES: GrowthStageConfig[] = [
     color: '#81C784',
     achievementTitle: 'Nurtured Growth',
     achievementDescription: "Care and patience are paying off.",
-    shortLabel: '3 wks',
+    shortLabel: '3 weeks',
     duration: 14 * 24 * 60 * 60 * 1000, // 14 days
     minDuration: 7 * 24 * 60 * 60 * 1000, // 7 days cumulative
   },
@@ -145,7 +145,7 @@ export const GROWTH_STAGES: GrowthStageConfig[] = [
     color: '#AED581',
     achievementTitle: 'Rooted Strength',
     achievementDescription: "You are growing from within.",
-    shortLabel: '6 wks',
+    shortLabel: '6 weeks',
     duration: 21 * 24 * 60 * 60 * 1000, // 21 days
     minDuration: 21 * 24 * 60 * 60 * 1000, // 21 days cumulative
   },
@@ -158,7 +158,7 @@ export const GROWTH_STAGES: GrowthStageConfig[] = [
     color: '#9CCC65',
     achievementTitle: 'Full of Life',
     achievementDescription: "Energy radiates through every leaf.",
-    shortLabel: '10 wks',
+    shortLabel: '10 weeks',
     duration: 30 * 24 * 60 * 60 * 1000, // 30 days
     minDuration: 42 * 24 * 60 * 60 * 1000, // 42 days cumulative
   },
@@ -171,7 +171,7 @@ export const GROWTH_STAGES: GrowthStageConfig[] = [
     color: '#8BC34A',
     achievementTitle: 'Hope Blooms',
     achievementDescription: "You're preparing for your first bloom.",
-    shortLabel: '15 wks',
+    shortLabel: '15 weeks',
     duration: 45 * 24 * 60 * 60 * 1000, // 45 days
     minDuration: 72 * 24 * 60 * 60 * 1000, // 72 days cumulative
   },
@@ -184,7 +184,7 @@ export const GROWTH_STAGES: GrowthStageConfig[] = [
     color: '#7CB342',
     achievementTitle: 'Blooming Spirit',
     achievementDescription: "Beauty and strength combine.",
-    shortLabel: '4.5 mos',
+    shortLabel: '4.5 months',
     duration: 60 * 24 * 60 * 60 * 1000, // 60 days
     minDuration: 118 * 24 * 60 * 60 * 1000, // 118 days cumulative
   },
@@ -197,7 +197,7 @@ export const GROWTH_STAGES: GrowthStageConfig[] = [
     color: '#689F38',
     achievementTitle: 'Thriving Life',
     achievementDescription: "You've reached full vitality.",
-    shortLabel: '7.5 mos',
+    shortLabel: '7.5 months',
     duration: 90 * 24 * 60 * 60 * 1000, // 90 days
     minDuration: 178 * 24 * 60 * 60 * 1000, // 178 days cumulative
   },
@@ -210,7 +210,7 @@ export const GROWTH_STAGES: GrowthStageConfig[] = [
     color: '#558B2F',
     achievementTitle: 'Strong Roots',
     achievementDescription: "Stability and wisdom grow together.",
-    shortLabel: '9 mos',
+    shortLabel: '9 months',
     duration: 30 * 24 * 60 * 60 * 1000, // 30 days
     minDuration: 268 * 24 * 60 * 60 * 1000, // 268 days cumulative
   },
@@ -223,7 +223,7 @@ export const GROWTH_STAGES: GrowthStageConfig[] = [
     color: '#33691E',
     achievementTitle: 'Enduring Spirit',
     achievementDescription: "You've become a symbol of lasting strength.",
-    shortLabel: '11 mos',
+    shortLabel: '11 months',
     duration: 45 * 24 * 60 * 60 * 1000, // 45 days
     minDuration: 298 * 24 * 60 * 60 * 1000, // 298 days cumulative
   },
@@ -236,7 +236,7 @@ export const GROWTH_STAGES: GrowthStageConfig[] = [
     color: '#1B5E20',
     achievementTitle: 'One Year Strong',
     achievementDescription: "A full cycle of growth completed.",
-    shortLabel: '1 yr',
+    shortLabel: '1 year',
     duration: 22 * 24 * 60 * 60 * 1000, // 22 days (to reach 365 total)
     minDuration: 343 * 24 * 60 * 60 * 1000, // 343 days cumulative
   },

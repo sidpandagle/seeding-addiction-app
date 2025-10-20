@@ -104,7 +104,7 @@ function DashboardScreen() {
         <View className="flex-row items-center justify-between px-6">
           <View className="flex-1">
             <View className="flex-row items-center gap-2 mb-0">
-              <Text className="text-2xl font-semibold tracking-widest text-gray-900 dark:text-white">
+              <Text className="text-2xl font-semibold tracking-wide text-gray-900 dark:text-white">
                 {stats.growthStage.achievementTitle}
               </Text>
               <Text className="text-2xl">{stats.growthStage.emoji}</Text>

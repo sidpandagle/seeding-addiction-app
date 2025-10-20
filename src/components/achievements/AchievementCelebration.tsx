@@ -61,7 +61,7 @@ export default function AchievementCelebration({
             {/* Content */}
             <View className="items-center">
               {/* Achievement Unlocked Label */}
-              <Text className="mb-4 text-sm font-semibold tracking-widest uppercase text-yellow-500">
+              <Text className="mb-4 text-sm font-semibold tracking-wide uppercase text-yellow-500">
                 🎉 Achievement Unlocked 🎉
               </Text>
 

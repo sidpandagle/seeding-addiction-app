@@ -54,7 +54,7 @@ export default function CalendarRelapseDetails({ selectedDate, relapses }: Calen
   }
 
   return (
-    <View className="px-6 py-6 mx-6 mt-2 mb-6 bg-white dark:bg-gray-900 rounded-3xl">
+    <View className="px-6 py-6 mx-6 mt-2 mb-6 bg-white border border-white dark:bg-gray-900 rounded-3xl dark:border-gray-900">
       <View className="flex-row items-center gap-3 mb-5">
         <View className="items-center justify-center w-12 h-12 bg-red-50 dark:bg-red-900/30 rounded-2xl">
           <Text className="text-2xl">📍</Text>

@@ -61,7 +61,7 @@ export default function AchievementsScreen() {
         <View className="px-6">
           <View className="flex-row items-center justify-between">
             <View className="flex-1">
-              <Text className="text-3xl font-semibold tracking-widest text-gray-900 dark:text-white">
+              <Text className="text-3xl font-semibold tracking-wide text-gray-900 dark:text-white">
                 Achievements
               </Text>
               <Text className="mt-1 text-sm font-medium tracking-wide text-amber-700 dark:text-amber-400">

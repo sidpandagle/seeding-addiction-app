@@ -48,7 +48,7 @@ function HistoryScreen() {
         <View className="px-6">
           <View className="flex-row items-center justify-between mb-4">
             <View className="flex-1">
-              <Text className="text-3xl font-semibold tracking-widest text-gray-900 dark:text-white">
+              <Text className="text-3xl font-semibold tracking-wide text-gray-900 dark:text-white">
                 History
               </Text>
               <Text className="mt-1 text-sm font-medium tracking-wide text-emerald-700 dark:text-emerald-400">

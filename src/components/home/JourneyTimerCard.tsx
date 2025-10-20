@@ -46,7 +46,7 @@ const JourneyTimerCardComponent: React.FC<JourneyTimerCardProps> = ({
       {/* Card with Background Icon - Same style as Daily Inspiration */}
       <View
         style={{ backgroundColor: colorScheme === 'dark' ? '#111827' : '#ffffff' }}
-        className="relative overflow-hidden shadow-md rounded-2xl"
+        className="relative overflow-hidden shadow-md rounded-2xl border border-gray-200 dark:border-gray-700"
       >
         <View className="p-6">
           {/* Decorative Background Icon - Bottom Right */}
@@ -62,10 +62,10 @@ const JourneyTimerCardComponent: React.FC<JourneyTimerCardProps> = ({
               {days > 0 && (
                 <>
                   <View className="items-center min-w-[70px]">
-                    <Text className="text-5xl font-extrabold tracking-tight text-emerald-600 dark:text-emerald-400">
+                    <Text className={`font-extrabold tracking-tight text-emerald-600 dark:text-emerald-400 ${ days > 0 ? 'text-4xl' : 'text-5xl'}`}>
                       {days}
                     </Text>
-                    <Text className="mt-1 text-xs font-bold tracking-widest uppercase text-emerald-700/70 dark:text-emerald-300/70">
+                    <Text className="mt-1 text-xs font-bold tracking-wide uppercase text-emerald-700/70 dark:text-emerald-300/70">
                       {days === 1 ? 'Day' : 'Days'}
                     </Text>
                   </View>
@@ -75,10 +75,10 @@ const JourneyTimerCardComponent: React.FC<JourneyTimerCardProps> = ({
 
               {/* Hours */}
               <View className="items-center min-w-[70px]">
-                <Text className="text-5xl font-extrabold tracking-tight text-emerald-600 dark:text-emerald-400">
+                <Text className={`font-extrabold tracking-tight text-emerald-600 dark:text-emerald-400 ${ days > 0 ? 'text-4xl' : 'text-5xl'}`}>
                   {hours.toString().padStart(2, '0')}
                 </Text>
-                <Text className="mt-1 text-xs font-bold tracking-widest uppercase text-emerald-700/70 dark:text-emerald-300/70">
+                <Text className="mt-1 text-xs font-bold tracking-wide uppercase text-emerald-700/70 dark:text-emerald-300/70">
                   Hours
                 </Text>
               </View>
@@ -88,10 +88,10 @@ const JourneyTimerCardComponent: React.FC<JourneyTimerCardProps> = ({
 
               {/* Minutes */}
               <View className="items-center min-w-[70px]">
-                <Text className="text-5xl font-extrabold tracking-tight text-emerald-600 dark:text-emerald-400">
+                <Text className={`font-extrabold tracking-tight text-emerald-600 dark:text-emerald-400 ${ days > 0 ? 'text-4xl' : 'text-5xl'}`}>
                   {minutes.toString().padStart(2, '0')}
                 </Text>
-                <Text className="mt-1 text-xs font-bold tracking-widest uppercase text-emerald-700/70 dark:text-emerald-300/70">
+                <Text className="mt-1 text-xs font-bold tracking-wide uppercase text-emerald-700/70 dark:text-emerald-300/70">
                   Mins
                 </Text>
               </View>
@@ -101,10 +101,10 @@ const JourneyTimerCardComponent: React.FC<JourneyTimerCardProps> = ({
 
               {/* Seconds */}
               <View className="items-center min-w-[70px]">
-                <Text className="text-5xl font-extrabold tracking-tight text-emerald-600 dark:text-emerald-400">
+                <Text className={`font-extrabold tracking-tight text-emerald-600 dark:text-emerald-400 ${ days > 0 ? 'text-4xl' : 'text-5xl'}`}>
                   {seconds.toString().padStart(2, '0')}
                 </Text>
-                <Text className="mt-1 text-xs font-bold tracking-widest uppercase text-emerald-700/70 dark:text-emerald-300/70">
+                <Text className="mt-1 text-xs font-bold tracking-wide uppercase text-emerald-700/70 dark:text-emerald-300/70">
                   Secs
                 </Text>
               </View>

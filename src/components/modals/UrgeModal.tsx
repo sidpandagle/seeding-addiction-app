@@ -152,7 +152,7 @@ export default function UrgeModal({ onClose }: UrgeModalProps) {
           <Pressable
             onPress={onClose}
             disabled={isSubmitting}
-            className={`rounded-2xl py-4 ${isSubmitting
+            className={`rounded-2xl py-4 border border-gray-200 dark:border-gray-700 ${isSubmitting
               ? 'bg-gray-100 dark:bg-gray-800'
               : 'bg-white dark:bg-gray-800 active:bg-gray-50 dark:active:bg-gray-700'
               }`}
