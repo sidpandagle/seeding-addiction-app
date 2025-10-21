@@ -3,6 +3,7 @@ import { StatusBar } from 'expo-status-bar';
 import { useState, useEffect, memo, useMemo } from 'react';
 import { History, BarChart3 } from 'lucide-react-native';
 import { useRelapseStore } from '../../src/stores/relapseStore';
+import { useUrgeStore } from '../../src/stores/urgeStore';
 import { useColorScheme } from '../../src/stores/themeStore';
 import { getJourneyStart } from '../../src/db/helpers';
 import { useJourneyStats } from '../../src/hooks/useJourneyStats';
@@ -12,17 +13,24 @@ import HistoryList from '../../src/components/history/HistoryList';
 import HistoryCalendar from '../../src/components/history/HistoryCalendar';
 import CalendarRelapseDetails from '../../src/components/history/CalendarRelapseDetails';
 import InsightsModal from '../../src/components/history/InsightsModal';
+import { createRelapseEntry, createUrgeEntry, sortHistoryEntries, type HistoryEntry } from '../../src/types/history';
 
 type ViewMode = 'list' | 'calendar';
 
 function HistoryScreen() {
   const colorScheme = useColorScheme();
   const { relapses } = useRelapseStore();
+  const { urges, loadUrges } = useUrgeStore();
   const stats = useJourneyStats();
   const [journeyStart, setJourneyStart] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<ViewMode>('list');
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [showInsightsModal, setShowInsightsModal] = useState(false);
+
+  // Load urges when component mounts
+  useEffect(() => {
+    loadUrges();
+  }, [loadUrges]);
 
   // Load journey start timestamp for calendar
   useEffect(() => {
@@ -32,6 +40,13 @@ function HistoryScreen() {
     };
     loadJourneyStart();
   }, []);
+
+  // Combine relapses and urges into unified history entries
+  const historyEntries = useMemo(() => {
+    const relapseEntries = relapses.map(createRelapseEntry);
+    const urgeEntries = urges.map(createUrgeEntry);
+    return sortHistoryEntries([...relapseEntries, ...urgeEntries]);
+  }, [relapses, urges]);
 
   // Calculate user stats for current streak
   const userStats = useMemo(
@@ -78,7 +93,7 @@ function HistoryScreen() {
                 View Advanced Insights
               </Text>
               <Text className="text-sm text-gray-500 dark:text-gray-400">
-                {relapses.length >= 2
+                {historyEntries.length >= 2
                   ? 'Detailed patterns & analytics'
                   : 'Start tracking to see insights'}
               </Text>
@@ -95,7 +110,7 @@ function HistoryScreen() {
       {/* Content Views */}
       <View className="flex-1">
         {viewMode === 'list' ? (
-          <HistoryList relapses={relapses} />
+          <HistoryList entries={historyEntries} />
         ) : (
           <ScrollView
             className="flex-1"
@@ -103,12 +118,12 @@ function HistoryScreen() {
             bounces={true}
           >
             <HistoryCalendar
-              relapses={relapses}
+              entries={historyEntries}
               selectedDate={selectedDate}
               onDateSelect={setSelectedDate}
               journeyStart={journeyStart}
             />
-            <CalendarRelapseDetails selectedDate={selectedDate} relapses={relapses} />
+            <CalendarRelapseDetails selectedDate={selectedDate} entries={historyEntries} />
           </ScrollView>
         )}
       </View>

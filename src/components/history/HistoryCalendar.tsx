@@ -2,10 +2,10 @@ import React, { useCallback, useMemo } from 'react';
 import { View } from 'react-native';
 import { Calendar, DateData } from 'react-native-calendars';
 import { useColorScheme } from '../../stores/themeStore';
-import type { Relapse } from '../../db/schema';
+import type { HistoryEntry } from '../../types/history';
 
 interface HistoryCalendarProps {
-  relapses: Relapse[];
+  entries: HistoryEntry[];
   selectedDate: string | null;
   onDateSelect: (date: string) => void;
   journeyStart: string | null;
@@ -13,7 +13,7 @@ interface HistoryCalendarProps {
 
 // Phase 2 Optimization: Memoize component to prevent re-renders on parent updates
 const HistoryCalendar = React.memo(function HistoryCalendar({
-  relapses,
+  entries,
   selectedDate,
   onDateSelect,
   journeyStart,
@@ -25,16 +25,46 @@ const HistoryCalendar = React.memo(function HistoryCalendar({
   const markedDates = useMemo(() => {
     const marks: { [key: string]: any } = {};
 
-    // Mark relapse dates
-    relapses.forEach((relapse) => {
-      const dateKey = new Date(relapse.timestamp).toISOString().split('T')[0];
+    // Group entries by date to handle mixed dates (both relapse and urge on same day)
+    const dateGroups: { [key: string]: { hasRelapse: boolean; hasUrge: boolean } } = {};
+
+    entries.forEach((entry) => {
+      const dateKey = new Date(entry.data.timestamp).toISOString().split('T')[0];
+      if (!dateGroups[dateKey]) {
+        dateGroups[dateKey] = { hasRelapse: false, hasUrge: false };
+      }
+      if (entry.type === 'relapse') {
+        dateGroups[dateKey].hasRelapse = true;
+      } else {
+        dateGroups[dateKey].hasUrge = true;
+      }
+    });
+
+    // Mark dates based on entry types
+    Object.entries(dateGroups).forEach(([dateKey, { hasRelapse, hasUrge }]) => {
+      let dotColor: string;
+      let textColor: string;
+
+      if (hasRelapse && hasUrge) {
+        // Both types on same day - use amber/yellow
+        dotColor = '#F59E0B'; // amber-500
+        textColor = isDark ? '#FDE68A' : '#92400E'; // amber-200/amber-800
+      } else if (hasRelapse) {
+        // Only relapse - red
+        dotColor = '#EF4444'; // red-500
+        textColor = isDark ? '#FECACA' : '#991B1B'; // red-200/red-800
+      } else {
+        // Only urge - green
+        dotColor = '#10B981'; // green-500
+        textColor = isDark ? '#A7F3D0' : '#065F46'; // green-200/green-800
+      }
+
       marks[dateKey] = {
         marked: true,
-        dotColor: '#EF4444', // red-500
-        // Use standard marking without custom container styles to preserve touch handling
+        dotColor,
         customStyles: {
           text: {
-            color: isDark ? '#FECACA' : '#991B1B', // red-200/red-800
+            color: textColor,
             fontWeight: 'bold',
             fontSize: 18,
           },
@@ -44,19 +74,38 @@ const HistoryCalendar = React.memo(function HistoryCalendar({
 
     // Mark selected date
     if (selectedDate) {
-      const isRelapseDate = marks[selectedDate];
+      const markedDate = marks[selectedDate];
+      let selectedColor: string;
+      let selectedTextColor: string;
+
+      if (markedDate?.marked) {
+        // Use color matching the dot color
+        if (markedDate.dotColor === '#EF4444') {
+          // Red for relapse
+          selectedColor = isDark ? '#7f1d1d' : '#fca5a5'; // red-900/red-300
+          selectedTextColor = isDark ? '#fecaca' : '#7f1d1d'; // red-200/red-900
+        } else if (markedDate.dotColor === '#10B981') {
+          // Green for urge
+          selectedColor = isDark ? '#065F46' : '#86EFAC'; // green-900/green-300
+          selectedTextColor = isDark ? '#A7F3D0' : '#065F46'; // green-200/green-900
+        } else {
+          // Amber for mixed
+          selectedColor = isDark ? '#78350F' : '#FCD34D'; // amber-900/amber-300
+          selectedTextColor = isDark ? '#FDE68A' : '#78350F'; // amber-200/amber-900
+        }
+      } else {
+        // Default blue for non-marked dates
+        selectedColor = isDark ? '#1d4ed8' : '#3B82F6'; // blue-700/blue-500
+        selectedTextColor = '#FFFFFF';
+      }
+
       marks[selectedDate] = {
         ...marks[selectedDate],
         selected: true,
-        // Use red/amber background for relapse dates to match the red text, blue for others
-        selectedColor: isRelapseDate?.marked && isRelapseDate?.dotColor === '#EF4444'
-          ? (isDark ? '#7f1d1d' : '#fca5a5')  // red-900/red-300
-          : (isDark ? '#1d4ed8' : '#3B82F6'), // blue-700/blue-500
-        selectedTextColor: isRelapseDate?.marked && isRelapseDate?.dotColor === '#EF4444'
-          ? (isDark ? '#fecaca' : '#7f1d1d')  // red-200/red-900
-          : '#FFFFFF',
-        marked: isRelapseDate?.marked,
-        dotColor: isRelapseDate?.dotColor,
+        selectedColor,
+        selectedTextColor,
+        marked: markedDate?.marked,
+        dotColor: markedDate?.dotColor,
       };
     }
 
@@ -70,7 +119,7 @@ const HistoryCalendar = React.memo(function HistoryCalendar({
     }
 
     return marks;
-  }, [relapses, selectedDate, isDark]);
+  }, [entries, selectedDate, isDark]);
 
   const handleDayPress = useCallback(
     (day: DateData) => {
