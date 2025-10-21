@@ -376,7 +376,7 @@ export default function SettingsScreen() {
         {/* App Info */}
         <View className="px-6 mt-8">
           <View className="items-center p-6 bg-white border border-white dark:bg-gray-900 dark:border-gray-900 rounded-2xl">
-            <View className="items-center justify-center w-16 h-16 mb-4 bg-gradient-to-br from-emerald-100 to-teal-100 dark:from-emerald-900/30 dark:to-teal-900/30 rounded-2xl">
+            <View className="items-center justify-center w-16 h-16 bg-gradient-to-br from-emerald-100 to-teal-100 dark:from-emerald-900/30 dark:to-teal-900/30 rounded-2xl">
               <Info size={28} color="#10b981" strokeWidth={2.5} />
             </View>
             <Text className="text-lg font-bold text-gray-900 dark:text-white">
@@ -388,7 +388,7 @@ export default function SettingsScreen() {
             <Text className="mt-3 text-xs text-center text-gray-400 dark:text-gray-500">
               Privacy-focused relapse tracking
             </Text>
-            <Text className="mt-1 text-xs text-center text-emerald-600 dark:text-emerald-400">
+            <Text className="mt-1 mb-4 text-xs text-center text-emerald-600 dark:text-emerald-400">
               Your data stays on your device
             </Text>
           </View>
