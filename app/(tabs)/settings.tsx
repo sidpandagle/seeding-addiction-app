@@ -14,7 +14,7 @@ import {
 import { useRelapseStore } from '../../src/stores/relapseStore';
 import { useColorScheme, useThemeStore } from '../../src/stores/themeStore';
 import { useSetNotificationsEnabled, useNotificationsEnabled } from '../../src/stores/notificationStore';
-import { enableNotifications, disableNotifications } from '../../src/services/notifications';
+import { enableNotifications, disableNotifications, cancelAllNotifications } from '../../src/services/notifications';
 import { getJourneyStart } from '../../src/db/helpers';
 import { Settings2, Palette, Lock, Database, Sun, Moon, Shield, Trash2, Info, Brain, Coffee, Bell } from 'lucide-react-native';
 import RecoveryEducationModal from '../../src/components/modals/RecoveryEducationModal';
@@ -129,7 +129,13 @@ export default function SettingsScreen() {
           style: 'destructive',
           onPress: async () => {
             try {
+              // Reset database
               await resetAllData();
+
+              // Cancel all scheduled notifications since journey is completely reset
+              // This prevents old milestone notifications from firing
+              await cancelAllNotifications();
+
               router.replace('/');
             } catch (error) {
               console.error('Error resetting data:', error);
@@ -166,15 +172,17 @@ export default function SettingsScreen() {
       if (value) {
         // Enabling notifications
         const journeyStart = await getJourneyStart();
-        const currentElapsedTime = journeyStart && latestRelapseTimestamp
-          ? Date.now() - new Date(latestRelapseTimestamp).getTime()
-          : journeyStart
-          ? Date.now() - new Date(journeyStart).getTime()
+
+        // Current streak start is either the latest relapse or the journey start
+        const currentStreakStart = latestRelapseTimestamp || journeyStart;
+
+        const currentElapsedTime = currentStreakStart
+          ? Date.now() - new Date(currentStreakStart).getTime()
           : null;
 
         const success = await enableNotifications(
           currentElapsedTime,
-          journeyStart,
+          currentStreakStart,
           '09:00' // Default motivational time
         );
 

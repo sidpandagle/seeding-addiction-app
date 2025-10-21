@@ -2,6 +2,8 @@ import { View, Text, TextInput, Pressable, ScrollView, KeyboardAvoidingView, Pla
 import { useState } from 'react';
 import { useRelapseStore } from '../../stores/relapseStore';
 import { useColorScheme } from '../../stores/themeStore';
+import { useNotificationsEnabled } from '../../stores/notificationStore';
+import { handleJourneyReset } from '../../services/notifications';
 import * as Haptics from 'expo-haptics';
 import { RotateCcw, Heart } from 'lucide-react-native';
 import { getRandomTip, type EducationalTip } from '../../data/educationalContent';
@@ -20,6 +22,7 @@ interface RelapseModalProps {
 export default function RelapseModal({ onClose, existingRelapse }: RelapseModalProps) {
   const { addRelapse, updateRelapse } = useRelapseStore();
   const colorScheme = useColorScheme();
+  const notificationsEnabled = useNotificationsEnabled();
 
   const [note, setNote] = useState(existingRelapse?.note || '');
   const [selectedTags, setSelectedTags] = useState<string[]>(existingRelapse?.tags || []);
@@ -40,16 +43,24 @@ export default function RelapseModal({ onClose, existingRelapse }: RelapseModalP
       setIsSubmitting(true);
 
       if (existingRelapse) {
+        // Updating existing relapse - no need to reset notifications
         await updateRelapse(existingRelapse.id, {
           note: note.trim() || undefined,
           tags: selectedTags.length > 0 ? selectedTags : undefined,
         });
       } else {
+        // Adding new relapse - this resets the journey
+        const relapseTimestamp = new Date().toISOString();
+
         await addRelapse({
-          timestamp: new Date().toISOString(),
+          timestamp: relapseTimestamp,
           note: note.trim() || undefined,
           tags: selectedTags.length > 0 ? selectedTags : undefined,
         });
+
+        // Reset milestone notifications to start from this new journey
+        // This ensures notifications fire at the correct times from the new start point
+        await handleJourneyReset(relapseTimestamp, notificationsEnabled);
       }
 
       // Brief delay for wither animation to be visible

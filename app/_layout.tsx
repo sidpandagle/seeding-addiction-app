@@ -90,17 +90,20 @@ export default function RootLayout() {
       try {
         // Get journey data
         const journeyStart = await getJourneyStart();
-        const currentElapsedTime = journeyStart && latestRelapseTimestamp
-          ? Date.now() - new Date(latestRelapseTimestamp).getTime()
-          : journeyStart
-          ? Date.now() - new Date(journeyStart).getTime()
+
+        // Current streak start is either the latest relapse or the journey start
+        const currentStreakStart = latestRelapseTimestamp || journeyStart;
+
+        const currentElapsedTime = currentStreakStart
+          ? Date.now() - new Date(currentStreakStart).getTime()
           : null;
 
-        // Initialize notifications
+        // Initialize notifications with current streak start
+        // This ensures milestone notifications are scheduled from the correct reference point
         await initializeNotifications(
           notificationsEnabled,
           currentElapsedTime,
-          journeyStart,
+          currentStreakStart,
           motivationalReminderTime
         );
       } catch (err) {
