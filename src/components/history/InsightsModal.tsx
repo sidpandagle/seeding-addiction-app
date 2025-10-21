@@ -6,6 +6,7 @@ import { useUrgeStore } from '../../stores/urgeStore';
 import { useColorScheme } from '../../stores/themeStore';
 import { getJourneyStart } from '../../db/helpers';
 import { calculateUserStats } from '../../utils/statsHelpers';
+import { MS_PER_DAY } from '../../constants/timeUnits';
 import WeeklyPatternChart from '../charts/WeeklyPatternChart';
 import MonthlyTrendChart from '../charts/MonthlyTrendChart';
 import ResistanceRatioChart from '../charts/ResistanceRatioChart';
@@ -35,8 +36,8 @@ const InsightsModal = React.memo(function InsightsModal({ onClose }: InsightsMod
     const userStats = calculateUserStats(relapses, journeyStart);
     
     if (relapses.length === 0) {
-      const totalDays = journeyStart 
-        ? Math.floor((Date.now() - new Date(journeyStart).getTime()) / (1000 * 60 * 60 * 24)) 
+      const totalDays = journeyStart
+        ? Math.floor((Date.now() - new Date(journeyStart).getTime()) / MS_PER_DAY)
         : 0;
       
       return {
@@ -57,12 +58,12 @@ const InsightsModal = React.memo(function InsightsModal({ onClose }: InsightsMod
     const streaks: number[] = [];
     
     // First streak: from journey start to first relapse
-    streaks.push(Math.floor((new Date(sorted[0].timestamp).getTime() - startTime) / (1000 * 60 * 60 * 24)));
+    streaks.push(Math.floor((new Date(sorted[0].timestamp).getTime() - startTime) / MS_PER_DAY));
 
     // Streaks between relapses
     for (let i = 0; i < sorted.length - 1; i++) {
       const streakDays = Math.floor(
-        (new Date(sorted[i + 1].timestamp).getTime() - new Date(sorted[i].timestamp).getTime()) / (1000 * 60 * 60 * 24)
+        (new Date(sorted[i + 1].timestamp).getTime() - new Date(sorted[i].timestamp).getTime()) / MS_PER_DAY
       );
       streaks.push(streakDays);
     }
@@ -71,7 +72,7 @@ const InsightsModal = React.memo(function InsightsModal({ onClose }: InsightsMod
     streaks.push(userStats.currentStreak);
 
     const averageStreak = streaks.reduce((sum, streak) => sum + streak, 0) / streaks.length;
-    const totalDays = Math.floor((Date.now() - startTime) / (1000 * 60 * 60 * 24));
+    const totalDays = Math.floor((Date.now() - startTime) / MS_PER_DAY);
     const relapseRate = relapses.length / (totalDays || 1);
 
     // Calculate trend (comparing first half vs second half)
@@ -80,9 +81,9 @@ const InsightsModal = React.memo(function InsightsModal({ onClose }: InsightsMod
     const secondHalfCount = relapses.length - midpoint;
 
     const firstHalfDays = sorted[midpoint]
-      ? (new Date(sorted[midpoint].timestamp).getTime() - startTime) / (1000 * 60 * 60 * 24)
+      ? (new Date(sorted[midpoint].timestamp).getTime() - startTime) / MS_PER_DAY
       : totalDays / 2;
-    const secondHalfDays = (Date.now() - (sorted[midpoint] ? new Date(sorted[midpoint].timestamp).getTime() : startTime)) / (1000 * 60 * 60 * 24);
+    const secondHalfDays = (Date.now() - (sorted[midpoint] ? new Date(sorted[midpoint].timestamp).getTime() : startTime)) / MS_PER_DAY;
 
     const firstHalfRate = firstHalfCount / (firstHalfDays || 1);
     const secondHalfRate = secondHalfCount / (secondHalfDays || 1);

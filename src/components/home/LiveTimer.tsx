@@ -1,9 +1,9 @@
 import { useState, useEffect, memo } from 'react';
-import { View, Text } from 'react-native';
+import { View, Text, ActivityIndicator } from 'react-native';
 import { millisecondsToTimeBreakdown } from '../../utils/growthStages';
 
 interface LiveTimerProps {
-  startTime: string; // ISO timestamp
+  startTime: string | null; // ISO timestamp (can be null while loading)
   showDays?: boolean;
 }
 
@@ -18,6 +18,15 @@ function LiveTimer({ startTime, showDays = true }: LiveTimerProps) {
 
     return () => clearInterval(interval);
   }, []);
+
+  // Show loading state if startTime is not yet available
+  if (!startTime) {
+    return (
+      <View className="items-center py-4">
+        <ActivityIndicator size="large" color="#6b7280" />
+      </View>
+    );
+  }
 
   const timeDiff = Math.max(0, time - new Date(startTime).getTime());
   const { days, hours, minutes, seconds } = millisecondsToTimeBreakdown(timeDiff);

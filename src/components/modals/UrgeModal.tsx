@@ -4,12 +4,11 @@ import { useUrgeStore } from '../../stores/urgeStore';
 import { useColorScheme } from '../../stores/themeStore';
 import { Shield, Sparkles } from 'lucide-react-native';
 import { getRandomTip, type EducationalTip } from '../../data/educationalContent';
+import { URGE_CONTEXTS } from '../../constants/tags';
 
 interface UrgeModalProps {
   onClose: () => void;
 }
-
-const CONTEXT_OPTIONS = ['Stress', 'Boredom', 'Trigger', 'Social', 'Tired', 'Anxious', 'Other'];
 
 export default function UrgeModal({ onClose }: UrgeModalProps) {
   const { addUrge } = useUrgeStore();
@@ -110,7 +109,7 @@ export default function UrgeModal({ onClose }: UrgeModalProps) {
                 What triggered the urge? (Optional)
               </Text>
               <View className="flex-row flex-wrap gap-2">
-                {CONTEXT_OPTIONS.map((context) => (
+                {URGE_CONTEXTS.map((context) => (
                   <Pressable
                     key={context}
                     onPress={() => toggleContext(context)}

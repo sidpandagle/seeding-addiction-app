@@ -1,4 +1,5 @@
 import type { Relapse, Urge } from '../db/schema';
+import { MS_PER_DAY } from '../constants/timeUnits';
 
 export interface UserStats {
   currentStreak: number; // Days since last relapse
@@ -67,13 +68,13 @@ function calculateCurrentStreak(sortedRelapses: Relapse[], journeyStart: string)
   if (sortedRelapses.length === 0) {
     // No relapses - calculate from journey start
     const timeDiff = now - new Date(journeyStart).getTime();
-    return Math.floor(timeDiff / (1000 * 60 * 60 * 24));
+    return Math.floor(timeDiff / MS_PER_DAY);
   }
 
   // Has relapses - calculate from last relapse
   const lastRelapse = sortedRelapses[sortedRelapses.length - 1];
   const timeDiff = now - new Date(lastRelapse.timestamp).getTime();
-  return Math.floor(timeDiff / (1000 * 60 * 60 * 24));
+  return Math.floor(timeDiff / MS_PER_DAY);
 }
 
 /**
@@ -90,14 +91,14 @@ function calculateBestStreak(sortedRelapses: Relapse[], journeyStart: string): n
 
   // Calculate streak from journey start to first relapse
   const firstRelapseTime = new Date(sortedRelapses[0].timestamp).getTime();
-  const firstStreak = Math.floor((firstRelapseTime - journeyStartTime) / (1000 * 60 * 60 * 24));
+  const firstStreak = Math.floor((firstRelapseTime - journeyStartTime) / MS_PER_DAY);
   streaks.push(firstStreak);
 
   // Calculate streaks between consecutive relapses
   for (let i = 0; i < sortedRelapses.length - 1; i++) {
     const currentRelapseTime = new Date(sortedRelapses[i].timestamp).getTime();
     const nextRelapseTime = new Date(sortedRelapses[i + 1].timestamp).getTime();
-    const streak = Math.floor((nextRelapseTime - currentRelapseTime) / (1000 * 60 * 60 * 24));
+    const streak = Math.floor((nextRelapseTime - currentRelapseTime) / MS_PER_DAY);
     streaks.push(streak);
   }
 

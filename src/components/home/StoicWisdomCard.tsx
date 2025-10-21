@@ -3,6 +3,7 @@ import { View, Text } from 'react-native';
 import { Brain } from 'lucide-react-native';
 import { useColorScheme } from '../../stores/themeStore';
 import { getRandomTeaching, type StoicTeaching } from '../../data/stoicTeachings';
+import { getCategoryBackgroundColor, getCategoryTextColor } from '../../constants/categoryColors';
 
 /**
  * Stoic Wisdom Card component for home page
@@ -18,36 +19,6 @@ const StoicWisdomCardComponent: React.FC = () => {
     setCurrentTeaching(getRandomTeaching());
   }, []);
 
-  const getCategoryColor = (category: StoicTeaching['category']) => {
-    switch (category) {
-      case 'control':
-        return 'border bg-blue-100 dark:bg-blue-950/30 border-blue-300 dark:border-blue-700';
-      case 'discipline':
-        return 'border bg-purple-100 dark:bg-purple-950/30 border-purple-300 dark:border-purple-700';
-      case 'resilience':
-        return 'border bg-amber-100 dark:bg-amber-950/30 border-amber-300 dark:border-amber-700';
-      case 'wisdom':
-        return 'border bg-emerald-100 dark:bg-emerald-950/30 border-emerald-300 dark:border-emerald-700';
-      case 'virtue':
-        return 'border bg-rose-100 dark:bg-rose-950/30 border-rose-300 dark:border-rose-700';
-    }
-  };
-
-  const getCategoryTextColor = (category: StoicTeaching['category']) => {
-    switch (category) {
-      case 'control':
-        return 'text-blue-700 dark:text-blue-300';
-      case 'discipline':
-        return 'text-purple-700 dark:text-purple-300';
-      case 'resilience':
-        return 'text-amber-700 dark:text-amber-300';
-      case 'wisdom':
-        return 'text-emerald-700 dark:text-emerald-300';
-      case 'virtue':
-        return 'text-rose-700 dark:text-rose-300';
-    }
-  };
-
   return (
     <View className="px-6 pb-0">
       {/* Header */}
@@ -59,7 +30,7 @@ const StoicWisdomCardComponent: React.FC = () => {
       </View>
 
       {/* Quote Card */}
-      <View className={`p-6 rounded-2xl ${getCategoryColor(currentTeaching.category)}`}>
+      <View className={`p-6 rounded-2xl ${getCategoryBackgroundColor(currentTeaching.category)}`}>
         <Text className="mb-2 text-xs font-bold tracking-wider text-gray-500 uppercase dark:text-gray-400">
           {currentTeaching.category}
         </Text>

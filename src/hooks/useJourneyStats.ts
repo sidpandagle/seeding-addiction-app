@@ -1,8 +1,8 @@
 import { useMemo, useState, useEffect, useRef } from 'react';
-import { getJourneyStart } from '../db/helpers';
 import { getCheckpointProgress } from '../utils/growthStages';
 import { getGrowthStage } from '../utils/growthStages';
 import { useLatestRelapseTimestamp } from '../stores/relapseStore';
+import { useJourneyStartLoader } from './useJourneyStartLoader';
 
 /**
  * Shared hook for journey statistics
@@ -14,9 +14,8 @@ export function useJourneyStats() {
   // Use optimized selector that only updates when latest timestamp changes
   const latestRelapseTimestamp = useLatestRelapseTimestamp();
 
-  const [journeyStart, setJourneyStart] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const journeyStartLoadedRef = useRef(false);
+  // Use centralized journey start loader
+  const { journeyStart, isLoading } = useJourneyStartLoader();
 
   // State to trigger updates when milestones are crossed
   const [, setMilestoneTrigger] = useState(0);
@@ -24,33 +23,6 @@ export function useJourneyStats() {
   // Track previous growth stage and checkpoint to detect changes
   const previousGrowthStageRef = useRef<string | null>(null);
   const previousCheckpointRef = useRef<string | null>(null);
-
-  // Load journey start timestamp ONCE on mount (not on every relapse change)
-  useEffect(() => {
-    if (journeyStartLoadedRef.current) return;
-
-    let isMounted = true;
-    const loadJourneyStart = async () => {
-      try {
-        const start = await getJourneyStart();
-        if (isMounted) {
-          setJourneyStart(start);
-          setIsLoading(false);
-          journeyStartLoadedRef.current = true;
-        }
-      } catch (error) {
-        console.error('Error loading journey start:', error);
-        if (isMounted) {
-          setIsLoading(false);
-        }
-      }
-    };
-    loadJourneyStart();
-
-    return () => {
-      isMounted = false;
-    };
-  }, []); // Only run once on mount
 
   // Monitor for milestone changes every 60 seconds
   useEffect(() => {
@@ -127,29 +99,7 @@ export function useJourneyStats() {
  */
 export function useJourneyStartTime(): string | null {
   const latestRelapseTimestamp = useLatestRelapseTimestamp();
-  const [journeyStart, setJourneyStart] = useState<string | null>(null);
-  const journeyStartLoadedRef = useRef(false);
-
-  useEffect(() => {
-    if (journeyStartLoadedRef.current) return;
-
-    let isMounted = true;
-    const loadJourneyStart = async () => {
-      try {
-        const start = await getJourneyStart();
-        if (isMounted) {
-          setJourneyStart(start);
-          journeyStartLoadedRef.current = true;
-        }
-      } catch (error) {
-        console.error('Error loading journey start:', error);
-      }
-    };
-    loadJourneyStart();
-    return () => {
-      isMounted = false;
-    };
-  }, []); // Only load once
+  const { journeyStart } = useJourneyStartLoader();
 
   // Return the most recent timestamp (relapse or journey start)
   return latestRelapseTimestamp || journeyStart;
@@ -162,29 +112,7 @@ export function useJourneyStartTime(): string | null {
  */
 export function useGrowthStage() {
   const latestRelapseTimestamp = useLatestRelapseTimestamp();
-  const [journeyStart, setJourneyStart] = useState<string | null>(null);
-  const journeyStartLoadedRef = useRef(false);
-
-  useEffect(() => {
-    if (journeyStartLoadedRef.current) return;
-
-    let isMounted = true;
-    const loadJourneyStart = async () => {
-      try {
-        const start = await getJourneyStart();
-        if (isMounted) {
-          setJourneyStart(start);
-          journeyStartLoadedRef.current = true;
-        }
-      } catch (error) {
-        console.error('Error loading journey start:', error);
-      }
-    };
-    loadJourneyStart();
-    return () => {
-      isMounted = false;
-    };
-  }, []); // Only load once
+  const { journeyStart } = useJourneyStartLoader();
 
   const growthStage = useMemo(() => {
     const startTime = latestRelapseTimestamp || journeyStart;
@@ -204,29 +132,7 @@ export function useGrowthStage() {
  */
 export function useCheckpointProgress() {
   const latestRelapseTimestamp = useLatestRelapseTimestamp();
-  const [journeyStart, setJourneyStart] = useState<string | null>(null);
-  const journeyStartLoadedRef = useRef(false);
-
-  useEffect(() => {
-    if (journeyStartLoadedRef.current) return;
-
-    let isMounted = true;
-    const loadJourneyStart = async () => {
-      try {
-        const start = await getJourneyStart();
-        if (isMounted) {
-          setJourneyStart(start);
-          journeyStartLoadedRef.current = true;
-        }
-      } catch (error) {
-        console.error('Error loading journey start:', error);
-      }
-    };
-    loadJourneyStart();
-    return () => {
-      isMounted = false;
-    };
-  }, []); // Only load once
+  const { journeyStart } = useJourneyStartLoader();
 
   const checkpointProgress = useMemo(() => {
     const startTime = latestRelapseTimestamp || journeyStart;

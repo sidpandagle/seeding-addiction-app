@@ -1,10 +1,10 @@
 import React, { useState, useEffect, memo, useMemo, useRef } from 'react';
-import { View, Text, Animated } from 'react-native';
+import { View, Text, Animated, ActivityIndicator } from 'react-native';
 import { useColorScheme } from '../../stores/themeStore';
 import { millisecondsToTimeBreakdown, getCheckpointProgress } from '../../utils/growthStages';
 
 interface JourneyTimerCardProps {
-  startTime: string; // ISO timestamp
+  startTime: string | null; // ISO timestamp (can be null while loading)
   growthStage: {
     emoji: string;
     achievementTitle: string;
@@ -137,6 +137,23 @@ const JourneyTimerCardComponent: React.FC<JourneyTimerCardProps> = ({
 
     return () => clearInterval(interval);
   }, []);
+
+  // Show loading state if startTime is not yet available
+  if (!startTime) {
+    return (
+      <View className="px-6">
+        <View
+          style={{ backgroundColor: colorScheme === 'dark' ? '#111827' : '#ffffff' }}
+          className="relative overflow-hidden border border-gray-200 shadow-md rounded-2xl dark:border-gray-700"
+        >
+          <View className="items-center justify-center p-6" style={{ minHeight: 250 }}>
+            <ActivityIndicator size="large" color="#10b981" />
+            <Text className="mt-4 text-sm text-gray-500 dark:text-gray-400">Loading your journey...</Text>
+          </View>
+        </View>
+      </View>
+    );
+  }
 
   // Calculate elapsed time
   const elapsed = Math.max(0, time - new Date(startTime).getTime());

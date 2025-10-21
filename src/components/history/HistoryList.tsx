@@ -1,8 +1,7 @@
 import { FlatList, View, Text, Pressable, ScrollView } from 'react-native';
 import { useState, useMemo } from 'react';
 import type { Relapse } from '../../db/schema';
-
-const AVAILABLE_TAGS = ['Stress', 'Trigger', 'Social', 'Boredom', 'Craving', 'Other'];
+import { RELAPSE_TAGS } from '../../constants/tags';
 
 interface HistoryListProps {
   relapses: Relapse[];
@@ -64,7 +63,7 @@ export default function HistoryList({ relapses }: HistoryListProps) {
                   All ({relapses.length})
                 </Text>
               </Pressable>
-              {AVAILABLE_TAGS.map((tag) => {
+              {RELAPSE_TAGS.map((tag) => {
                 const count = relapses.filter((r) => r.tags?.includes(tag)).length;
                 return (
                   <Pressable

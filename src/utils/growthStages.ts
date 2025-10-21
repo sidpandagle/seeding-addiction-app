@@ -4,6 +4,8 @@
  * Represents the complete recovery journey from 0 minutes to 365 days (1 year)
  */
 
+import { MS_PER_DAY, millisecondsToDays, daysToMilliseconds } from '../constants/timeUnits';
+
 // ============================================================================
 // TYPE DEFINITIONS
 // ============================================================================
@@ -228,7 +230,7 @@ export const GROWTH_STAGES: GrowthStageConfig[] = [
  * @returns Current growth stage configuration
  */
 export function getGrowthStage(elapsedTime: number): GrowthStageConfig {
-  const days = elapsedTime / (1000 * 60 * 60 * 24);
+  const days = millisecondsToDays(elapsedTime);
 
   // Find the matching stage (iterate backwards to find highest threshold met)
   for (let i = GROWTH_STAGES.length - 1; i >= 0; i--) {
@@ -268,7 +270,7 @@ export function getStageProgress(elapsedTime: number): number {
     return 1; // At final stage
   }
 
-  const days = elapsedTime / (1000 * 60 * 60 * 24);
+  const days = millisecondsToDays(elapsedTime);
   const daysInCurrentStage = days - currentStage.minDays;
   const totalDaysInStage = nextStage.minDays - currentStage.minDays;
 
@@ -288,9 +290,9 @@ export function getTimeUntilNextStage(elapsedTime: number): number | null {
     return null; // At final stage
   }
 
-  const days = elapsedTime / (1000 * 60 * 60 * 24);
+  const days = millisecondsToDays(elapsedTime);
   const daysRemaining = nextStage.minDays - days;
-  return daysRemaining * 24 * 60 * 60 * 1000; // Convert back to milliseconds
+  return daysRemaining * MS_PER_DAY;
 }
 
 // ============================================================================
@@ -326,7 +328,7 @@ export function getAchievements(elapsedTime: number): Achievement[] {
 
   // Calculate new result by mapping growth stages to achievements
   const result = GROWTH_STAGES.map((stage) => {
-    const threshold = stage.minDays * 24 * 60 * 60 * 1000; // Convert days to milliseconds
+    const threshold = daysToMilliseconds(stage.minDays);
     return {
       id: stage.id,
       title: stage.achievementTitle,
@@ -358,7 +360,7 @@ export function getNewlyUnlockedAchievements(
   previousTime: number
 ): Achievement[] {
   return GROWTH_STAGES.filter((stage) => {
-    const threshold = stage.minDays * 24 * 60 * 60 * 1000; // Convert days to milliseconds
+    const threshold = daysToMilliseconds(stage.minDays);
     return currentTime >= threshold && previousTime < threshold;
   }).map((stage) => ({
     id: stage.id,
@@ -366,7 +368,7 @@ export function getNewlyUnlockedAchievements(
     description: stage.achievementDescription,
     emoji: stage.emoji,
     shortLabel: stage.shortLabel,
-    threshold: stage.minDays * 24 * 60 * 60 * 1000, // Convert days to milliseconds
+    threshold: daysToMilliseconds(stage.minDays),
     isUnlocked: true,
     unlockedAt: new Date().toISOString(),
   }));
@@ -379,7 +381,7 @@ export function getNewlyUnlockedAchievements(
  */
 export function getNextAchievement(elapsedTime: number): Achievement | null {
   const nextStage = GROWTH_STAGES.find(
-    (stage) => elapsedTime < stage.minDays * 24 * 60 * 60 * 1000 // Convert days to milliseconds
+    (stage) => elapsedTime < daysToMilliseconds(stage.minDays)
   );
 
   return nextStage
@@ -388,7 +390,7 @@ export function getNextAchievement(elapsedTime: number): Achievement | null {
         title: nextStage.achievementTitle,
         description: nextStage.achievementDescription,
         emoji: nextStage.emoji,
-        threshold: nextStage.minDays * 24 * 60 * 60 * 1000, // Convert days to milliseconds
+        threshold: daysToMilliseconds(nextStage.minDays),
         shortLabel: nextStage.shortLabel,
         isUnlocked: false,
       }
@@ -429,7 +431,7 @@ export function getCheckpointProgress(elapsedTime: number): CheckpointProgress {
     };
   }
 
-  const days = elapsedTime / (1000 * 60 * 60 * 24);
+  const days = millisecondsToDays(elapsedTime);
 
   // Find the current stage (the stage the user is currently in)
   let currentStageIndex = -1;
@@ -519,7 +521,7 @@ export const CHECKPOINTS = GROWTH_STAGES.map((stage) => ({
   id: stage.id,
   label: stage.label,
   shortLabel: stage.shortLabel,
-  duration: stage.minDays * 24 * 60 * 60 * 1000, // Convert days to milliseconds
+  duration: daysToMilliseconds(stage.minDays),
 }));
 
 /**

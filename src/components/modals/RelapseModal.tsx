@@ -5,6 +5,7 @@ import { useColorScheme } from '../../stores/themeStore';
 import * as Haptics from 'expo-haptics';
 import { RotateCcw, Heart } from 'lucide-react-native';
 import { getRandomTip, type EducationalTip } from '../../data/educationalContent';
+import { RELAPSE_TAGS } from '../../constants/tags';
 
 interface RelapseModalProps {
   onClose: () => void;
@@ -15,8 +16,6 @@ interface RelapseModalProps {
     tags?: string[];
   };
 }
-
-const AVAILABLE_TAGS = ['Stress', 'Trigger', 'Social', 'Boredom', 'Craving', 'Other'];
 
 export default function RelapseModal({ onClose, existingRelapse }: RelapseModalProps) {
   const { addRelapse, updateRelapse } = useRelapseStore();
@@ -143,7 +142,7 @@ export default function RelapseModal({ onClose, existingRelapse }: RelapseModalP
             <View>
               <Text className="mb-3 text-xs font-semibold tracking-wide text-gray-500 uppercase dark:text-gray-400">What triggered the urge? (Optional)</Text>
               <View className="flex-row flex-wrap gap-2">
-                {AVAILABLE_TAGS.map((tag) => (
+                {RELAPSE_TAGS.map((tag) => (
                   <Pressable
                     key={tag}
                     onPress={() => toggleTag(tag)}
