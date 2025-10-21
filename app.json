@@ -15,7 +15,10 @@
     ],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.seeding.app"
+      "bundleIdentifier": "com.seeding.app",
+      "infoPlist": {
+        "UIBackgroundModes": ["remote-notification"]
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -25,7 +28,10 @@
       "package": "com.seeding.app",
       "jsEngine": "hermes",
       "enableProguardInReleaseBuilds": true,
-      "enableShrinkResourcesInReleaseBuilds": true
+      "enableShrinkResourcesInReleaseBuilds": true,
+      "permissions": [
+        "android.permission.POST_NOTIFICATIONS"
+      ]
     },
     "web": {
       "favicon": "./assets/app-icon.png"
@@ -49,7 +55,20 @@
           },
           "imageWidth": 350
         }
+      ],
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/app-icon.png",
+          "color": "#395141"
+        }
       ]
-    ]
+    ],
+    "notification": {
+      "icon": "./assets/app-icon.png",
+      "color": "#395141",
+      "androidMode": "default",
+      "androidCollapsedTitle": "Seeding"
+    }
   }
 }

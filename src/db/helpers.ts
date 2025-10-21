@@ -280,3 +280,34 @@ export const getUrgesCount = async (): Promise<number> => {
   );
   return result?.count || 0;
 };
+
+/**
+ * Get a generic app setting value by key
+ */
+export const getAppSetting = async (key: string): Promise<string | null> => {
+  const db = await getDatabase();
+  const result = await db.getFirstAsync<{ value: string }>(
+    'SELECT value FROM app_settings WHERE key = ?',
+    [key]
+  );
+  return result?.value || null;
+};
+
+/**
+ * Set a generic app setting value by key
+ */
+export const setAppSetting = async (key: string, value: string): Promise<void> => {
+  const db = await getDatabase();
+  await db.runAsync(
+    'INSERT OR REPLACE INTO app_settings (key, value) VALUES (?, ?)',
+    [key, value]
+  );
+};
+
+/**
+ * Delete an app setting by key
+ */
+export const deleteAppSetting = async (key: string): Promise<void> => {
+  const db = await getDatabase();
+  await db.runAsync('DELETE FROM app_settings WHERE key = ?', [key]);
+};

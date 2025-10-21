@@ -5,10 +5,13 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { enableScreens } from 'react-native-screens';
 import { useRelapseStore } from '../src/stores/relapseStore';
 import { useColorScheme as useColorSchemeStore } from '../src/stores/themeStore';
+import { useNotificationStore } from '../src/stores/notificationStore';
 import { AppLock } from '../src/components/common/AppLock';
 import { ThemeTransitionOverlay } from '../src/components/common/ThemeTransitionOverlay';
 import { initializeEncryptionKey } from '../src/services/security';
 import { initializeDatabase } from '../src/db/schema';
+import { initializeNotifications } from '../src/services/notifications';
+import { getJourneyStart } from '../src/db/helpers';
 import { useFonts, Poppins_400Regular, Poppins_500Medium, Poppins_600SemiBold, Poppins_700Bold } from '@expo-google-fonts/poppins';
 import { useColorScheme } from 'nativewind';
 import * as SplashScreen from 'expo-splash-screen';
@@ -29,8 +32,12 @@ SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
   const loadRelapses = useRelapseStore((state) => state.loadRelapses);
+  const latestRelapseTimestamp = useRelapseStore((state) => state.latestTimestamp);
   const colorScheme = useColorSchemeStore();
   const { setColorScheme } = useColorScheme();
+  const notificationsEnabled = useNotificationStore((state) => state.notificationsEnabled);
+  const motivationalReminderTime = useNotificationStore((state) => state.motivationalReminderTime);
+  const notificationHydrated = useNotificationStore((state) => state._hasHydrated);
   const [isReady, setIsReady] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -72,6 +79,37 @@ export default function RootLayout() {
 
     initialize();
   }, [loadRelapses]);
+
+  // Initialize notifications after store is hydrated and data is loaded
+  useEffect(() => {
+    const setupNotifications = async () => {
+      if (!notificationHydrated || !isReady) {
+        return;
+      }
+
+      try {
+        // Get journey data
+        const journeyStart = await getJourneyStart();
+        const currentElapsedTime = journeyStart && latestRelapseTimestamp
+          ? Date.now() - new Date(latestRelapseTimestamp).getTime()
+          : journeyStart
+          ? Date.now() - new Date(journeyStart).getTime()
+          : null;
+
+        // Initialize notifications
+        await initializeNotifications(
+          notificationsEnabled,
+          currentElapsedTime,
+          journeyStart,
+          motivationalReminderTime
+        );
+      } catch (err) {
+        console.error('Notification initialization error:', err);
+      }
+    };
+
+    setupNotifications();
+  }, [notificationHydrated, isReady, notificationsEnabled, latestRelapseTimestamp, motivationalReminderTime]);
 
   // Hide splash screen when everything is ready
   useEffect(() => {

@@ -13,13 +13,19 @@ import {
 } from '../../src/services/security';
 import { useRelapseStore } from '../../src/stores/relapseStore';
 import { useColorScheme, useThemeStore } from '../../src/stores/themeStore';
-import { Settings2, Palette, Lock, Database, Sun, Moon, Shield, Trash2, Info, Brain, Coffee } from 'lucide-react-native';
+import { useSetNotificationsEnabled, useNotificationsEnabled } from '../../src/stores/notificationStore';
+import { enableNotifications, disableNotifications } from '../../src/services/notifications';
+import { getJourneyStart } from '../../src/db/helpers';
+import { Settings2, Palette, Lock, Database, Sun, Moon, Shield, Trash2, Info, Brain, Coffee, Bell } from 'lucide-react-native';
 import RecoveryEducationModal from '../../src/components/modals/RecoveryEducationModal';
 
 export default function SettingsScreen() {
   const router = useRouter();
   const colorScheme = useColorScheme();
   const resetAllData = useRelapseStore((state) => state.resetAllData);
+  const latestRelapseTimestamp = useRelapseStore((state) => state.latestTimestamp);
+  const notificationsEnabled = useNotificationsEnabled();
+  const setNotificationsEnabled = useSetNotificationsEnabled();
   const [appLockEnabled, setAppLockEnabledState] = useState(false);
   const [biometricAvailable, setBiometricAvailable] = useState(false);
   const [authMethodName, setAuthMethodName] = useState('Biometric');
@@ -152,6 +158,56 @@ export default function SettingsScreen() {
     }
   };
 
+  const handleNotificationsToggle = async (value: boolean) => {
+    try {
+      // Haptic feedback
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+
+      if (value) {
+        // Enabling notifications
+        const journeyStart = await getJourneyStart();
+        const currentElapsedTime = journeyStart && latestRelapseTimestamp
+          ? Date.now() - new Date(latestRelapseTimestamp).getTime()
+          : journeyStart
+          ? Date.now() - new Date(journeyStart).getTime()
+          : null;
+
+        const success = await enableNotifications(
+          currentElapsedTime,
+          journeyStart,
+          '09:00' // Default motivational time
+        );
+
+        if (success) {
+          setNotificationsEnabled(true);
+          Alert.alert(
+            'Notifications Enabled',
+            'You will receive milestone achievements and daily motivational quotes.',
+            [{ text: 'OK' }]
+          );
+        } else {
+          Alert.alert(
+            'Permission Required',
+            'Please enable notifications in your device settings to receive milestone alerts and daily motivation.',
+            [{ text: 'OK' }]
+          );
+        }
+      } else {
+        // Disabling notifications
+        await disableNotifications();
+        setNotificationsEnabled(false);
+        Alert.alert(
+          'Notifications Disabled',
+          'All scheduled notifications have been cancelled.',
+          [{ text: 'OK' }]
+        );
+      }
+    } catch (error) {
+      console.error('Error toggling notifications:', error);
+      Alert.alert('Error', 'Could not update notification settings.');
+    }
+  };
+
   return (
     <View className="flex-1 bg-gray-50 dark:bg-gray-950">
       <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'} />
@@ -237,6 +293,50 @@ export default function SettingsScreen() {
                 </View>
               </Pressable>
             </Animated.View>
+          </View>
+        </View>
+
+        {/* Notifications Section */}
+        <View className="px-6 mt-6">
+          <View className="flex-row items-center gap-2 mb-3">
+            <Bell size={18} color={colorScheme === 'dark' ? '#10b981' : '#059669'} strokeWidth={2.5} />
+            <Text className="text-sm font-bold tracking-wider text-gray-600 uppercase dark:text-gray-400">
+              Notifications
+            </Text>
+          </View>
+
+          <View className="p-5 bg-white border border-white dark:bg-gray-900 dark:border-gray-900 rounded-2xl">
+            <View className="flex-row items-center justify-between">
+              <View className="flex-row items-center flex-1">
+                <View className="items-center justify-center w-10 h-10 mr-3 rounded-full bg-emerald-50 dark:bg-emerald-900/30">
+                  <Bell size={20} color="#10b981" strokeWidth={2.5} />
+                </View>
+                <View className="flex-1">
+                  <Text className="text-base font-bold text-gray-900 dark:text-white">
+                    Enable Notifications
+                  </Text>
+                  <Text className="mt-0.5 text-sm text-gray-500 dark:text-gray-400">
+                    Milestones and daily motivation
+                  </Text>
+                </View>
+              </View>
+              <Switch
+                value={notificationsEnabled}
+                onValueChange={handleNotificationsToggle}
+                trackColor={{ false: '#d1d5db', true: '#10b981' }}
+                thumbColor={notificationsEnabled ? '#ffffff' : '#f3f4f6'}
+              />
+            </View>
+
+            {/* Explanation text */}
+            <View className="pt-4 mt-4 border-t border-gray-100 dark:border-gray-800">
+              <Text className="text-xs leading-5 text-gray-500 dark:text-gray-400">
+                Receive notifications for milestone achievements and daily motivational quotes to support your recovery journey.
+              </Text>
+              <Text className="mt-2 text-xs leading-5 text-emerald-600 dark:text-emerald-400">
+                All notifications stay on your device.
+              </Text>
+            </View>
           </View>
         </View>
 
