@@ -1,4 +1,4 @@
-import { View, Text, Pressable, Alert, ScrollView, Switch, Modal } from 'react-native';
+import { View, Text, Pressable, Alert, ScrollView, Switch, Modal, Linking } from 'react-native';
 import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useState, useEffect } from 'react';
@@ -13,7 +13,7 @@ import {
 } from '../../src/services/security';
 import { useRelapseStore } from '../../src/stores/relapseStore';
 import { useColorScheme, useThemeStore } from '../../src/stores/themeStore';
-import { Settings2, Palette, Lock, Database, Sun, Moon, Shield, Trash2, Info, Brain } from 'lucide-react-native';
+import { Settings2, Palette, Lock, Database, Sun, Moon, Shield, Trash2, Info, Brain, Coffee } from 'lucide-react-native';
 import RecoveryEducationModal from '../../src/components/modals/RecoveryEducationModal';
 
 export default function SettingsScreen() {
@@ -133,6 +133,23 @@ export default function SettingsScreen() {
         },
       ]
     );
+  };
+
+  const handleBuyMeCoffee = async () => {
+    const url = 'https://buymeacoffee.com/sidp'; // Replace with your actual Buy Me a Coffee URL
+
+    try {
+      const supported = await Linking.canOpenURL(url);
+
+      if (supported) {
+        await Linking.openURL(url);
+      } else {
+        Alert.alert('Error', 'Unable to open link. Please try again later.');
+      }
+    } catch (error) {
+      console.error('Error opening Buy Me a Coffee:', error);
+      Alert.alert('Error', 'Could not open support page.');
+    }
   };
 
   return (
@@ -288,6 +305,38 @@ export default function SettingsScreen() {
                 </View>
               </View>
               <Text className="text-xl font-medium text-purple-600 dark:text-purple-400">→</Text>
+            </View>
+          </Pressable>
+        </View>
+
+        {/* Support Section */}
+        <View className="px-6 mt-6">
+          <View className="flex-row items-center gap-2 mb-3">
+            <Coffee size={18} color={colorScheme === 'dark' ? '#f59e0b' : '#d97706'} strokeWidth={2.5} />
+            <Text className="text-sm font-bold tracking-wider text-gray-600 uppercase dark:text-gray-400">
+              Support
+            </Text>
+          </View>
+
+          <Pressable
+            onPress={handleBuyMeCoffee}
+            className="p-5 bg-white border border-white dark:bg-gray-900 dark:border-gray-900 rounded-2xl active:opacity-70"
+          >
+            <View className="flex-row items-center justify-between">
+              <View className="flex-row items-center flex-1">
+                <View className="items-center justify-center w-10 h-10 mr-3 rounded-full bg-amber-50 dark:bg-amber-900/30">
+                  <Coffee size={20} color="#f59e0b" strokeWidth={2.5} />
+                </View>
+                <View className="flex-1">
+                  <Text className="text-base font-bold text-gray-900 dark:text-white">
+                    Buy Me a Coffee
+                  </Text>
+                  <Text className="mt-0.5 text-sm text-gray-500 dark:text-gray-400">
+                    Support the development
+                  </Text>
+                </View>
+              </View>
+              <Text className="text-xl font-medium text-amber-600 dark:text-amber-400">→</Text>
             </View>
           </Pressable>
         </View>
