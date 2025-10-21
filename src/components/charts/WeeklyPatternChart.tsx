@@ -72,9 +72,9 @@ export default function WeeklyPatternChart({ relapses }: WeeklyPatternChartProps
     <View className="p-5 mb-4 bg-white border border-gray-200 dark:bg-gray-900 dark:border-gray-700 rounded-2xl">
       <View className="flex flex-row items-center gap-3 mb-0">
         <Text className="mb-1 text-lg font-bold text-gray-900 dark:text-white">Weekly Pattern</Text>
-        <Text className="text-xs font-medium text-blue-600 dark:text-blue-400">
+        {/* <Text className="text-xs font-medium text-blue-600 dark:text-blue-400">
           {weekRange}
-        </Text>
+        </Text> */}
       </View>
       <Text className="mb-4 text-sm text-gray-600 dark:text-gray-400">
         {relapses.length === 0

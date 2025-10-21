@@ -21,14 +21,21 @@ export default function AchievementRoadmap({ achievements, onAchievementPress }:
   const activeIndex = currentIndex === -1 ? achievements.length - 1 : currentIndex;
 
   const formatDuration = (threshold: number) => {
-    const minutes = threshold / (60 * 1000);
+    const totalMinutes = threshold / (60 * 1000);
     const hours = threshold / (60 * 60 * 1000);
     const days = threshold / (24 * 60 * 60 * 1000);
 
-    if (minutes < 60) return `${minutes}m`;
-    if (hours < 24) return `${hours}h`;
-    if (days < 30) return `${days}d`;
-    return `${Math.floor(days / 30)}mo`;
+    // For day 0, show "Start"
+    if (days === 0) return 'Start';
+
+    // For sub-hour durations, show minutes
+    if (totalMinutes < 60) return `${Math.floor(totalMinutes)}m`;
+
+    // For sub-day durations, show hours
+    if (hours < 24) return `${Math.floor(hours)}h`;
+
+    // For day-based durations, show days
+    return `${Math.floor(days)}d`;
   };
 
   return (
@@ -82,7 +89,7 @@ export default function AchievementRoadmap({ achievements, onAchievementPress }:
                 {/* Pulse Animation for Current */}
                 {isCurrent && !isUnlocked && (
                   <View className="absolute inset-0 items-center justify-center">
-                    <View className="w-20 h-20 bg-amber-500/20 dark:bg-amber-600/20 rounded-full" />
+                    <View className="w-20 h-20 rounded-full bg-amber-500/20 dark:bg-amber-600/20" />
                   </View>
                 )}
 
@@ -107,7 +114,7 @@ export default function AchievementRoadmap({ achievements, onAchievementPress }:
                 <View className="flex-row items-center justify-between mb-2">
                   <Text className="text-2xl">{achievement.emoji}</Text>
                   {isCurrent && !isUnlocked && (
-                    <View className="px-2 py-1 bg-amber-500/20 dark:bg-amber-600/30 rounded-full">
+                    <View className="px-2 py-1 rounded-full bg-amber-500/20 dark:bg-amber-600/30">
                       <Text className="text-xs font-bold text-amber-700 dark:text-amber-400">
                         Next Up
                       </Text>

@@ -22,19 +22,20 @@ export default function AchievementDetailModal({
   if (!achievement) return null;
 
   const formatThreshold = (threshold: number) => {
-    const seconds = threshold / 1000;
-    const minutes = seconds / 60;
-    const hours = minutes / 60;
-    const days = hours / 24;
+    const minutes = threshold / (1000 * 60);
+    const hours = threshold / (1000 * 60 * 60);
+    const days = threshold / (1000 * 60 * 60 * 24);
 
-    if (days >= 1) {
-      return days === 1 ? '1 day' : `${days} days`;
-    } else if (hours >= 1) {
-      return hours === 1 ? '1 hour' : `${hours} hours`;
-    } else if (minutes >= 1) {
-      return minutes === 1 ? '1 minute' : `${minutes} minutes`;
+    if (days === 0) {
+      return 'the start of your journey';
+    } else if (minutes < 60) {
+      return minutes === 1 ? '1 minute' : `${Math.floor(minutes)} minutes`;
+    } else if (hours < 24) {
+      return hours === 1 ? '1 hour' : `${Math.floor(hours)} hours`;
+    } else if (days === 1) {
+      return '1 day';
     } else {
-      return seconds === 1 ? '1 second' : `${seconds} seconds`;
+      return `${Math.floor(days)} days`;
     }
   };
 
@@ -117,7 +118,7 @@ export default function AchievementDetailModal({
                 Requirement
               </Text>
               <Text className="text-base text-gray-900 dark:text-white">
-                {achievement.threshold ? `Maintain a streak of ${formatThreshold(achievement.threshold)}` : 'Start your journey to unlock this achievement!'}
+                {achievement.threshold ? `Maintain a streak of ${achievement.shortLabel}` : 'Start your journey to unlock this achievement!'}
               </Text>
             </View>
 

@@ -14,7 +14,7 @@ const QuickActionsComponent: React.FC = () => {
   return (
     <View className="px-6 mb-6">
       {/* Header */}
-      <View className="flex-row items-center justify-between mb-3">
+      <View className="flex-row items-center justify-between mb-6">
         <View className="flex-row items-center gap-2">
           <Zap size={20} color="#f59e0b" strokeWidth={2.5} />
           <Text className="text-lg font-semibold text-gray-800 dark:text-gray-200">
@@ -27,7 +27,7 @@ const QuickActionsComponent: React.FC = () => {
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
-        contentContainerClassName="gap-3"
+        contentContainerClassName="gap-6"
       >
         {QUICK_ACTIONS.map((action) => (
           <View 

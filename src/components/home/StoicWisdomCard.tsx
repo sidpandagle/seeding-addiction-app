@@ -21,15 +21,15 @@ const StoicWisdomCardComponent: React.FC = () => {
   const getCategoryColor = (category: StoicTeaching['category']) => {
     switch (category) {
       case 'control':
-        return 'bg-blue-100 dark:bg-blue-950/30';
+        return 'border bg-blue-100 dark:bg-blue-950/30 border-blue-300 dark:border-blue-700';
       case 'discipline':
-        return 'bg-purple-100 dark:bg-purple-950/30';
+        return 'border bg-purple-100 dark:bg-purple-950/30 border-purple-300 dark:border-purple-700';
       case 'resilience':
-        return 'bg-amber-100 dark:bg-amber-950/30';
+        return 'border bg-amber-100 dark:bg-amber-950/30 border-amber-300 dark:border-amber-700';
       case 'wisdom':
-        return 'bg-emerald-100 dark:bg-emerald-950/30';
+        return 'border bg-emerald-100 dark:bg-emerald-950/30 border-emerald-300 dark:border-emerald-700';
       case 'virtue':
-        return 'bg-rose-100 dark:bg-rose-950/30';
+        return 'border bg-rose-100 dark:bg-rose-950/30 border-rose-300 dark:border-rose-700';
     }
   };
 

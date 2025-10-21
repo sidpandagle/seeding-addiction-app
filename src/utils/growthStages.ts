@@ -15,7 +15,7 @@ export interface GrowthStageConfig {
   id: string;
   label: string;
   emoji: string;
-  minMinutes: number;
+  minDays: number; // Minimum days to reach this stage (supports fractional days: 5m=0.00347, 1h=0.04167, 6h=0.25, 1d=1, etc.)
   description: string;
   color: string;
 
@@ -24,9 +24,7 @@ export interface GrowthStageConfig {
   achievementDescription: string;
 
   // Checkpoint metadata (for progress tracking)
-  shortLabel: string;
-  duration: number; // in milliseconds (time span of this stage)
-  minDuration: number; // in milliseconds (cumulative time from journey start to reach this stage)
+  shortLabel: string; // Display label (e.g., "5m", "1h", "6h", "1d", "7d", "365d")
 }
 
 export interface Achievement {
@@ -35,6 +33,7 @@ export interface Achievement {
   description: string;
   emoji: string;
   threshold: number; // in milliseconds
+  shortLabel: string; // e.g. "5 minutes"
   isUnlocked: boolean;
   unlockedAt?: string;
 }
@@ -54,7 +53,8 @@ export interface TimeBreakdown {
 }
 
 // ============================================================================
-// GROWTH STAGES DATA (21 stages: 0 min → 365 days)
+// GROWTH STAGES DATA (14 stages: 5m → 1h → 6h → 1d → 365d)
+// Progression with early sub-day milestones and day-based stages
 // ============================================================================
 
 export const GROWTH_STAGES: GrowthStageConfig[] = [
@@ -62,183 +62,155 @@ export const GROWTH_STAGES: GrowthStageConfig[] = [
     id: 'bean',
     label: 'Germinating Seed',
     emoji: '🫘',
-    minMinutes: 0,
+    minDays: 0,
     description: "The seed awakens — the very first spark of life.",
     color: '#F3F4F6',
     achievementTitle: 'The Beginning',
     achievementDescription: "You planted the seed of growth.",
-    shortLabel: '5 minutes',
-    duration: 5 * 60 * 1000, // 5 minutes
-    minDuration: 0, // 0 minutes cumulative
+    shortLabel: '0d',
   },
   {
     id: 'sprout',
-    label: 'Sprout',
+    label: 'First Minutes',
     emoji: '🌱',
-    minMinutes: 5,
-    description: "Roots stretch downward while a sprout reaches upward.",
+    minDays: 5 / 1440, // 5 minutes = 0.00347 days
+    description: "The first moments of your journey — every second counts.",
     color: '#E8F5E9',
-    achievementTitle: 'First Light',
-    achievementDescription: "The first green pierces through the soil.",
-    shortLabel: '1 hour',
-    duration: 55 * 60 * 1000, // 55 minutes
-    minDuration: 5 * 60 * 1000, // 5 minutes cumulative
+    achievementTitle: 'First Five Minutes',
+    achievementDescription: "You've taken the first step in your recovery.",
+    shortLabel: '5m',
   },
   {
     id: 'seedling',
-    label: 'Seedling',
+    label: 'First Hour',
     emoji: '🌿',
-    minMinutes: 60,
-    description: "Tiny leaves unfold as sunlight fuels new life.",
+    minDays: 1 / 24, // 1 hour = 0.04167 days
+    description: "An hour of strength — you're building momentum.",
     color: '#D0F0C0',
-    achievementTitle: 'Emerging Life',
-    achievementDescription: "Growth becomes visible and steady.",
-    shortLabel: '6 hours',
-    duration: 5 * 60 * 60 * 1000, // 5 hours
-    minDuration: 60 * 60 * 1000, // 1 hour cumulative
+    achievementTitle: 'One Hour Strong',
+    achievementDescription: "The first hour is complete.",
+    shortLabel: '1h',
   },
   {
     id: 'small-plant',
-    label: 'Small Plant',
+    label: 'Six Hours',
     emoji: '☘️',
-    minMinutes: 360,
-    description: "The stem strengthens and leaves start to spread.",
+    minDays: 6 / 24, // 6 hours = 0.25 days
+    description: "Quarter of a day — resilience is taking root.",
     color: '#C8E6C9',
-    achievementTitle: 'Taking Shape',
-    achievementDescription: "You're gaining structure and direction.",
-    shortLabel: '1 day',
-    duration: 18 * 60 * 60 * 1000, // 18 hours
-    minDuration: 6 * 60 * 60 * 1000, // 6 hours cumulative
+    achievementTitle: 'Six Hour Victory',
+    achievementDescription: "You're gaining strength with each passing hour.",
+    shortLabel: '6h',
   },
   {
     id: 'healthy-growth',
-    label: 'Healthy Growth',
+    label: 'First Day',
     emoji: '🍀',
-    minMinutes: 1440, // 1 day
+    minDays: 1,
     description: "Your leaves are vibrant, filled with energy and vitality.",
     color: '#A5D6A7',
-    achievementTitle: 'Healthy Spirit',
-    achievementDescription: "You've entered a steady rhythm of growth.",
-    shortLabel: '1 week',
-    duration: 6 * 24 * 60 * 60 * 1000, // 6 days
-    minDuration: 24 * 60 * 60 * 1000, // 1 day cumulative
+    achievementTitle: 'One Full Day',
+    achievementDescription: "You've completed your first day.",
+    shortLabel: '1d',
   },
   {
     id: 'potted-sapling',
-    label: 'Nurtured Sapling',
+    label: 'Three Days',
     emoji: '🪴',
-    minMinutes: 10080, // 7 days
+    minDays: 3,
     description: "Roots deepen, and you're adjusting to new surroundings.",
     color: '#81C784',
-    achievementTitle: 'Nurtured Growth',
+    achievementTitle: 'Three Day Streak',
     achievementDescription: "Care and patience are paying off.",
-    shortLabel: '3 weeks',
-    duration: 14 * 24 * 60 * 60 * 1000, // 14 days
-    minDuration: 7 * 24 * 60 * 60 * 1000, // 7 days cumulative
+    shortLabel: '3d',
   },
   {
     id: 'grass-growth',
-    label: 'Root Expansion',
+    label: 'One Week',
     emoji: '🌾',
-    minMinutes: 30240, // 21 days
+    minDays: 7,
     description: "Your foundation strengthens — resilience takes hold.",
     color: '#AED581',
-    achievementTitle: 'Rooted Strength',
+    achievementTitle: 'First Week',
     achievementDescription: "You are growing from within.",
-    shortLabel: '6 weeks',
-    duration: 21 * 24 * 60 * 60 * 1000, // 21 days
-    minDuration: 21 * 24 * 60 * 60 * 1000, // 21 days cumulative
+    shortLabel: '7d',
   },
   {
     id: 'leafy-phase',
-    label: 'Leafy Growth',
+    label: 'Two Weeks',
     emoji: '🍃',
-    minMinutes: 60480, // 42 days
+    minDays: 14,
     description: "You've grown lush and full of life.",
     color: '#9CCC65',
-    achievementTitle: 'Full of Life',
+    achievementTitle: 'Two Week Milestone',
     achievementDescription: "Energy radiates through every leaf.",
-    shortLabel: '10 weeks',
-    duration: 30 * 24 * 60 * 60 * 1000, // 30 days
-    minDuration: 42 * 24 * 60 * 60 * 1000, // 42 days cumulative
+    shortLabel: '14d',
   },
   {
     id: 'budding',
-    label: 'Budding Phase',
+    label: 'Three Weeks',
     emoji: '🌼',
-    minMinutes: 103680, // 72 days
+    minDays: 21,
     description: "The first buds appear — transformation is near.",
     color: '#8BC34A',
-    achievementTitle: 'Hope Blooms',
+    achievementTitle: 'Three Weeks Strong',
     achievementDescription: "You're preparing for your first bloom.",
-    shortLabel: '15 weeks',
-    duration: 45 * 24 * 60 * 60 * 1000, // 45 days
-    minDuration: 72 * 24 * 60 * 60 * 1000, // 72 days cumulative
+    shortLabel: '21d',
   },
   {
     id: 'blooming',
-    label: 'Blooming Plant',
+    label: 'One Month',
     emoji: '🌷',
-    minMinutes: 169920, // 118 days
+    minDays: 30,
     description: "Your flowers begin to open — you're in full bloom.",
     color: '#7CB342',
-    achievementTitle: 'Blooming Spirit',
+    achievementTitle: 'One Month',
     achievementDescription: "Beauty and strength combine.",
-    shortLabel: '4.5 months',
-    duration: 60 * 24 * 60 * 60 * 1000, // 60 days
-    minDuration: 118 * 24 * 60 * 60 * 1000, // 118 days cumulative
+    shortLabel: '30d',
   },
   {
     id: 'flowering',
-    label: 'Mature Flowering Plant',
+    label: 'Two Months',
     emoji: '🌻',
-    minMinutes: 256320, // 178 days
+    minDays: 60,
     description: "Vibrant and radiant — you are flourishing.",
     color: '#689F38',
-    achievementTitle: 'Thriving Life',
-    achievementDescription: "You've reached full vitality.",
-    shortLabel: '7.5 months',
-    duration: 90 * 24 * 60 * 60 * 1000, // 90 days
-    minDuration: 178 * 24 * 60 * 60 * 1000, // 178 days cumulative
+    achievementTitle: 'Two Months',
+    achievementDescription: "You've reached sustained vitality.",
+    shortLabel: '60d',
   },
   {
     id: 'young-tree',
-    label: 'Young Tree',
+    label: 'Three Months',
     emoji: '🌴',
-    minMinutes: 386880, // 268 days
+    minDays: 90,
     description: "You stand tall, ready to face the seasons ahead.",
     color: '#558B2F',
-    achievementTitle: 'Strong Roots',
+    achievementTitle: 'Three Months',
     achievementDescription: "Stability and wisdom grow together.",
-    shortLabel: '9 months',
-    duration: 30 * 24 * 60 * 60 * 1000, // 30 days
-    minDuration: 268 * 24 * 60 * 60 * 1000, // 268 days cumulative
+    shortLabel: '90d',
   },
   {
     id: 'evergreen',
-    label: 'Evergreen Stage',
+    label: 'Six Months',
     emoji: '🌲',
-    minMinutes: 430080, // 298 days
+    minDays: 180,
     description: "Evergreen and enduring, your presence is constant.",
     color: '#33691E',
-    achievementTitle: 'Enduring Spirit',
+    achievementTitle: 'Six Months',
     achievementDescription: "You've become a symbol of lasting strength.",
-    shortLabel: '11 months',
-    duration: 45 * 24 * 60 * 60 * 1000, // 45 days
-    minDuration: 298 * 24 * 60 * 60 * 1000, // 298 days cumulative
+    shortLabel: '180d',
   },
   {
     id: 'full-tree',
-    label: 'Full-grown Tree',
+    label: 'One Year',
     emoji: '🌳',
-    minMinutes: 494880, // 343 days
+    minDays: 365,
     description: "A magnificent tree — deeply rooted and thriving after a full year.",
     color: '#1B5E20',
     achievementTitle: 'One Year Strong',
     achievementDescription: "A full cycle of growth completed.",
-    shortLabel: '1 year',
-    duration: 22 * 24 * 60 * 60 * 1000, // 22 days (to reach 365 total)
-    minDuration: 343 * 24 * 60 * 60 * 1000, // 343 days cumulative
+    shortLabel: '365d',
   },
 ];
 
@@ -256,12 +228,12 @@ export const GROWTH_STAGES: GrowthStageConfig[] = [
  * @returns Current growth stage configuration
  */
 export function getGrowthStage(elapsedTime: number): GrowthStageConfig {
-  const minutes = elapsedTime / (1000 * 60);
+  const days = elapsedTime / (1000 * 60 * 60 * 24);
 
   // Find the matching stage (iterate backwards to find highest threshold met)
   for (let i = GROWTH_STAGES.length - 1; i >= 0; i--) {
     const stage = GROWTH_STAGES[i];
-    if (minutes >= stage.minMinutes) {
+    if (days >= stage.minDays) {
       return stage;
     }
   }
@@ -296,11 +268,11 @@ export function getStageProgress(elapsedTime: number): number {
     return 1; // At final stage
   }
 
-  const minutes = elapsedTime / (1000 * 60);
-  const minutesInCurrentStage = minutes - currentStage.minMinutes;
-  const totalMinutesInStage = nextStage.minMinutes - currentStage.minMinutes;
+  const days = elapsedTime / (1000 * 60 * 60 * 24);
+  const daysInCurrentStage = days - currentStage.minDays;
+  const totalDaysInStage = nextStage.minDays - currentStage.minDays;
 
-  return Math.min(Math.max(minutesInCurrentStage / totalMinutesInStage, 0), 1);
+  return Math.min(Math.max(daysInCurrentStage / totalDaysInStage, 0), 1);
 }
 
 /**
@@ -316,9 +288,9 @@ export function getTimeUntilNextStage(elapsedTime: number): number | null {
     return null; // At final stage
   }
 
-  const minutes = elapsedTime / (1000 * 60);
-  const minutesRemaining = nextStage.minMinutes - minutes;
-  return minutesRemaining * 60 * 1000; // Convert back to milliseconds
+  const days = elapsedTime / (1000 * 60 * 60 * 24);
+  const daysRemaining = nextStage.minDays - days;
+  return daysRemaining * 24 * 60 * 60 * 1000; // Convert back to milliseconds
 }
 
 // ============================================================================
@@ -354,13 +326,14 @@ export function getAchievements(elapsedTime: number): Achievement[] {
 
   // Calculate new result by mapping growth stages to achievements
   const result = GROWTH_STAGES.map((stage) => {
-    const threshold = stage.minMinutes * 60 * 1000; // Convert to milliseconds
+    const threshold = stage.minDays * 24 * 60 * 60 * 1000; // Convert days to milliseconds
     return {
       id: stage.id,
       title: stage.achievementTitle,
       description: stage.achievementDescription,
       emoji: stage.emoji,
       threshold,
+      shortLabel: stage.shortLabel,
       isUnlocked: elapsedTime >= threshold,
       unlockedAt: elapsedTime >= threshold
         ? new Date(Date.now() - (elapsedTime - threshold)).toISOString()
@@ -385,14 +358,15 @@ export function getNewlyUnlockedAchievements(
   previousTime: number
 ): Achievement[] {
   return GROWTH_STAGES.filter((stage) => {
-    const threshold = stage.minMinutes * 60 * 1000;
+    const threshold = stage.minDays * 24 * 60 * 60 * 1000; // Convert days to milliseconds
     return currentTime >= threshold && previousTime < threshold;
   }).map((stage) => ({
     id: stage.id,
     title: stage.achievementTitle,
     description: stage.achievementDescription,
     emoji: stage.emoji,
-    threshold: stage.minMinutes * 60 * 1000,
+    shortLabel: stage.shortLabel,
+    threshold: stage.minDays * 24 * 60 * 60 * 1000, // Convert days to milliseconds
     isUnlocked: true,
     unlockedAt: new Date().toISOString(),
   }));
@@ -405,7 +379,7 @@ export function getNewlyUnlockedAchievements(
  */
 export function getNextAchievement(elapsedTime: number): Achievement | null {
   const nextStage = GROWTH_STAGES.find(
-    (stage) => elapsedTime < stage.minMinutes * 60 * 1000
+    (stage) => elapsedTime < stage.minDays * 24 * 60 * 60 * 1000 // Convert days to milliseconds
   );
 
   return nextStage
@@ -414,7 +388,8 @@ export function getNextAchievement(elapsedTime: number): Achievement | null {
         title: nextStage.achievementTitle,
         description: nextStage.achievementDescription,
         emoji: nextStage.emoji,
-        threshold: nextStage.minMinutes * 60 * 1000,
+        threshold: nextStage.minDays * 24 * 60 * 60 * 1000, // Convert days to milliseconds
+        shortLabel: nextStage.shortLabel,
         isUnlocked: false,
       }
     : null;
@@ -454,12 +429,12 @@ export function getCheckpointProgress(elapsedTime: number): CheckpointProgress {
     };
   }
 
-  const minutes = elapsedTime / (1000 * 60);
+  const days = elapsedTime / (1000 * 60 * 60 * 24);
 
   // Find the current stage (the stage the user is currently in)
   let currentStageIndex = -1;
   for (let i = 0; i < GROWTH_STAGES.length; i++) {
-    if (minutes >= GROWTH_STAGES[i].minMinutes) {
+    if (days >= GROWTH_STAGES[i].minDays) {
       currentStageIndex = i;
     } else {
       break;
@@ -477,15 +452,15 @@ export function getCheckpointProgress(elapsedTime: number): CheckpointProgress {
     };
   }
 
-  // Normal case: user is in a current stage working towards its goal
+  // Normal case: user is in a current stage working towards the next stage
   const currentCheckpoint = GROWTH_STAGES[currentStageIndex];
-  const nextCheckpoint = currentCheckpoint; // The next checkpoint is the current stage's goal
+  const nextCheckpoint = GROWTH_STAGES[currentStageIndex + 1];
 
-  // Calculate progress within the current stage
-  const stageStartMinutes = currentCheckpoint.minMinutes;
-  const stageDurationMinutes = currentCheckpoint.duration / (60 * 1000); // Convert duration from ms to minutes
-  const minutesInCurrentStage = minutes - stageStartMinutes;
-  const progress = Math.min(Math.max(minutesInCurrentStage / stageDurationMinutes, 0), 1);
+  // Calculate progress towards the next stage
+  const stageStartDays = currentCheckpoint.minDays;
+  const stageDurationDays = nextCheckpoint.minDays - currentCheckpoint.minDays;
+  const daysInCurrentStage = days - stageStartDays;
+  const progress = Math.min(Math.max(daysInCurrentStage / stageDurationDays, 0), 1);
 
   return {
     currentCheckpoint,
@@ -544,7 +519,7 @@ export const CHECKPOINTS = GROWTH_STAGES.map((stage) => ({
   id: stage.id,
   label: stage.label,
   shortLabel: stage.shortLabel,
-  duration: stage.minMinutes * 60 * 1000, // Convert to milliseconds
+  duration: stage.minDays * 24 * 60 * 60 * 1000, // Convert days to milliseconds
 }));
 
 /**

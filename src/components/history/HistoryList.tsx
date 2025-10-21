@@ -14,10 +14,10 @@ export default function HistoryList({ relapses }: HistoryListProps) {
   const filteredRelapses = useMemo(() => {
     // Avoid re-sorting - relapses should already be sorted from DB query
     // Only sort if absolutely necessary
-    const needsSorting = relapses.length > 1 && 
+    const needsSorting = relapses.length > 1 &&
       new Date(relapses[0].timestamp).getTime() < new Date(relapses[1].timestamp).getTime();
-    
-    const sorted = needsSorting 
+
+    const sorted = needsSorting
       ? [...relapses].sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
       : relapses;
 
@@ -44,7 +44,7 @@ export default function HistoryList({ relapses }: HistoryListProps) {
         index,
       })}
       ListHeaderComponent={
-        <View className="px-6 pt-4 pb-5 mb-2 bg-gray-50 dark:bg-gray-900/40">
+        <View className="px-6 pt-4 pb-5 mb-2">
           <Text className="mb-4 text-xs font-bold tracking-wide text-gray-500 uppercase dark:text-gray-400">
             Filter by Tag
           </Text>
@@ -52,16 +52,14 @@ export default function HistoryList({ relapses }: HistoryListProps) {
             <View className="flex-row gap-2.5">
               <Pressable
                 onPress={() => setSelectedTag(null)}
-                className={`px-5 py-3 rounded-2xl ${
-                  selectedTag === null
+                className={`px-5 py-3 rounded-2xl ${selectedTag === null
                     ? 'bg-blue-600 dark:bg-blue-600'
                     : 'bg-white dark:bg-gray-900'
-                }`}
+                  }`}
               >
                 <Text
-                  className={`text-sm font-bold ${
-                    selectedTag === null ? 'text-white' : 'text-gray-700 dark:text-gray-300'
-                  }`}
+                  className={`text-sm font-bold ${selectedTag === null ? 'text-white' : 'text-gray-700 dark:text-gray-300'
+                    }`}
                 >
                   All ({relapses.length})
                 </Text>
@@ -72,16 +70,14 @@ export default function HistoryList({ relapses }: HistoryListProps) {
                   <Pressable
                     key={tag}
                     onPress={() => setSelectedTag(tag)}
-                    className={`px-5 py-3 rounded-2xl ${
-                      selectedTag === tag
+                    className={`px-5 py-3 rounded-2xl ${selectedTag === tag
                         ? 'bg-blue-600 dark:bg-blue-600'
                         : 'bg-white dark:bg-gray-900'
-                    }`}
+                      }`}
                   >
                     <Text
-                      className={`text-sm font-bold ${
-                        selectedTag === tag ? 'text-white' : 'text-gray-700 dark:text-gray-300'
-                      }`}
+                      className={`text-sm font-bold ${selectedTag === tag ? 'text-white' : 'text-gray-700 dark:text-gray-300'
+                        }`}
                     >
                       {tag} {count > 0 && `(${count})`}
                     </Text>
@@ -106,10 +102,10 @@ export default function HistoryList({ relapses }: HistoryListProps) {
         </View>
       }
       renderItem={({ item }) => (
-        <View className="relative p-6 mx-6 mb-4 overflow-hidden bg-white dark:bg-gray-900 rounded-3xl">
+        <View className="relative p-6 mx-6 mb-4 overflow-hidden bg-white border border-gray-200 shadow-sm dark:border-gray-800 dark:bg-gray-900 rounded-3xl">
           {/* Subtle gradient accent */}
           <View className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-red-400 to-orange-400" />
-          
+
           <View className="flex-row items-start justify-between mb-3">
             <View className="flex-1">
               <Text className="mb-1 text-lg font-bold text-gray-900 dark:text-white">

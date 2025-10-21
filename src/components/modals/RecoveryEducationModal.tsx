@@ -49,7 +49,7 @@ export default function RecoveryEducationModal({ onClose }: RecoveryEducationMod
               . Research shows that going from weekly relapses to monthly ones is massive progress,
               even if you're not perfect.
             </Text>
-            <View className="p-4 bg-emerald-50 dark:bg-emerald-950/30 rounded-2xl">
+            <View className="p-4 border bg-emerald-50 dark:bg-emerald-950/30 border-emerald-300 dark:border-emerald-700 rounded-2xl">
               <Text className="text-base font-semibold leading-6 text-emerald-700 dark:text-emerald-300">
                 <Text className="font-bold">What's Acceptable?</Text> A 40-60% success rate is normal
                 in addiction recovery. After 5 years, successful recoveries see this improve to 85%.
@@ -72,7 +72,7 @@ export default function RecoveryEducationModal({ onClose }: RecoveryEducationMod
             </Text>
 
             {/* Cheap Dopamine */}
-            <View className="p-4 mb-4 bg-red-50 dark:bg-red-950/30 rounded-2xl">
+            <View className="p-4 mb-4 border border-red-300 bg-red-50 dark:bg-red-950/30 dark:border-red-700 rounded-2xl">
               <Text className="mb-2 text-base font-bold text-red-700 dark:text-red-300">
                 Cheap Dopamine (50-100% spike)
               </Text>
@@ -84,7 +84,7 @@ export default function RecoveryEducationModal({ onClose }: RecoveryEducationMod
             </View>
 
             {/* Natural Dopamine */}
-            <View className="p-4 bg-blue-50 dark:bg-blue-950/30 rounded-2xl">
+            <View className="p-4 border border-blue-300 bg-blue-50 dark:bg-blue-950/30 dark:border-blue-700 rounded-2xl">
               <Text className="mb-2 text-base font-bold text-blue-700 dark:text-blue-300">
                 Natural Dopamine (earned rewards)
               </Text>
@@ -112,7 +112,7 @@ export default function RecoveryEducationModal({ onClose }: RecoveryEducationMod
               . Studies show cravings decrease significantly within 4 weeks of reducing cheap
               dopamine sources.
             </Text>
-            <View className="p-4 bg-purple-50 dark:bg-purple-950/30 rounded-2xl">
+            <View className="p-4 border border-purple-300 bg-purple-50 dark:bg-purple-950/30 dark:border-purple-700 rounded-2xl">
               <Text className="text-base leading-6 text-purple-700 dark:text-purple-300">
                 <Text className="font-bold">The Timeline:</Text> Most people see 85% relapse rate in
                 year 1, dropping to 40% by year 2, and just 15% by year 5. Each urge you resist

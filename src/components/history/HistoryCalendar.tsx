@@ -81,7 +81,7 @@ const HistoryCalendar = React.memo(function HistoryCalendar({
 
   const theme = useMemo(
     () => ({
-      calendarBackground: isDark ? '#1F2937' : '#FFFFFF', // gray-800/white
+      calendarBackground: isDark ? '#111827' : '#FFFFFF', // gray-800/white
       textSectionTitleColor: isDark ? '#9CA3AF' : '#6B7280', // gray-400/gray-500
       selectedDayBackgroundColor: '#3B82F6', // blue-500
       selectedDayTextColor: '#FFFFFF',

@@ -122,7 +122,7 @@ const InsightsModal = React.memo(function InsightsModal({ onClose }: InsightsMod
       {/* Content */}
       <ScrollView className="flex-1 px-4 py-6">
         {/* Journey Overview */}
-        <View className="p-5 mb-4 bg-emerald-50 dark:bg-emerald-900/20 rounded-2xl">
+        <View className="p-5 mb-4 border bg-emerald-50 dark:bg-emerald-900/20 border-emerald-300 dark:border-emerald-700 rounded-2xl">
           <View className="flex-row items-center mb-3">
             <View className="items-center justify-center w-10 h-10 mr-3 rounded-full bg-emerald-100 dark:bg-emerald-900/40">
               <Calendar size={20} color="#10b981" />
@@ -139,7 +139,7 @@ const InsightsModal = React.memo(function InsightsModal({ onClose }: InsightsMod
 
         {/* Streak Stats */}
         <View className="flex-row gap-3 mb-4">
-          <View className="flex-1 p-5 bg-blue-50 dark:bg-blue-900/20 rounded-2xl">
+          <View className="flex-1 p-5 border border-blue-300 bg-blue-50 dark:bg-blue-900/20 dark:border-blue-700 rounded-2xl">
             <View className="items-center justify-center w-10 h-10 mb-3 bg-blue-100 rounded-full dark:bg-blue-900/40">
               <Target size={20} color="#3b82f6" />
             </View>
@@ -149,7 +149,7 @@ const InsightsModal = React.memo(function InsightsModal({ onClose }: InsightsMod
             <Text className="mt-1 text-sm font-medium text-blue-700 dark:text-blue-300">Longest Streak</Text>
           </View>
 
-          <View className="flex-1 p-5 bg-purple-50 dark:bg-purple-900/20 rounded-2xl">
+          <View className="flex-1 p-5 border border-purple-300 bg-purple-50 dark:bg-purple-900/20 dark:border-purple-700 rounded-2xl">
             <View className="items-center justify-center w-10 h-10 mb-3 bg-purple-100 rounded-full dark:bg-purple-900/40">
               <TrendingUp size={20} color="#a855f7" />
             </View>
@@ -161,7 +161,7 @@ const InsightsModal = React.memo(function InsightsModal({ onClose }: InsightsMod
         </View>
 
         {/* Relapse Stats */}
-        <View className="p-5 mb-4 bg-orange-50 dark:bg-orange-900/20 rounded-2xl">
+        <View className="p-5 mb-4 border border-orange-300 bg-orange-50 dark:bg-orange-900/20 dark:border-orange-700 rounded-2xl">
           <Text className="mb-2 text-lg font-bold text-orange-900 dark:text-orange-100">Total Relapses</Text>
           <Text className="text-4xl font-bold text-orange-600 dark:text-orange-400">
             {insights.totalRelapses}
@@ -173,11 +173,11 @@ const InsightsModal = React.memo(function InsightsModal({ onClose }: InsightsMod
 
         {/* Trend */}
         <View
-          className={`p-5 mb-4 rounded-2xl ${insights.trend === 'improving'
-            ? 'bg-green-50 dark:bg-green-900/20'
+          className={`p-5 mb-4 rounded-2xl border ${insights.trend === 'improving'
+            ? 'border-green-300 bg-green-50 dark:bg-green-900/20 dark:border-green-700'
             : insights.trend === 'declining'
-              ? 'bg-red-50 dark:bg-red-900/20'
-              : 'bg-gray-50 dark:bg-gray-800'
+              ? 'border-red-300 bg-red-50 dark:bg-red-900/20 dark:border-red-700'
+              : 'border-gray-300 bg-gray-50 dark:bg-gray-800 dark:border-gray-600'
             }`}
         >
           <View className="flex-row items-center mb-3">

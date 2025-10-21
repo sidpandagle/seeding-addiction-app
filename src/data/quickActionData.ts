@@ -17,28 +17,28 @@ export const QUICK_ACTIONS: QuickAction[] = [
     icon: '💪',
     title: 'Physical Reset',
     description: 'Do 10 push-ups, take a cold shower, go for a walk, or sprint. Your body needs to remember who\'s boss.',
-    colorScheme: 'blue',
+    colorScheme: 'amber',
   },
   {
     id: 'breathe',
     icon: '🌬️',
     title: 'Breathe, Seriously',
     description: 'Breathe in for 4, hold for 4, out for 4. Repeat 5 times. Trick your nervous system into calming down.',
-    colorScheme: 'cyan',
+    colorScheme: 'emerald',
   },
   {
     id: 'mental-distraction',
     icon: '🧘',
     title: 'Mental Distraction',
     description: 'Call a friend, work on that hobby you keep postponing, watch a documentary, or meditate.',
-    colorScheme: 'emerald',
+    colorScheme: 'cyan',
   },
   {
     id: 'remember-why',
     icon: '🎯',
     title: 'Remember Your Why',
     description: 'Think about your goals. Why did you start this journey? Future you is rooting for present you.',
-    colorScheme: 'amber',
+    colorScheme: 'blue',
   },
 ];
 
@@ -79,14 +79,14 @@ export const EMERGENCY_ACTIONS: QuickAction[] = [
  */
 export function getActionColorClasses(colorScheme: QuickAction['colorScheme']) {
   const colorMap = {
-    blue: 'bg-blue-100 dark:bg-blue-950/30',
-    cyan: 'bg-cyan-100 dark:bg-cyan-950/30',
-    emerald: 'bg-emerald-100 dark:bg-emerald-950/30',
-    amber: 'bg-amber-100 dark:bg-amber-950/30',
-    purple: 'bg-purple-100 dark:bg-purple-950/30',
-    rose: 'bg-rose-100 dark:bg-rose-950/30',
-    indigo: 'bg-indigo-100 dark:bg-indigo-950/30',
-    teal: 'bg-teal-100 dark:bg-teal-950/30',
+    blue: 'bg-blue-100 dark:bg-blue-950/30 border border-blue-300 dark:border-blue-700',
+    cyan: 'bg-cyan-100 dark:bg-cyan-950/30 border border-cyan-300 dark:border-cyan-700',
+    emerald: 'bg-emerald-100 dark:bg-emerald-950/30 border border-emerald-300 dark:border-emerald-700',
+    amber: 'bg-amber-100 dark:bg-amber-950/30 border border-amber-300 dark:border-amber-700',
+    purple: 'bg-purple-100 dark:bg-purple-950/30 border border-purple-300 dark:border-purple-700',
+    rose: 'bg-rose-100 dark:bg-rose-950/30 border border-rose-300 dark:border-rose-700',
+    indigo: 'bg-indigo-100 dark:bg-indigo-950/30 border border-indigo-300 dark:border-indigo-700',
+    teal: 'bg-teal-100 dark:bg-teal-950/30 border border-teal-300 dark:border-teal-700',
   };
 
   return colorMap[colorScheme];

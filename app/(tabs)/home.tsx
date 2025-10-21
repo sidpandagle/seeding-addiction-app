@@ -117,8 +117,8 @@ function DashboardScreen() {
           {/* Emergency Help Button */}
           <Pressable
             onPress={handleHelpPress}
-            style={{ backgroundColor: colorScheme === 'dark' ? 'rgba(153, 27, 27, 0.3)' : '#f9fafb' }}
-            className="items-center justify-center w-14 h-14 rounded-2xl active:scale-95"
+            style={{ backgroundColor: colorScheme === 'dark' ? 'rgba(153, 27, 27, 0.3)' : '#fecaca' }}
+            className="items-center justify-center bg-red-200 w-14 h-14 rounded-2xl active:scale-95"
           >
             <AlertCircle size={28} color="#ef4444" strokeWidth={2.5} />
           </Pressable>

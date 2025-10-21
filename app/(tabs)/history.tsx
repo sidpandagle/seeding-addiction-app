@@ -51,12 +51,12 @@ function HistoryScreen() {
               <Text className="text-3xl font-semibold tracking-wide text-gray-900 dark:text-white">
                 History
               </Text>
-              <Text className="mt-1 text-sm font-medium tracking-wide text-emerald-700 dark:text-emerald-400">
+              <Text className="mt-1 text-sm font-medium tracking-wide text-blue-700 dark:text-blue-400">
                 Track your journey
               </Text>
             </View>
-            <View className="items-center justify-center w-14 h-14 bg-emerald-100 dark:bg-emerald-900/30 rounded-2xl">
-              <History size={26} color="#10b981" strokeWidth={2.5} />
+            <View className="items-center justify-center bg-blue-100 rounded-2xl w-14 h-14 dark:bg-blue-900/30">
+              <History size={26} color="#3b82f6" strokeWidth={2.5} />
             </View>
           </View>
         </View>

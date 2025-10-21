@@ -39,7 +39,7 @@ export default function EmergencyHelpModal({ onClose }: EmergencyHelpModalProps)
 
         {/* Great Men Who Conquered Lust */}
         <View className="px-5 pb-6">
-          <View className="p-5 bg-amber-50 dark:bg-amber-950/30 rounded-xl">
+          <View className="p-5 border bg-amber-50 dark:bg-amber-950/30 rounded-xl border-amber-300 dark:border-amber-700">
             <Text className="mb-1 text-xs font-bold tracking-wider uppercase text-amber-600 dark:text-amber-400">
               {greatMan.title}
             </Text>
@@ -79,7 +79,7 @@ export default function EmergencyHelpModal({ onClose }: EmergencyHelpModalProps)
 
         {/* Reminder */}
         <View className="px-5 pb-12">
-          <View className="p-6 bg-white border-dashed dark:bg-gray-900 rounded-2xl">
+          <View className="p-6 bg-white border border-gray-500 border-dashed dark:bg-gray-900 rounded-2xl">
             <Text className="mb-2 text-xl font-bold text-center text-gray-900 dark:text-white">
               This feeling is temporary
             </Text>

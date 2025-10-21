@@ -1,7 +1,7 @@
-import React, { useState, useEffect, memo } from 'react';
-import { View, Text } from 'react-native';
+import React, { useState, useEffect, memo, useMemo, useRef } from 'react';
+import { View, Text, Animated } from 'react-native';
 import { useColorScheme } from '../../stores/themeStore';
-import { millisecondsToTimeBreakdown } from '../../utils/growthStages';
+import { millisecondsToTimeBreakdown, getCheckpointProgress } from '../../utils/growthStages';
 
 interface JourneyTimerCardProps {
   startTime: string; // ISO timestamp
@@ -14,6 +14,107 @@ interface JourneyTimerCardProps {
     shortLabel: string;
   } | null;
 }
+
+/**
+ * Progress Indicator Component - Shows checkpoint progress with nodes and edges
+ * Optimized for performance with memoization
+ */
+const ProgressIndicator: React.FC<{ progress: number; colorScheme: 'light' | 'dark' }> = memo(({ progress, colorScheme }) => {
+  const pulseAnim = useRef(new Animated.Value(1)).current;
+
+  // Pulse animation for current progress node
+  useEffect(() => {
+    const pulse = Animated.loop(
+      Animated.sequence([
+        Animated.timing(pulseAnim, {
+          toValue: 1.3,
+          duration: 1000,
+          useNativeDriver: true,
+        }),
+        Animated.timing(pulseAnim, {
+          toValue: 1,
+          duration: 1000,
+          useNativeDriver: true,
+        }),
+      ])
+    );
+    pulse.start();
+    return () => pulse.stop();
+  }, [pulseAnim]);
+
+  const nodes = [0, 0.25, 0.5, 0.75, 1]; // 5 nodes: 0%, 25%, 50%, 75%, 100%
+
+  // Memoize calculations to prevent unnecessary recalculations
+  const progressPercent = useMemo(() => Math.round(progress * 100), [progress]);
+
+  // Memoize current node calculation
+  const currentNodeIndex = useMemo(() => {
+    return nodes.findIndex((node, idx) => {
+      if (idx === nodes.length - 1) return progress >= node;
+      return progress >= node && progress < nodes[idx + 1];
+    });
+  }, [progress, nodes]);
+
+  return (
+    <View className="items-center px-4 pb-4">
+      {/* Percentage Display */}
+      <View className="mb-3">
+        <Text className="text-sm font-bold text-emerald-600 dark:text-emerald-400">
+          {progressPercent}% to next milestone
+        </Text>
+      </View>
+
+      {/* Progress Path */}
+      <View className="flex-row items-center justify-center w-full px-4">
+        {nodes.map((nodeValue, index) => {
+          const isCompleted = progress >= nodeValue;
+          const isCurrent = index === currentNodeIndex;
+          const isLastNode = index === nodes.length - 1;
+
+          return (
+            <React.Fragment key={index}>
+              {/* Node */}
+              <View className="items-center justify-center">
+                {isCurrent && progress < 1 ? (
+                  // Pulsing current node
+                  <Animated.View
+                    style={{
+                      transform: [{ scale: pulseAnim }],
+                    }}
+                    className="items-center justify-center w-3 h-3 rounded-full bg-emerald-500 dark:bg-emerald-400"
+                  >
+                    <View className="w-1.5 h-1.5 bg-white rounded-full" />
+                  </Animated.View>
+                ) : (
+                  // Static node
+                  <View
+                    className={`w-2.5 h-2.5 rounded-full ${
+                      isCompleted
+                        ? 'bg-emerald-600 dark:bg-emerald-400'
+                        : 'bg-gray-300 dark:bg-gray-600'
+                    }`}
+                  />
+                )}
+              </View>
+
+              {/* Edge (connecting line) */}
+              {!isLastNode && (
+                <View
+                  className={`h-0.5 flex-1 mx-1 ${
+                    progress > nodeValue + 0.125 // Middle of segment
+                      ? 'bg-emerald-600 dark:bg-emerald-400'
+                      : 'bg-gray-300 dark:bg-gray-600'
+                  }`}
+                  style={{ minWidth: 30, maxWidth: 50 }}
+                />
+              )}
+            </React.Fragment>
+          );
+        })}
+      </View>
+    </View>
+  );
+});
 
 /**
  * Journey Timer Card - Displays current streak time in a card layout
@@ -40,6 +141,14 @@ const JourneyTimerCardComponent: React.FC<JourneyTimerCardProps> = ({
   // Calculate elapsed time
   const elapsed = Math.max(0, time - new Date(startTime).getTime());
   const { days, hours, minutes, seconds } = millisecondsToTimeBreakdown(elapsed);
+
+  // Calculate checkpoint progress for the progress indicator
+  const checkpointProgress = useMemo(() => {
+    return getCheckpointProgress(elapsed);
+  }, [elapsed]);
+
+  // Get progress value (0 to 1)
+  const progressValue = checkpointProgress.progress;
 
   return (
     <View className="px-6">
@@ -109,6 +218,11 @@ const JourneyTimerCardComponent: React.FC<JourneyTimerCardProps> = ({
                 </Text>
               </View>
             </View>
+
+            {/* Progress Indicator - Only show if there's a next checkpoint */}
+            {nextCheckpoint && (
+              <ProgressIndicator progress={progressValue} colorScheme={colorScheme} />
+            )}
 
             {/* Next Goal */}
             {nextCheckpoint && (
