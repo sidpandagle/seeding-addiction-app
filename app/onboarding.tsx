@@ -151,7 +151,12 @@ export default function OnboardingScreen() {
               <ActivityIndicator color="#ffffff" />
             ) : (
               <>
-                <Text className="mr-2 text-lg font-bold text-white">
+                <Text
+                  className="mr-2 text-lg font-bold text-white"
+                  numberOfLines={1}
+                  adjustsFontSizeToFit
+                  minimumFontScale={0.8}
+                >
                   Start Your Journey
                 </Text>
                 <ChevronRight size={24} color="#ffffff" strokeWidth={2.5} />

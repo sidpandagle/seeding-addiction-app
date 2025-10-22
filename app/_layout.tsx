@@ -1,8 +1,10 @@
 import { Stack } from 'expo-router';
-import { useEffect, useState, useLayoutEffect } from 'react';
+import { useEffect, useState, useLayoutEffect, useRef } from 'react';
 import { View, LogBox } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { enableScreens } from 'react-native-screens';
+import * as Notifications from 'expo-notifications';
+import { EventSubscription } from 'expo-modules-core';
 import { useRelapseStore } from '../src/stores/relapseStore';
 import { useColorScheme as useColorSchemeStore } from '../src/stores/themeStore';
 import { useNotificationStore } from '../src/stores/notificationStore';
@@ -20,8 +22,8 @@ import "../global.css";
 
 // Suppress deprecation warnings from third-party libraries
 LogBox.ignoreLogs([
-  'SafeAreaView has been deprecated', // From react-native-calendars dependency
-  'setLayoutAnimationEnabledExperimental', // From React Native's New Architecture
+  /SafeAreaView has been deprecated/,
+  /setLayoutAnimationEnabledExperimental/,
 ]);
 
 // Enable native screens for better performance
@@ -40,6 +42,8 @@ export default function RootLayout() {
   const notificationHydrated = useNotificationStore((state) => state._hasHydrated);
   const [isReady, setIsReady] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const notificationListener = useRef<EventSubscription | null>(null);
+  const responseListener = useRef<EventSubscription | null>(null);
 
   const [fontsLoaded] = useFonts({
     Poppins_400Regular,
@@ -92,17 +96,13 @@ export default function RootLayout() {
         const journeyStart = await getJourneyStart();
 
         // Current streak start is either the latest relapse or the journey start
+        // This is the absolute timestamp that notifications will be scheduled from
         const currentStreakStart = latestRelapseTimestamp || journeyStart;
 
-        const currentElapsedTime = currentStreakStart
-          ? Date.now() - new Date(currentStreakStart).getTime()
-          : null;
-
-        // Initialize notifications with current streak start
-        // This ensures milestone notifications are scheduled from the correct reference point
+        // Initialize notifications with absolute journey start timestamp
+        // No need to calculate elapsed time - notification service does this internally
         await initializeNotifications(
           notificationsEnabled,
-          currentElapsedTime,
           currentStreakStart,
           motivationalReminderTime
         );
@@ -112,7 +112,37 @@ export default function RootLayout() {
     };
 
     setupNotifications();
-  }, [notificationHydrated, isReady, notificationsEnabled, latestRelapseTimestamp, motivationalReminderTime]);
+  }, [notificationHydrated, isReady, notificationsEnabled, motivationalReminderTime]);
+
+  // Set up notification listeners for when notifications are tapped
+  useEffect(() => {
+    // This listener is fired whenever a notification is received while the app is foregrounded
+    notificationListener.current = Notifications.addNotificationReceivedListener(notification => {
+      console.log('Notification received in foreground:', notification);
+    });
+
+    // This listener is fired whenever a user taps on or interacts with a notification
+    responseListener.current = Notifications.addNotificationResponseReceivedListener(response => {
+      console.log('Notification tapped:', response);
+
+      // Check if it's an achievement notification
+      const notificationData = response.notification.request.content.data;
+      if (notificationData?.type === 'achievement') {
+        console.log('Achievement notification tapped, will be shown on home screen');
+        // The achievement will be detected and shown when the home screen loads
+        // via the missed achievement detection logic
+      }
+    });
+
+    return () => {
+      if (notificationListener.current) {
+        notificationListener.current.remove();
+      }
+      if (responseListener.current) {
+        responseListener.current.remove();
+      }
+    };
+  }, []);
 
   // Hide splash screen when everything is ready
   useEffect(() => {

@@ -4,6 +4,7 @@ import { useState, useEffect, useRef, memo, useMemo } from 'react';
 import { useRelapseStore } from '../../src/stores/relapseStore';
 import { useUrgeStore } from '../../src/stores/urgeStore';
 import { useColorScheme } from '../../src/stores/themeStore';
+import { useAchievementStore } from '../../src/stores/achievementStore';
 import RelapseModal from '../../src/components/modals/RelapseModal';
 import UrgeModal from '../../src/components/modals/UrgeModal';
 import EmergencyHelpModal from '../../src/components/modals/EmergencyHelpModal';
@@ -27,6 +28,12 @@ function DashboardScreen() {
   const urges = useUrgeStore((state) => state.urges);
   const loadUrges = useUrgeStore((state) => state.loadUrges);
   const [celebrationAchievement, setCelebrationAchievement] = useState<Achievement | null>(null);
+  const [pendingAchievements, setPendingAchievements] = useState<Achievement[]>([]);
+
+  // Achievement tracking store
+  const lastCheckedElapsedTime = useAchievementStore((state) => state.lastCheckedElapsedTime);
+  const setLastCheckedElapsedTime = useAchievementStore((state) => state.setLastCheckedElapsedTime);
+  const achievementStoreHydrated = useAchievementStore((state) => state._hasHydrated);
 
   // Use centralized hook for journey stats (now optimized - no continuous updates)
   const stats = useJourneyStats();
@@ -47,13 +54,38 @@ function DashboardScreen() {
     return () => task.cancel();
   }, [relapses, loadUrges]);
 
+  // Check for missed achievements on app open (runs once after hydration)
+  useEffect(() => {
+    if (!stats.startTime || !achievementStoreHydrated) return;
+
+    const currentElapsed = Math.max(0, Date.now() - new Date(stats.startTime!).getTime());
+
+    // Get achievements that were unlocked since last check
+    const missedAchievements = getNewlyUnlockedAchievements(
+      currentElapsed,
+      lastCheckedElapsedTime
+    );
+
+    if (missedAchievements.length > 0) {
+      // Queue achievements to show sequentially
+      setPendingAchievements(missedAchievements);
+      // Show the first one immediately
+      setCelebrationAchievement(missedAchievements[0]);
+    }
+
+    // Update last checked time (only once on mount)
+    setLastCheckedElapsedTime(currentElapsed);
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [stats.startTime, achievementStoreHydrated]);
+
   // Memoize user stats calculation to prevent recalculation on every render
   const userStats = useMemo(
     () => calculateUserStats(relapses, stats.startTime, urges),
     [relapses, stats.startTime, urges]
   );
 
-  // Achievement detection: monitor elapsed time and trigger celebrations
+  // Achievement detection: monitor elapsed time and trigger celebrations while app is open
   useEffect(() => {
     if (!stats.startTime) return;
 
@@ -65,8 +97,16 @@ function DashboardScreen() {
       const newAchievements = getNewlyUnlockedAchievements(currentElapsed, previousElapsed);
 
       if (newAchievements.length > 0) {
-        // Show celebration for the first newly unlocked achievement
-        setCelebrationAchievement(newAchievements[0]);
+        // Queue achievements to show sequentially
+        setPendingAchievements(prev => [...prev, ...newAchievements]);
+
+        // If no achievement is currently showing, show the first one
+        if (!celebrationAchievement) {
+          setCelebrationAchievement(newAchievements[0]);
+        }
+
+        // Update last checked time in store
+        setLastCheckedElapsedTime(currentElapsed);
       }
 
       // Update previous elapsed time
@@ -81,7 +121,7 @@ function DashboardScreen() {
     const interval = setInterval(checkAchievements, 1000);
 
     return () => clearInterval(interval);
-  }, [stats.startTime]);
+  }, [stats.startTime, celebrationAchievement, setLastCheckedElapsedTime]);
 
   const handleRelapsePress = () => {
     setShowModal(true);
@@ -93,6 +133,23 @@ function DashboardScreen() {
 
   const handleHelpPress = () => {
     setShowHelpModal(true);
+  };
+
+  const handleCelebrationClose = () => {
+    // Remove the current achievement from the queue and show next one
+    setPendingAchievements(prev => {
+      const remaining = prev.slice(1);
+
+      if (remaining.length > 0) {
+        // Show next achievement
+        setCelebrationAchievement(remaining[0]);
+      } else {
+        // No more achievements to show
+        setCelebrationAchievement(null);
+      }
+
+      return remaining;
+    });
   };
 
   return (
@@ -170,7 +227,7 @@ function DashboardScreen() {
             <Pressable
               onPress={handleRelapsePress}
               style={{ backgroundColor: colorScheme === 'dark' ? '#111827' : '#ffffff' }}
-              className="flex-1 shadow-sm rounded-2xl"
+              className="flex-1 shadow-sm rounded-2xl shadow-black"
             >
               <View className="items-center px-4 py-6">
                 <View className="items-center justify-center mb-3 w-14 h-14 rounded-2xl bg-emerald-50 dark:bg-emerald-950/30">
@@ -222,7 +279,7 @@ function DashboardScreen() {
             {/* Best Streak */}
             <View
               style={{ backgroundColor: colorScheme === 'dark' ? '#111827' : '#ffffff' }}
-              className="relative flex-1 overflow-hidden shadow-sm rounded-2xl"
+              className="relative flex-1 overflow-hidden shadow-sm shadow-black rounded-2xl"
             >
               <View className="p-4">
                 <Text className="mb-2 text-xs font-medium tracking-wide text-gray-600 uppercase dark:text-gray-400">
@@ -249,7 +306,7 @@ function DashboardScreen() {
             {/* Urges Resisted */}
             <View
               style={{ backgroundColor: colorScheme === 'dark' ? '#111827' : '#ffffff' }}
-              className="relative flex-1 overflow-hidden shadow-sm rounded-2xl"
+              className="relative flex-1 overflow-hidden shadow-sm shadow-black rounded-2xl"
             >
               <View className="p-4">
                 <Text className="mb-2 text-xs font-medium tracking-wide text-gray-600 uppercase dark:text-gray-400">
@@ -268,7 +325,7 @@ function DashboardScreen() {
             {/* Success Rate */}
             <View
               style={{ backgroundColor: colorScheme === 'dark' ? '#111827' : '#ffffff' }}
-              className="relative flex-1 overflow-hidden shadow-sm rounded-2xl"
+              className="relative flex-1 overflow-hidden shadow-sm shadow-black rounded-2xl"
             >
               <View className="p-4">
                 <Text className="mb-2 text-xs font-medium tracking-wide text-gray-600 uppercase dark:text-gray-400">
@@ -332,7 +389,7 @@ function DashboardScreen() {
         <AchievementCelebration
           achievement={celebrationAchievement}
           visible={!!celebrationAchievement}
-          onClose={() => setCelebrationAchievement(null)}
+          onClose={handleCelebrationClose}
         />
 
         {/* Insights Modal */}

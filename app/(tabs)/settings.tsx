@@ -14,10 +14,12 @@ import {
 import { useRelapseStore } from '../../src/stores/relapseStore';
 import { useColorScheme, useThemeStore } from '../../src/stores/themeStore';
 import { useSetNotificationsEnabled, useNotificationsEnabled } from '../../src/stores/notificationStore';
-import { enableNotifications, disableNotifications, cancelAllNotifications } from '../../src/services/notifications';
+import { enableNotifications, disableNotifications, cancelAllNotifications, getScheduledNotifications } from '../../src/services/notifications';
 import { getJourneyStart } from '../../src/db/helpers';
-import { Settings2, Palette, Lock, Database, Sun, Moon, Shield, Trash2, Info, Brain, Coffee, Bell } from 'lucide-react-native';
+import { Settings2, Palette, Lock, Database, Sun, Moon, Shield, Trash2, Info, Brain, Coffee, Bell, Bug } from 'lucide-react-native';
+import * as Notifications from 'expo-notifications';
 import RecoveryEducationModal from '../../src/components/modals/RecoveryEducationModal';
+import ScheduledNotificationsModal from '../../src/components/modals/ScheduledNotificationsModal';
 
 export default function SettingsScreen() {
   const router = useRouter();
@@ -30,6 +32,8 @@ export default function SettingsScreen() {
   const [biometricAvailable, setBiometricAvailable] = useState(false);
   const [authMethodName, setAuthMethodName] = useState('Biometric');
   const [showEducationModal, setShowEducationModal] = useState(false);
+  const [showNotificationsModal, setShowNotificationsModal] = useState(false);
+  const [scheduledNotifications, setScheduledNotifications] = useState<Notifications.NotificationRequest[]>([]);
 
   // Animation values for theme buttons
   const lightButtonScale = useSharedValue(1);
@@ -174,14 +178,10 @@ export default function SettingsScreen() {
         const journeyStart = await getJourneyStart();
 
         // Current streak start is either the latest relapse or the journey start
+        // This is the absolute timestamp that notifications will be scheduled from
         const currentStreakStart = latestRelapseTimestamp || journeyStart;
 
-        const currentElapsedTime = currentStreakStart
-          ? Date.now() - new Date(currentStreakStart).getTime()
-          : null;
-
         const success = await enableNotifications(
-          currentElapsedTime,
           currentStreakStart,
           '09:00' // Default motivational time
         );
@@ -213,6 +213,17 @@ export default function SettingsScreen() {
     } catch (error) {
       console.error('Error toggling notifications:', error);
       Alert.alert('Error', 'Could not update notification settings.');
+    }
+  };
+
+  const handleCheckScheduledNotifications = async () => {
+    try {
+      const scheduled = await Notifications.getAllScheduledNotificationsAsync();
+      setScheduledNotifications(scheduled);
+      setShowNotificationsModal(true);
+    } catch (error) {
+      console.error('Error checking scheduled notifications:', error);
+      Alert.alert('Error', 'Could not check scheduled notifications.');
     }
   };
 
@@ -385,6 +396,38 @@ export default function SettingsScreen() {
           </View>
         </View>
 
+        {/* Developer Tools Section */}
+        <View className="px-6 mt-6">
+          <View className="flex-row items-center gap-2 mb-3">
+            <Bug size={18} color={colorScheme === 'dark' ? '#fbbf24' : '#f59e0b'} strokeWidth={2.5} />
+            <Text className="text-sm font-bold tracking-wider text-gray-600 uppercase dark:text-gray-400">
+              Developer Tools
+            </Text>
+          </View>
+
+          <Pressable
+            onPress={handleCheckScheduledNotifications}
+            className="p-5 bg-white border border-white dark:bg-gray-900 dark:border-gray-900 rounded-2xl active:opacity-70"
+          >
+            <View className="flex-row items-center justify-between">
+              <View className="flex-row items-center flex-1">
+                <View className="items-center justify-center w-10 h-10 mr-3 rounded-full bg-amber-50 dark:bg-amber-900/30">
+                  <Bell size={20} color="#f59e0b" strokeWidth={2.5} />
+                </View>
+                <View className="flex-1">
+                  <Text className="text-base font-bold text-gray-900 dark:text-white">
+                    Check Scheduled Notifications
+                  </Text>
+                  <Text className="mt-0.5 text-sm text-gray-500 dark:text-gray-400">
+                    View pending notifications
+                  </Text>
+                </View>
+              </View>
+              <Text className="text-xl font-medium text-amber-600 dark:text-amber-400">→</Text>
+            </View>
+          </Pressable>
+        </View>
+
         {/* Education Section */}
         <View className="px-6 mt-6">
           <View className="flex-row items-center gap-2 mb-3">
@@ -512,6 +555,13 @@ export default function SettingsScreen() {
       >
         <RecoveryEducationModal onClose={() => setShowEducationModal(false)} />
       </Modal>
+
+      {/* Scheduled Notifications Modal */}
+      <ScheduledNotificationsModal
+        visible={showNotificationsModal}
+        onClose={() => setShowNotificationsModal(false)}
+        notifications={scheduledNotifications}
+      />
     </View>
   );
 }

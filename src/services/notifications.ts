@@ -13,7 +13,6 @@ import {
   getMotivationalNotificationQuote,
   formatMotivationalNotificationBody,
   parseNotificationTime,
-  getTimeUntilAchievement,
   clearLastNotifiedAchievement,
 } from '../utils/notificationHelpers';
 import { Achievement, GROWTH_STAGES } from '../utils/growthStages';
@@ -168,19 +167,19 @@ export async function scheduleAchievementNotification(
       } as Notifications.DateTriggerInput,
     });
 
-    console.log(`Scheduled achievement notification: ${achievement.id} at ${triggerTime.toISOString()}`);
+    console.log(`✅ Scheduled achievement: ${achievement.id} at ${triggerTime.toLocaleString()}`);
   } catch (error) {
-    console.error(`Error scheduling achievement notification for ${achievement.id}:`, error);
+    console.error(`❌ Error scheduling achievement notification for ${achievement.id}:`, error);
   }
 }
 
 /**
  * Schedule notifications for all upcoming achievements
- * @param currentElapsedTime - Current journey elapsed time in milliseconds
+ * Uses ABSOLUTE time scheduling based on journey start timestamp
+ * This ensures perfect synchronization with achievement unlocks regardless of app restarts
  * @param journeyStartTimestamp - Journey start timestamp (ISO string)
  */
 export async function scheduleAllUpcomingMilestones(
-  currentElapsedTime: number,
   journeyStartTimestamp: string
 ): Promise<void> {
   try {
@@ -188,7 +187,9 @@ export async function scheduleAllUpcomingMilestones(
     await cancelAchievementNotifications();
 
     const journeyStart = new Date(journeyStartTimestamp);
+    const journeyStartTime = journeyStart.getTime();
     const now = Date.now();
+    const currentElapsedTime = now - journeyStartTime;
 
     // Iterate through all growth stages and schedule notifications for future ones
     for (const stage of GROWTH_STAGES) {
@@ -199,9 +200,17 @@ export async function scheduleAllUpcomingMilestones(
         continue;
       }
 
-      // Calculate when this achievement will be unlocked
-      const timeUntilAchievement = threshold - currentElapsedTime;
-      const triggerTime = new Date(now + timeUntilAchievement);
+      // ✅ ABSOLUTE TIME CALCULATION
+      // Calculate trigger time as: journey start + threshold
+      // This ensures notifications fire exactly when elapsed time reaches threshold
+      // No drift on app restart or settings change!
+      const triggerTime = new Date(journeyStartTime + threshold);
+
+      // Skip if the calculated trigger time is in the past
+      // (edge case: shouldn't happen if filtering logic above is correct)
+      if (triggerTime.getTime() <= now) {
+        continue;
+      }
 
       // Schedule the notification
       const achievement: Achievement = {
@@ -217,9 +226,12 @@ export async function scheduleAllUpcomingMilestones(
       await scheduleAchievementNotification(achievement, triggerTime);
     }
 
-    console.log('All upcoming milestone notifications scheduled');
+    const scheduledCount = GROWTH_STAGES.filter(stage =>
+      currentElapsedTime < daysToMilliseconds(stage.minDays)
+    ).length;
+    console.log(`✅ Scheduled ${scheduledCount} milestone notifications (absolute time from ${journeyStart.toLocaleString()})`);
   } catch (error) {
-    console.error('Error scheduling upcoming milestones:', error);
+    console.error('❌ Error scheduling upcoming milestones:', error);
   }
 }
 
@@ -303,9 +315,9 @@ export async function scheduleDailyMotivationalNotification(
           } as Notifications.CalendarTriggerInput,
     });
 
-    console.log(`Scheduled daily motivational notification at ${timeString}`);
+    console.log(`✅ Daily motivational notification scheduled for ${timeString} (repeats daily)`);
   } catch (error) {
-    console.error('Error scheduling daily motivational notification:', error);
+    console.error('❌ Error scheduling daily motivational notification:', error);
   }
 }
 
@@ -338,13 +350,11 @@ export async function cancelAllNotifications(): Promise<void> {
 /**
  * Enable notifications
  * Requests permissions and schedules notifications
- * @param currentElapsedTime - Current journey elapsed time
- * @param journeyStartTimestamp - Journey start timestamp
+ * @param journeyStartTimestamp - Journey start timestamp (or null if no journey yet)
  * @param motivationalTime - Time for daily motivational notification
  * @returns true if successfully enabled, false otherwise
  */
 export async function enableNotifications(
-  currentElapsedTime: number | null,
   journeyStartTimestamp: string | null,
   motivationalTime: string
 ): Promise<boolean> {
@@ -364,8 +374,8 @@ export async function enableNotifications(
     await scheduleDailyMotivationalNotification(motivationalTime);
 
     // Schedule achievement notifications if journey has started
-    if (currentElapsedTime !== null && journeyStartTimestamp !== null) {
-      await scheduleAllUpcomingMilestones(currentElapsedTime, journeyStartTimestamp);
+    if (journeyStartTimestamp !== null) {
+      await scheduleAllUpcomingMilestones(journeyStartTimestamp);
     }
 
     return true;
@@ -392,13 +402,11 @@ export async function disableNotifications(): Promise<void> {
  * Initialize notifications on app start
  * Sets up channels and schedules notifications if enabled
  * @param notificationsEnabled - Whether notifications are enabled
- * @param currentElapsedTime - Current journey elapsed time
- * @param journeyStartTimestamp - Journey start timestamp
+ * @param journeyStartTimestamp - Journey start timestamp (or null if no journey yet)
  * @param motivationalTime - Time for daily motivational notification
  */
 export async function initializeNotifications(
   notificationsEnabled: boolean,
-  currentElapsedTime: number | null,
   journeyStartTimestamp: string | null,
   motivationalTime: string
 ): Promise<void> {
@@ -422,8 +430,8 @@ export async function initializeNotifications(
     // Schedule notifications
     await scheduleDailyMotivationalNotification(motivationalTime);
 
-    if (currentElapsedTime !== null && journeyStartTimestamp !== null) {
-      await scheduleAllUpcomingMilestones(currentElapsedTime, journeyStartTimestamp);
+    if (journeyStartTimestamp !== null) {
+      await scheduleAllUpcomingMilestones(journeyStartTimestamp);
     }
 
     console.log('Notifications initialized successfully');
@@ -450,8 +458,8 @@ export async function handleJourneyReset(
     // Clear last notified achievement
     await clearLastNotifiedAchievement();
 
-    // Reschedule all achievement notifications from scratch
-    await scheduleAllUpcomingMilestones(0, newJourneyStartTimestamp);
+    // Reschedule all achievement notifications from scratch (absolute time from new start)
+    await scheduleAllUpcomingMilestones(newJourneyStartTimestamp);
 
     console.log('Journey reset: notifications rescheduled');
   } catch (error) {

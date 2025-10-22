@@ -59,13 +59,13 @@
       [
         "expo-notifications",
         {
-          "icon": "./assets/app-icon.png",
+          "icon": "./assets/adaptive-icon.png",
           "color": "#395141"
         }
       ]
     ],
     "notification": {
-      "icon": "./assets/app-icon.png",
+      "icon": "./assets/adaptive-icon.png",
       "color": "#395141",
       "androidMode": "default",
       "androidCollapsedTitle": "Seeding"

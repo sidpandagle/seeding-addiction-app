@@ -13,7 +13,7 @@ export const NOTIFICATION_CONFIG = {
   MOTIVATIONAL_IDENTIFIER: 'notif-motivational-daily',
 
   // Defaults
-  DEFAULT_MOTIVATIONAL_TIME: '09:00', // 9:00 AM local time
+  DEFAULT_MOTIVATIONAL_TIME: '10:30', // 10:30 AM local time
 
   // Privacy & Behavior
   SHOW_ON_LOCK_SCREEN: true,

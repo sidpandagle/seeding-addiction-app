@@ -130,54 +130,6 @@ export function formatMotivationalNotificationBody(
   return `"${quote}"\n\n— ${author}`;
 }
 
-/**
- * Calculate time until a specific achievement is unlocked
- * @param currentElapsedTime - Current journey elapsed time in milliseconds
- * @param achievement - Target achievement
- * @returns Time in milliseconds until achievement, or 0 if already unlocked
- */
-export function getTimeUntilAchievement(
-  currentElapsedTime: number,
-  achievement: Achievement
-): number {
-  if (currentElapsedTime >= achievement.threshold) {
-    return 0; // Already unlocked
-  }
-  return achievement.threshold - currentElapsedTime;
-}
-
-/**
- * Get the last achievement that was notified
- * @returns Achievement ID or null
- */
-export async function getLastNotifiedAchievement(): Promise<string | null> {
-  try {
-    const value = await AsyncStorage.getItem(
-      NOTIFICATION_CONFIG.STORAGE_KEYS.LAST_ACHIEVEMENT_NOTIFIED
-    );
-    return value;
-  } catch (error) {
-    console.error('Error reading last notified achievement:', error);
-    return null;
-  }
-}
-
-/**
- * Save the last achievement that was notified
- * @param achievementId - Achievement ID
- */
-export async function saveLastNotifiedAchievement(
-  achievementId: string
-): Promise<void> {
-  try {
-    await AsyncStorage.setItem(
-      NOTIFICATION_CONFIG.STORAGE_KEYS.LAST_ACHIEVEMENT_NOTIFIED,
-      achievementId
-    );
-  } catch (error) {
-    console.error('Error saving last notified achievement:', error);
-  }
-}
 
 /**
  * Clear the last notified achievement (e.g., after relapse/reset)
