@@ -1,19 +1,14 @@
 import { Stack } from 'expo-router';
-import { useEffect, useState, useLayoutEffect, useRef } from 'react';
+import { useEffect, useState } from 'react';
 import { View, LogBox } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { enableScreens } from 'react-native-screens';
-import * as Notifications from 'expo-notifications';
-import { EventSubscription } from 'expo-modules-core';
 import { useRelapseStore } from '../src/stores/relapseStore';
 import { useColorScheme as useColorSchemeStore } from '../src/stores/themeStore';
-import { useNotificationStore } from '../src/stores/notificationStore';
 import { AppLock } from '../src/components/common/AppLock';
 import { ThemeTransitionOverlay } from '../src/components/common/ThemeTransitionOverlay';
 import { initializeEncryptionKey } from '../src/services/security';
 import { initializeDatabase } from '../src/db/schema';
-import { initializeNotifications } from '../src/services/notifications';
-import { getJourneyStart } from '../src/db/helpers';
 import { useFonts, Poppins_400Regular, Poppins_500Medium, Poppins_600SemiBold, Poppins_700Bold } from '@expo-google-fonts/poppins';
 import { useColorScheme } from 'nativewind';
 import * as SplashScreen from 'expo-splash-screen';
@@ -34,16 +29,10 @@ SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
   const loadRelapses = useRelapseStore((state) => state.loadRelapses);
-  const latestRelapseTimestamp = useRelapseStore((state) => state.latestTimestamp);
   const colorScheme = useColorSchemeStore();
   const { setColorScheme } = useColorScheme();
-  const notificationsEnabled = useNotificationStore((state) => state.notificationsEnabled);
-  const motivationalReminderTime = useNotificationStore((state) => state.motivationalReminderTime);
-  const notificationHydrated = useNotificationStore((state) => state._hasHydrated);
   const [isReady, setIsReady] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const notificationListener = useRef<EventSubscription | null>(null);
-  const responseListener = useRef<EventSubscription | null>(null);
 
   const [fontsLoaded] = useFonts({
     Poppins_400Regular,
@@ -84,65 +73,6 @@ export default function RootLayout() {
     initialize();
   }, [loadRelapses]);
 
-  // Initialize notifications after store is hydrated and data is loaded
-  useEffect(() => {
-    const setupNotifications = async () => {
-      if (!notificationHydrated || !isReady) {
-        return;
-      }
-
-      try {
-        // Get journey data
-        const journeyStart = await getJourneyStart();
-
-        // Current streak start is either the latest relapse or the journey start
-        // This is the absolute timestamp that notifications will be scheduled from
-        const currentStreakStart = latestRelapseTimestamp || journeyStart;
-
-        // Initialize notifications with absolute journey start timestamp
-        // No need to calculate elapsed time - notification service does this internally
-        await initializeNotifications(
-          notificationsEnabled,
-          currentStreakStart,
-          motivationalReminderTime
-        );
-      } catch (err) {
-        console.error('Notification initialization error:', err);
-      }
-    };
-
-    setupNotifications();
-  }, [notificationHydrated, isReady, notificationsEnabled, motivationalReminderTime]);
-
-  // Set up notification listeners for when notifications are tapped
-  useEffect(() => {
-    // This listener is fired whenever a notification is received while the app is foregrounded
-    notificationListener.current = Notifications.addNotificationReceivedListener(notification => {
-      console.log('Notification received in foreground:', notification);
-    });
-
-    // This listener is fired whenever a user taps on or interacts with a notification
-    responseListener.current = Notifications.addNotificationResponseReceivedListener(response => {
-      console.log('Notification tapped:', response);
-
-      // Check if it's an achievement notification
-      const notificationData = response.notification.request.content.data;
-      if (notificationData?.type === 'achievement') {
-        console.log('Achievement notification tapped, will be shown on home screen');
-        // The achievement will be detected and shown when the home screen loads
-        // via the missed achievement detection logic
-      }
-    });
-
-    return () => {
-      if (notificationListener.current) {
-        notificationListener.current.remove();
-      }
-      if (responseListener.current) {
-        responseListener.current.remove();
-      }
-    };
-  }, []);
 
   // Hide splash screen when everything is ready
   useEffect(() => {
