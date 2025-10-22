@@ -166,7 +166,7 @@ function DashboardScreen() {
               </Text>
               <Text className="text-2xl">{stats.growthStage.emoji}</Text>
             </View>
-            <Text className="mt-0 text-sm tracking-wide font-regular text-emerald-700 dark:text-emerald-400">
+            <Text className="pr-2 mt-0 text-sm tracking-wide font-regular text-emerald-700 dark:text-emerald-400">
               {stats.growthStage.description}
             </Text>
           </View>
