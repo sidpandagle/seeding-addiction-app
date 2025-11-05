@@ -16,7 +16,7 @@ export const QUICK_ACTIONS: QuickAction[] = [
     id: 'physical-reset',
     icon: '💪',
     title: 'Physical Reset',
-    description: 'Do 10 push-ups, take a cold shower, go for a walk, or sprint. Your body needs to remember who\'s boss.',
+    description: 'Do 10 push-ups or take a cold shower. Go for a walk or sprint. Your body needs to remember who\'s boss.',
     colorScheme: 'amber',
   },
   {
@@ -30,7 +30,7 @@ export const QUICK_ACTIONS: QuickAction[] = [
     id: 'mental-distraction',
     icon: '🧘',
     title: 'Mental Distraction',
-    description: 'Call a friend, work on that hobby you keep postponing, watch a documentary, or meditate.',
+    description: 'Call a friend or work on that hobby. Watch a documentary or meditate. Give your mind something else to focus on.',
     colorScheme: 'cyan',
   },
   {
@@ -48,28 +48,28 @@ export const EMERGENCY_ACTIONS: QuickAction[] = [
     id: 'redirect-energy',
     icon: '🎮',
     title: 'Redirect the Energy',
-    description: 'Play a quick game, clean your room, organize your desk, or learn 5 words in a new language. Channel that chaos into something productive.',
+    description: 'Play a quick game or clean your room. Organize your desk or learn 5 new words. Channel that chaos into something productive.',
     colorScheme: 'purple',
   },
   {
     id: 'fuel-brain',
     icon: '🍎',
     title: 'Fuel Your Brain',
-    description: 'Drink a full glass of water, eat an apple, have some nuts. Sometimes your brain is just hangry.',
+    description: 'Drink a full glass of water. Eat an apple or have some nuts. Sometimes your brain is just hangry.',
     colorScheme: 'rose',
   },
   {
     id: 'write-it-out',
     icon: '📝',
     title: 'Write It Out',
-    description: 'Journal about how you feel right now. Write angry. Write grateful. Just get it out of your head and onto paper.',
+    description: 'Journal about how you feel right now. Write angry or write grateful. Just get it out of your head and onto paper.',
     colorScheme: 'indigo',
   },
   {
     id: 'change-soundtrack',
     icon: '🎵',
     title: 'Change the Soundtrack',
-    description: 'Put on your favorite pump-up song and dance like nobody\'s watching. Music changes moods faster than you think.',
+    description: 'Put on your favorite pump-up song. Dance like nobody\'s watching. Music changes moods faster than you think.',
     colorScheme: 'teal',
   },
 ];
@@ -90,4 +90,22 @@ export function getActionColorClasses(colorScheme: QuickAction['colorScheme']) {
   };
 
   return colorMap[colorScheme];
+}
+
+/**
+ * Map quick action IDs to activity categories
+ */
+export function getQuickActionCategory(actionId: string): string | null {
+  const categoryMap: Record<string, string> = {
+    'physical-reset': '🏃 Physical',
+    'breathe': '🧘 Mindfulness',
+    'mental-distraction': '👥 Social',
+    'remember-why': '🎯 Productive',
+    'redirect-energy': '🎨 Creative',
+    'fuel-brain': '🏃 Physical',
+    'write-it-out': '📚 Learning',
+    'change-soundtrack': '✨ Other',
+  };
+
+  return categoryMap[actionId] || null;
 }

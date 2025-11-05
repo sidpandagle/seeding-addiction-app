@@ -51,15 +51,15 @@ export default function EmergencyHelpModal({ onClose }: EmergencyHelpModalProps)
             </Text>
             <View className="pt-3 border-t border-amber-300 dark:border-amber-700">
               <Text className="text-sm font-semibold leading-6 text-amber-900 dark:text-amber-100">
-                Lesson: {greatMan.lesson}
+                {greatMan.lesson}
               </Text>
             </View>
           </View>
         </View>
 
-        {/* Quick Actions */}
-        <View className="px-5 pb-6">
-          <Text className="mb-4 text-lg font-bold text-gray-900 dark:text-white">Take Action Now</Text>
+        {/* Healthy Distractions */}
+        {/* <View className="px-5 pb-6">
+          <Text className="mb-4 text-lg font-bold text-gray-900 dark:text-white">Healthy Distractions</Text>
           <View className="gap-3">
             {QUICK_ACTIONS.map((action) => (
               <View
@@ -75,7 +75,7 @@ export default function EmergencyHelpModal({ onClose }: EmergencyHelpModalProps)
               </View>
             ))}
           </View>
-        </View>
+        </View> */}
 
         {/* Reminder */}
         <View className="px-5 pb-12">

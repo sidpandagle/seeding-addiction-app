@@ -1,7 +1,7 @@
 import { FlatList, View, Text, Pressable, ScrollView } from 'react-native';
 import { useState, useMemo } from 'react';
 import type { HistoryEntry } from '../../types/history';
-import { RELAPSE_TAGS, URGE_CONTEXTS } from '../../constants/tags';
+import { RELAPSE_TAGS, ACTIVITY_CATEGORIES } from '../../constants/tags';
 
 interface HistoryListProps {
   entries: HistoryEntry[];
@@ -10,39 +10,37 @@ interface HistoryListProps {
 export default function HistoryList({ entries }: HistoryListProps) {
   const [selectedTag, setSelectedTag] = useState<string | null>(null);
 
-  // Get all unique tags/contexts from both relapses and urges
+  // Get all unique tags/categories from both relapses and activities
   const allTags = useMemo(() => {
     const tags = new Set<string>();
-    
+
     // Add relapse tags
     entries.forEach(entry => {
       if (entry.type === 'relapse' && entry.data.tags) {
         entry.data.tags.forEach(tag => tags.add(tag));
       }
     });
-    
-    // Add urge contexts
+
+    // Add activity categories (now supports arrays)
     entries.forEach(entry => {
-      if (entry.type === 'urge' && entry.data.context) {
-        // Split comma-separated contexts
-        entry.data.context.split(',').forEach(ctx => tags.add(ctx.trim()));
+      if (entry.type === 'activity' && entry.data.categories) {
+        entry.data.categories.forEach(category => tags.add(category));
       }
     });
-    
+
     return Array.from(tags).sort();
   }, [entries]);
 
   const filteredEntries = useMemo(() => {
     let filtered = entries;
 
-    // Filter by tag (applies to both relapses and urges)
+    // Filter by tag (applies to both relapses and activities)
     if (selectedTag) {
       filtered = filtered.filter(e => {
         if (e.type === 'relapse') {
           return e.data.tags?.includes(selectedTag);
-        } else if (e.type === 'urge' && e.data.context) {
-          // Check if the context string contains the selected tag
-          return e.data.context.split(',').map(c => c.trim()).includes(selectedTag);
+        } else if (e.type === 'activity' && e.data.categories) {
+          return e.data.categories.includes(selectedTag);
         }
         return false;
       });
@@ -69,9 +67,9 @@ export default function HistoryList({ entries }: HistoryListProps) {
       })}
       ListHeaderComponent={
         <View className="px-6 pt-4 pb-5 mb-2">
-          {/* Tag/Context Filter */}
+          {/* Tag/Category Filter */}
           <Text className="mb-4 text-xs font-bold tracking-wide text-gray-500 uppercase dark:text-gray-400">
-            Filter by Tag/Trigger
+            Filter by Tag/Category
           </Text>
           <ScrollView horizontal showsHorizontalScrollIndicator={false}>
             <View className="flex-row gap-2.5">
@@ -91,9 +89,9 @@ export default function HistoryList({ entries }: HistoryListProps) {
               </Pressable>
               {allTags.map((tag) => {
                 const relapseCount = entries.filter((e) => e.type === 'relapse' && e.data.tags?.includes(tag)).length;
-                const urgeCount = entries.filter((e) => e.type === 'urge' && e.data.context?.split(',').map(c => c.trim()).includes(tag)).length;
-                const totalCount = relapseCount + urgeCount;
-                
+                const activityCount = entries.filter((e) => e.type === 'activity' && e.data.categories?.includes(tag)).length;
+                const totalCount = relapseCount + activityCount;
+
                 return (
                   <Pressable
                     key={tag}
@@ -168,7 +166,7 @@ export default function HistoryList({ entries }: HistoryListProps) {
               {/* Entry type badge */}
               <View className={`px-4 py-2 rounded-xl ${isRelapse ? 'bg-red-50 dark:bg-red-900/30' : 'bg-green-50 dark:bg-green-900/30'}`}>
                 <Text className={`text-xs font-bold ${isRelapse ? 'text-red-700 dark:text-red-300' : 'text-green-700 dark:text-green-300'}`}>
-                  {isRelapse ? '📍 Relapse' : '🎯 Urge Resisted'}
+                  {isRelapse ? '📍 Relapse' : '✨ Activity'}
                 </Text>
               </View>
             </View>
@@ -181,7 +179,7 @@ export default function HistoryList({ entries }: HistoryListProps) {
               </View>
             )}
 
-            {/* Show tags for relapses or context for urges */}
+            {/* Show tags for relapses or category for activities */}
             {isRelapse && item.data.tags && item.data.tags.length > 0 && (
               <View className="flex-row flex-wrap gap-2 mt-2">
                 {item.data.tags.map((tag: string) => (
@@ -197,13 +195,15 @@ export default function HistoryList({ entries }: HistoryListProps) {
               </View>
             )}
 
-            {!isRelapse && item.data.context && (
+            {!isRelapse && item.data.categories && item.data.categories.length > 0 && (
               <View className="flex-row flex-wrap gap-2 mt-2">
-                <View className="px-4 py-2 bg-green-50 dark:bg-green-900/30 rounded-xl">
-                  <Text className="text-xs font-bold text-green-700 dark:text-green-300">
-                    Context: {item.data.context}
-                  </Text>
-                </View>
+                {item.data.categories.map((category: string) => (
+                  <View key={category} className="px-4 py-2 bg-green-50 dark:bg-green-900/30 rounded-xl">
+                    <Text className="text-xs font-bold text-green-700 dark:text-green-300">
+                      {category}
+                    </Text>
+                  </View>
+                ))}
               </View>
             )}
           </View>

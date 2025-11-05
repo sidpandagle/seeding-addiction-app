@@ -6,7 +6,9 @@ npm-debug.*
 *.p8
 *.p12
 *.key
+*.keystore
 *.mobileprovision
+gradle.properties
 *.orig.*
 web-build/
 

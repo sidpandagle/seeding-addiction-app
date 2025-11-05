@@ -1,32 +1,32 @@
-import type { Relapse, Urge } from '../db/schema';
+import type { Relapse, Activity } from '../db/schema';
 import { MS_PER_DAY } from '../constants/timeUnits';
 
 export interface UserStats {
   currentStreak: number; // Days since last relapse
   bestStreak: number; // Longest streak ever achieved
   totalAttempts: number; // Number of relapses (fresh starts)
-  urgesResisted: number; // Total number of urges successfully resisted
-  resistanceRate: number; // Percentage of urges resisted (urges / (urges + relapses) * 100)
+  activitiesLogged: number; // Total number of positive activities logged
+  resistanceRate: number; // Percentage of activities vs relapses (activities / (activities + relapses) * 100)
 }
 
 /**
- * Calculate user statistics from relapse data, urge data, and journey start
+ * Calculate user statistics from relapse data, activity data, and journey start
  * @param relapses - Array of all relapse records
- * @param urges - Array of all urge records
+ * @param activities - Array of all activity records
  * @param journeyStart - ISO string of when the journey began
- * @returns UserStats object with current streak, best streak, total attempts, urges resisted, and resistance rate
+ * @returns UserStats object with current streak, best streak, total attempts, activities logged, and engagement rate
  */
 export function calculateUserStats(
   relapses: Relapse[],
   journeyStart: string | null,
-  urges: Urge[] = []
+  activities: Activity[] = []
 ): UserStats {
   const totalAttempts = relapses.length;
-  const urgesResisted = urges.length;
+  const activitiesLogged = activities.length;
 
-  // Calculate resistance rate: urges / (urges + relapses) * 100
-  const totalEvents = urgesResisted + totalAttempts;
-  const resistanceRate = totalEvents > 0 ? Math.round((urgesResisted / totalEvents) * 100) : 0;
+  // Calculate engagement rate: activities / (activities + relapses) * 100
+  const totalEvents = activitiesLogged + totalAttempts;
+  const resistanceRate = totalEvents > 0 ? Math.round((activitiesLogged / totalEvents) * 100) : 0;
 
   // If no journey start, return zeros
   if (!journeyStart) {
@@ -34,7 +34,7 @@ export function calculateUserStats(
       currentStreak: 0,
       bestStreak: 0,
       totalAttempts: 0,
-      urgesResisted: 0,
+      activitiesLogged: 0,
       resistanceRate: 0,
     };
   }
@@ -54,7 +54,7 @@ export function calculateUserStats(
     currentStreak,
     bestStreak,
     totalAttempts,
-    urgesResisted,
+    activitiesLogged,
     resistanceRate,
   };
 }

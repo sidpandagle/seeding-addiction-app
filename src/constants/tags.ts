@@ -1,6 +1,6 @@
 /**
- * Tag and context constants for relapse and urge tracking
- * Single source of truth for all tag/context options across the app
+ * Tag and category constants for relapse and activity tracking
+ * Single source of truth for all tag/category options across the app
  */
 
 /**
@@ -17,19 +17,20 @@ export const RELAPSE_TAGS = [
 ] as const;
 
 /**
- * Context options for urge events
- * Used in: UrgeModal
+ * Category options for positive activities
+ * Used in: ActivityModal, HistoryList
  */
-export const URGE_CONTEXTS = [
-  'Stress',
-  'Boredom',
-  'Trigger',
-  'Social',
-  'Tired',
-  'Anxious',
-  'Other',
+export const ACTIVITY_CATEGORIES = [
+  '🏃 Physical',
+  '👥 Social',
+  '🎨 Creative',
+  '📚 Learning',
+  '🧘 Mindfulness',
+  '🎯 Productive',
+  '🌳 Nature',
+  '✨ Other',
 ] as const;
 
 // Type exports for type safety
 export type RelapseTag = typeof RELAPSE_TAGS[number];
-export type UrgeContext = typeof URGE_CONTEXTS[number];
+export type ActivityCategory = typeof ACTIVITY_CATEGORIES[number];

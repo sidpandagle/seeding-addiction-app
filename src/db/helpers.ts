@@ -1,12 +1,12 @@
 import { getDatabase } from './schema';
-import type { Relapse, RelapseInput, Urge, UrgeInput } from './schema';
+import type { Relapse, RelapseInput, Activity, ActivityInput } from './schema';
 import * as Crypto from 'expo-crypto';
-import { 
-  validateTimestamp, 
-  sanitizeString, 
-  validateTags, 
+import {
+  validateTimestamp,
+  sanitizeString,
+  validateTags,
   validateNote,
-  validateContext 
+  validateCategory
 } from '../utils/validation';
 
 /**
@@ -173,61 +173,61 @@ export const resetDatabase = async (): Promise<void> => {
   const db = await getDatabase();
 
   await db.runAsync('DELETE FROM relapse');
-  await db.runAsync('DELETE FROM urge');
+  await db.runAsync('DELETE FROM activity');
   await db.runAsync('DELETE FROM app_settings WHERE key = ?', ['journey_start']);
 };
 
 /**
- * Add a new urge record
+ * Add a new activity record
  */
-export const addUrge = async (input: UrgeInput): Promise<Urge> => {
+export const addActivity = async (input: ActivityInput): Promise<Activity> => {
   const db = await getDatabase();
 
   const id = generateUUID();
   const timestamp = input.timestamp || new Date().toISOString();
-  
+
   // Validate inputs
   const timestampValidation = validateTimestamp(timestamp);
   if (timestampValidation !== true) {
     throw new Error(timestampValidation);
   }
-  
+
   const noteValidation = validateNote(input.note);
   if (noteValidation !== true) {
     throw new Error(noteValidation);
   }
-  
-  const contextValidation = validateContext(input.context);
-  if (contextValidation !== true) {
-    throw new Error(contextValidation);
+
+  const categoryValidation = validateCategory(input.categories);
+  if (categoryValidation !== true) {
+    throw new Error(categoryValidation);
   }
-  
+
   // Sanitize inputs
   const note = sanitizeString(input.note, 5000) || null;
-  const context = sanitizeString(input.context, 100) || null;
+  const categories = input.categories ? JSON.stringify(input.categories) : null;
 
   await db.runAsync(
-    'INSERT INTO urge (id, timestamp, note, context) VALUES (?, ?, ?, ?)',
-    [id, timestamp, note, context]
+    'INSERT INTO activity (id, timestamp, note, category) VALUES (?, ?, ?, ?)',
+    [id, timestamp, note, categories]
   );
 
   return {
     id,
     timestamp,
     note: note || undefined,
-    context: context || undefined,
+    categories: input.categories,
   };
 };
 
 /**
- * Get all urge records, ordered by timestamp (newest first)
+ * Get all activity records, ordered by timestamp (newest first)
  * @param limit - Optional limit for number of records to return (default: all)
  * @param offset - Optional offset for pagination (default: 0)
  */
-export const getUrges = async (limit?: number, offset: number = 0): Promise<Urge[]> => {
+export const getActivities = async (limit?: number, offset: number = 0): Promise<Activity[]> => {
   const db = await getDatabase();
 
-  let query = 'SELECT * FROM urge ORDER BY timestamp DESC';
+  let query = 'SELECT * FROM activity ORDER BY timestamp DESC';
   const params: any[] = [];
 
   if (limit !== undefined) {
@@ -239,24 +239,24 @@ export const getUrges = async (limit?: number, offset: number = 0): Promise<Urge
     id: string;
     timestamp: string;
     note: string | null;
-    context: string | null;
+    category: string | null;
   }>(query, params);
 
   return rows.map((row) => ({
     id: row.id,
     timestamp: row.timestamp,
     note: row.note || undefined,
-    context: row.context || undefined,
+    categories: row.category ? JSON.parse(row.category) : undefined,
   }));
 };
 
 /**
- * Delete an urge record by ID
+ * Delete an activity record by ID
  */
-export const deleteUrge = async (id: string): Promise<void> => {
+export const deleteActivity = async (id: string): Promise<void> => {
   const db = await getDatabase();
 
-  await db.runAsync('DELETE FROM urge WHERE id = ?', [id]);
+  await db.runAsync('DELETE FROM activity WHERE id = ?', [id]);
 };
 
 /**
@@ -271,12 +271,12 @@ export const getRelapsesCount = async (): Promise<number> => {
 };
 
 /**
- * Get total count of urge records
+ * Get total count of activity records
  */
-export const getUrgesCount = async (): Promise<number> => {
+export const getActivitiesCount = async (): Promise<number> => {
   const db = await getDatabase();
   const result = await db.getFirstAsync<{ count: number }>(
-    'SELECT COUNT(*) as count FROM urge'
+    'SELECT COUNT(*) as count FROM activity'
   );
   return result?.count || 0;
 };

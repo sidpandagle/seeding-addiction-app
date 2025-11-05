@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { useRelapseStore } from '../../stores/relapseStore';
 import { useColorScheme } from '../../stores/themeStore';
 import * as Haptics from 'expo-haptics';
-import { RotateCcw, Heart } from 'lucide-react-native';
+import { RotateCcw, Heart, CheckCircle } from 'lucide-react-native';
 import { getRandomTip, type EducationalTip } from '../../data/educationalContent';
 import { RELAPSE_TAGS } from '../../constants/tags';
 
@@ -144,27 +144,44 @@ export default function RelapseModal({ onClose, existingRelapse }: RelapseModalP
 
             {/* Tags */}
             <View>
-              <Text className="mb-3 text-xs font-semibold tracking-wide text-gray-500 uppercase dark:text-gray-400">What triggered the urge? (Optional)</Text>
+              <View className="flex-row items-center justify-between mb-3">
+                <Text className="text-xs font-semibold tracking-wide text-gray-500 uppercase dark:text-gray-400">
+                  What triggered the urge? (Optional)
+                </Text>
+                <View className="px-2 py-1 rounded-full bg-emerald-100 dark:bg-emerald-900/30">
+                  <Text className="text-xs font-semibold text-emerald-700 dark:text-emerald-300">
+                    {selectedTags.length} selected
+                  </Text>
+                </View>
+              </View>
               <View className="flex-row flex-wrap gap-2">
-                {RELAPSE_TAGS.map((tag) => (
-                  <Pressable
-                    key={tag}
-                    onPress={() => toggleTag(tag)}
-                    className={`px-4 py-2.5 rounded-full ${selectedTags.includes(tag)
-                      ? 'bg-emerald-600 dark:bg-emerald-700'
-                      : 'bg-gray-100 dark:bg-gray-700'
+                {RELAPSE_TAGS.map((tag) => {
+                  const isSelected = selectedTags.includes(tag);
+                  return (
+                    <Pressable
+                      key={tag}
+                      onPress={() => toggleTag(tag)}
+                      className={`px-4 py-2.5 rounded-full flex-row items-center gap-2 ${
+                        isSelected
+                          ? 'bg-emerald-600 dark:bg-emerald-700'
+                          : 'bg-gray-100 dark:bg-gray-700'
                       }`}
-                  >
-                    <Text
-                      className={`text-sm font-semibold ${selectedTags.includes(tag)
-                        ? 'text-white'
-                        : 'text-gray-700 dark:text-gray-300'
-                        }`}
                     >
-                      {tag}
-                    </Text>
-                  </Pressable>
-                ))}
+                      <Text
+                        className={`text-sm font-semibold ${
+                          isSelected
+                            ? 'text-white'
+                            : 'text-gray-700 dark:text-gray-300'
+                        }`}
+                      >
+                        {tag}
+                      </Text>
+                      {isSelected && (
+                        <CheckCircle size={16} color="#FFFFFF" strokeWidth={2.5} />
+                      )}
+                    </Pressable>
+                  );
+                })}
               </View>
             </View>
           </View>

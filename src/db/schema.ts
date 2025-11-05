@@ -22,21 +22,38 @@ const initDB = async (): Promise<void> => {
     CREATE INDEX IF NOT EXISTS idx_relapse_timestamp ON relapse(timestamp DESC);
     CREATE INDEX IF NOT EXISTS idx_relapse_tags ON relapse(tags);
 
-    CREATE TABLE IF NOT EXISTS urge (
+    CREATE TABLE IF NOT EXISTS activity (
       id TEXT PRIMARY KEY NOT NULL,
       timestamp TEXT NOT NULL,
       note TEXT,
-      context TEXT
+      category TEXT
     );
 
-    CREATE INDEX IF NOT EXISTS idx_urge_timestamp ON urge(timestamp DESC);
-    CREATE INDEX IF NOT EXISTS idx_urge_context ON urge(context);
+    CREATE INDEX IF NOT EXISTS idx_activity_timestamp ON activity(timestamp DESC);
+    CREATE INDEX IF NOT EXISTS idx_activity_category ON activity(category);
 
     CREATE TABLE IF NOT EXISTS app_settings (
       key TEXT PRIMARY KEY NOT NULL,
       value TEXT NOT NULL
     );
   `);
+
+  // Migration: Update existing single-category data to array format
+  // This is backward compatible - we'll handle both formats in the helpers
+  const existingActivities = await dbInstance.getAllAsync<{ id: string; category: string | null }>(
+    'SELECT id, category FROM activity WHERE category IS NOT NULL AND category NOT LIKE \'[%\''
+  );
+
+  for (const activity of existingActivities) {
+    if (activity.category && !activity.category.startsWith('[')) {
+      // Convert single category to JSON array
+      const categoryArray = JSON.stringify([activity.category]);
+      await dbInstance.runAsync(
+        'UPDATE activity SET category = ? WHERE id = ?',
+        [categoryArray, activity.id]
+      );
+    }
+  }
 };
 
 /**
@@ -79,20 +96,20 @@ export interface RelapseInput {
 }
 
 /**
- * Urge record interface
+ * Activity record interface
  */
-export interface Urge {
+export interface Activity {
   id: string;
   timestamp: string; // ISO8601 format
   note?: string;
-  context?: string; // e.g., "stress", "boredom", "trigger"
+  categories?: string[]; // Multiple categories (e.g., ["🏃 Physical", "👥 Social"])
 }
 
 /**
- * Urge input interface (for creating new records)
+ * Activity input interface (for creating new records)
  */
-export interface UrgeInput {
+export interface ActivityInput {
   timestamp?: string;
   note?: string;
-  context?: string;
+  categories?: string[];
 }

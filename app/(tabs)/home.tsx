@@ -2,11 +2,11 @@ import { View, Text, Pressable, Modal, ScrollView, InteractionManager } from 're
 import { StatusBar } from 'expo-status-bar';
 import { useState, useEffect, useRef, memo, useMemo } from 'react';
 import { useRelapseStore } from '../../src/stores/relapseStore';
-import { useUrgeStore } from '../../src/stores/urgeStore';
+import { useActivityStore } from '../../src/stores/activityStore';
 import { useColorScheme } from '../../src/stores/themeStore';
 import { useAchievementStore } from '../../src/stores/achievementStore';
 import RelapseModal from '../../src/components/modals/RelapseModal';
-import UrgeModal from '../../src/components/modals/UrgeModal';
+import ActivityModal from '../../src/components/modals/ActivityModal';
 import EmergencyHelpModal from '../../src/components/modals/EmergencyHelpModal';
 import { JourneyTimerCard } from '../../src/components/home/JourneyTimerCard';
 import { QuickActions } from '../../src/components/home/QuickActions';
@@ -14,19 +14,22 @@ import { StoicWisdomCard } from '../../src/components/home/StoicWisdomCard';
 import AchievementCelebration from '../../src/components/achievements/AchievementCelebration';
 import { getNewlyUnlockedAchievements, Achievement } from '../../src/utils/growthStages';
 import { calculateUserStats } from '../../src/utils/statsHelpers';
-import { Shield, AlertCircle, RotateCcw, Sparkles, TrendingUp, Award, Heart, BarChart3 } from 'lucide-react-native';
+// Icon options for Log Activity (current: SmilePlus)
+// Available alternatives: Heart, HeartHandshake, Zap, Award, Trophy, CheckCircle, Star, SmilePlus
+import { SmilePlus, AlertCircle, RotateCcw, TrendingUp, Award, Heart, Sparkles } from 'lucide-react-native';
 import { useJourneyStats } from '../../src/hooks/useJourneyStats';
 import InsightsModal from '../../src/components/history/InsightsModal';
 
 function DashboardScreen() {
   const colorScheme = useColorScheme();
   const [showModal, setShowModal] = useState(false);
-  const [showUrgeModal, setShowUrgeModal] = useState(false);
+  const [showActivityModal, setShowActivityModal] = useState(false);
+  const [preSelectedCategories, setPreSelectedCategories] = useState<string[]>([]);
   const [showHelpModal, setShowHelpModal] = useState(false);
   const [showInsightsModal, setShowInsightsModal] = useState(false);
   const relapses = useRelapseStore((state) => state.relapses);
-  const urges = useUrgeStore((state) => state.urges);
-  const loadUrges = useUrgeStore((state) => state.loadUrges);
+  const activities = useActivityStore((state) => state.activities);
+  const loadActivities = useActivityStore((state) => state.loadActivities);
   const [celebrationAchievement, setCelebrationAchievement] = useState<Achievement | null>(null);
   const [pendingAchievements, setPendingAchievements] = useState<Achievement[]>([]);
 
@@ -41,18 +44,14 @@ function DashboardScreen() {
   // Track previous elapsed time for achievement detection
   const previousElapsedRef = useRef<number>(0);
 
-  // Removed continuous pulse animation for emergency button
-  // Using static button to save battery and CPU resources
-  // Animation was causing unnecessary re-renders and battery drain
-
-  // Defer urge loading until after screen is fully rendered (performance optimization)
+  // Defer activity loading until after screen is fully rendered (performance optimization)
   useEffect(() => {
     const task = InteractionManager.runAfterInteractions(() => {
-      loadUrges();
+      loadActivities();
     });
 
     return () => task.cancel();
-  }, [relapses, loadUrges]);
+  }, [relapses, loadActivities]);
 
   // Check for missed achievements on app open (runs once after hydration)
   useEffect(() => {
@@ -81,8 +80,8 @@ function DashboardScreen() {
 
   // Memoize user stats calculation to prevent recalculation on every render
   const userStats = useMemo(
-    () => calculateUserStats(relapses, stats.startTime, urges),
-    [relapses, stats.startTime, urges]
+    () => calculateUserStats(relapses, stats.startTime, activities),
+    [relapses, stats.startTime, activities]
   );
 
   // Achievement detection: monitor elapsed time and trigger celebrations while app is open
@@ -127,12 +126,18 @@ function DashboardScreen() {
     setShowModal(true);
   };
 
-  const handleUrgePress = () => {
-    setShowUrgeModal(true);
+  const handleActivityPress = (categories: string[] = []) => {
+    setPreSelectedCategories(categories);
+    setShowActivityModal(true);
   };
 
   const handleHelpPress = () => {
     setShowHelpModal(true);
+  };
+
+  const handleActivityModalClose = () => {
+    setShowActivityModal(false);
+    setPreSelectedCategories([]); // Reset pre-selected categories
   };
 
   const handleCelebrationClose = () => {
@@ -205,20 +210,20 @@ function DashboardScreen() {
         {/* Quick Actions */}
         <View className="px-6 mb-6">
           <View className="flex-row gap-6">
-            {/* Resisted Urge - Primary Action */}
+            {/* Log Activity - Primary Action */}
             <Pressable
-              onPress={handleUrgePress}
-              className="flex-1 shadow-sm bg-blue-600/90 dark:bg-blue-600/20 rounded-2xl"
+              onPress={() => handleActivityPress()}
+              className="flex-1 shadow-sm bg-blue-600/90 dark:bg-blue-900/30 rounded-2xl"
             >
               <View className="items-center px-4 py-6">
-                <View className="items-center justify-center mb-3 w-14 h-14 bg-white/20 rounded-2xl">
-                  <Shield size={28} color="#FFFFFF" strokeWidth={2.5} />
+                <View className="items-center justify-center mb-3 rounded-2xl w-14 h-14 bg-white/5">
+                  <SmilePlus size={28} color="#ffffff" strokeWidth={2.5} />
                 </View>
                 <Text className="mb-1 text-base font-bold text-center text-white">
-                  Resisted Urge
+                  Log Activity
                 </Text>
                 <Text className="text-xs text-center text-blue-100">
-                  Track your strength
+                  Track healthy actions
                 </Text>
               </View>
             </Pressable>
@@ -303,22 +308,22 @@ function DashboardScreen() {
 
           {/* Second Row */}
           <View className="flex-row gap-6">
-            {/* Urges Resisted */}
+            {/* Activities Logged */}
             <View
               style={{ backgroundColor: colorScheme === 'dark' ? '#111827' : '#ffffff' }}
               className="relative flex-1 overflow-hidden shadow-sm shadow-black rounded-2xl"
             >
               <View className="p-4">
                 <Text className="mb-2 text-xs font-medium tracking-wide text-gray-600 uppercase dark:text-gray-400">
-                  Urges Resisted
+                  Activities Logged
                 </Text>
                 <Text className="text-3xl font-bold text-blue-600 dark:text-blue-400">
-                  {userStats.urgesResisted}
+                  {userStats.activitiesLogged}
                 </Text>
               </View>
               {/* Background Icon */}
               <View className="absolute bottom-[-8px] right-[-8px] opacity-15 dark:opacity-10">
-                <Shield size={70} color="#3b82f6" strokeWidth={2} />
+                <Sparkles size={70} color="#3b82f6" strokeWidth={2} />
               </View>
             </View>
 
@@ -350,7 +355,7 @@ function DashboardScreen() {
         </View>
 
         {/* Quick Actions */}
-        <QuickActions />
+        <QuickActions onActionPress={handleActivityPress} />
 
         {/* Stoic Wisdom */}
         <StoicWisdomCard />
@@ -365,14 +370,17 @@ function DashboardScreen() {
           <RelapseModal onClose={() => setShowModal(false)} />
         </Modal>
 
-        {/* Urge Modal */}
+        {/* Activity Modal */}
         <Modal
-          visible={showUrgeModal}
+          visible={showActivityModal}
           animationType="slide"
           presentationStyle="pageSheet"
-          onRequestClose={() => setShowUrgeModal(false)}
+          onRequestClose={handleActivityModalClose}
         >
-          <UrgeModal onClose={() => setShowUrgeModal(false)} />
+          <ActivityModal
+            onClose={handleActivityModalClose}
+            preSelectedCategories={preSelectedCategories}
+          />
         </Modal>
 
         {/* Emergency Help Modal */}

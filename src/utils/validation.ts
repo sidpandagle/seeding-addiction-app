@@ -108,24 +108,46 @@ export function validateNote(note: string | undefined): string | true {
 }
 
 /**
- * Validate context input for urges
- * @param context - Context string
+ * Validate category/categories input for activities
+ * @param categories - Category string or array of category strings
  * @returns true if valid, error message if invalid
  */
-export function validateContext(context: string | undefined): string | true {
-  if (!context) return true;
-  
-  if (typeof context !== 'string') {
-    return 'Context must be a string';
+export function validateCategory(categories: string | string[] | undefined): string | true {
+  if (!categories) return true;
+
+  // Handle array of categories
+  if (Array.isArray(categories)) {
+    if (categories.length > 10) {
+      return 'Maximum 10 categories allowed';
+    }
+
+    for (const category of categories) {
+      if (typeof category !== 'string') {
+        return 'All categories must be strings';
+      }
+      if (category.trim().length === 0) {
+        return 'Categories cannot be empty';
+      }
+      if (category.length > 100) {
+        return 'Category length cannot exceed 100 characters';
+      }
+    }
+
+    return true;
   }
-  
-  if (context.trim().length === 0) {
-    return true; // Empty context is okay
+
+  // Handle single category (backward compatibility)
+  if (typeof categories !== 'string') {
+    return 'Category must be a string or array';
   }
-  
-  if (context.length > 100) {
-    return 'Context cannot exceed 100 characters';
+
+  if (categories.trim().length === 0) {
+    return true; // Empty category is okay
   }
-  
+
+  if (categories.length > 100) {
+    return 'Category cannot exceed 100 characters';
+  }
+
   return true;
 }

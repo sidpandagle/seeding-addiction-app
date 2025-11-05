@@ -23,6 +23,7 @@
         "backgroundColor": "#ffffff"
       },
       "package": "com.seeding.app",
+      "versionCode": 2,
       "jsEngine": "hermes",
       "enableProguardInReleaseBuilds": true,
       "enableShrinkResourcesInReleaseBuilds": true

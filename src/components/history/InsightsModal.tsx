@@ -2,7 +2,7 @@ import React, { useMemo, useEffect, useState } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, Pressable } from 'react-native';
 import { ChevronLeft, TrendingUp, TrendingDown, Calendar, Target, X } from 'lucide-react-native';
 import { useRelapses } from '../../stores/relapseStore';
-import { useUrgeStore } from '../../stores/urgeStore';
+import { useActivityStore } from '../../stores/activityStore';
 import { useColorScheme } from '../../stores/themeStore';
 import { getJourneyStart } from '../../db/helpers';
 import { calculateUserStats } from '../../utils/statsHelpers';
@@ -20,7 +20,7 @@ const InsightsModal = React.memo(function InsightsModal({ onClose }: InsightsMod
   const colorScheme = useColorScheme();
   // Phase 2 Optimization: Use granular selector to only subscribe to relapses array
   const relapses = useRelapses();
-  const urges = useUrgeStore((state) => state.urges);
+  const activities = useActivityStore((state) => state.activities);
   const [journeyStart, setJourneyStart] = useState<string | null>(null);
 
   useEffect(() => {
@@ -162,7 +162,7 @@ const InsightsModal = React.memo(function InsightsModal({ onClose }: InsightsMod
         </View>
 
         {/* Resistance Ratio Chart */}
-        <ResistanceRatioChart relapses={relapses} urges={urges} />
+        <ResistanceRatioChart relapses={relapses} activities={activities} />
 
         {/* Weekly Pattern Chart */}
         <WeeklyPatternChart relapses={relapses} />

@@ -1,12 +1,12 @@
-import type { Relapse, Urge } from '../db/schema';
+import type { Relapse, Activity } from '../db/schema';
 
 /**
  * Unified entry type for history display
- * Combines relapses and urge-resisted entries with a discriminator
+ * Combines relapses and positive activity entries with a discriminator
  */
 export type HistoryEntry =
   | { type: 'relapse'; data: Relapse }
-  | { type: 'urge'; data: Urge };
+  | { type: 'activity'; data: Activity };
 
 /**
  * Helper to create a history entry from a relapse
@@ -17,11 +17,11 @@ export const createRelapseEntry = (relapse: Relapse): HistoryEntry => ({
 });
 
 /**
- * Helper to create a history entry from an urge
+ * Helper to create a history entry from an activity
  */
-export const createUrgeEntry = (urge: Urge): HistoryEntry => ({
-  type: 'urge',
-  data: urge,
+export const createActivityEntry = (activity: Activity): HistoryEntry => ({
+  type: 'activity',
+  data: activity,
 });
 
 /**
