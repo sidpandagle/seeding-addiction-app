@@ -25,27 +25,27 @@ const HistoryCalendar = React.memo(function HistoryCalendar({
   const markedDates = useMemo(() => {
     const marks: { [key: string]: any } = {};
 
-    // Group entries by date to handle mixed dates (both relapse and urge on same day)
-    const dateGroups: { [key: string]: { hasRelapse: boolean; hasUrge: boolean } } = {};
+    // Group entries by date to handle mixed dates (both relapse and activity on same day)
+    const dateGroups: { [key: string]: { hasRelapse: boolean; hasActivity: boolean } } = {};
 
     entries.forEach((entry) => {
       const dateKey = new Date(entry.data.timestamp).toISOString().split('T')[0];
       if (!dateGroups[dateKey]) {
-        dateGroups[dateKey] = { hasRelapse: false, hasUrge: false };
+        dateGroups[dateKey] = { hasRelapse: false, hasActivity: false };
       }
       if (entry.type === 'relapse') {
         dateGroups[dateKey].hasRelapse = true;
       } else {
-        dateGroups[dateKey].hasUrge = true;
+        dateGroups[dateKey].hasActivity = true;
       }
     });
 
     // Mark dates based on entry types
-    Object.entries(dateGroups).forEach(([dateKey, { hasRelapse, hasUrge }]) => {
+    Object.entries(dateGroups).forEach(([dateKey, { hasRelapse, hasActivity }]) => {
       let dotColor: string;
       let textColor: string;
 
-      if (hasRelapse && hasUrge) {
+      if (hasRelapse && hasActivity) {
         // Both types on same day - use amber/yellow
         dotColor = '#F59E0B'; // amber-500
         textColor = isDark ? '#FDE68A' : '#92400E'; // amber-200/amber-800
@@ -54,7 +54,7 @@ const HistoryCalendar = React.memo(function HistoryCalendar({
         dotColor = '#EF4444'; // red-500
         textColor = isDark ? '#FECACA' : '#991B1B'; // red-200/red-800
       } else {
-        // Only urge - green
+        // Only activity - green
         dotColor = '#10B981'; // green-500
         textColor = isDark ? '#A7F3D0' : '#065F46'; // green-200/green-800
       }
@@ -85,7 +85,7 @@ const HistoryCalendar = React.memo(function HistoryCalendar({
           selectedColor = isDark ? '#7f1d1d' : '#fca5a5'; // red-900/red-300
           selectedTextColor = isDark ? '#fecaca' : '#7f1d1d'; // red-200/red-900
         } else if (markedDate.dotColor === '#10B981') {
-          // Green for urge
+          // Green for activity
           selectedColor = isDark ? '#065F46' : '#86EFAC'; // green-900/green-300
           selectedTextColor = isDark ? '#A7F3D0' : '#065F46'; // green-200/green-900
         } else {

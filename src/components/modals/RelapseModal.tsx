@@ -1,9 +1,9 @@
 import { View, Text, TextInput, Pressable, ScrollView, KeyboardAvoidingView, Platform } from 'react-native';
 import { useState } from 'react';
-import { useRelapseStore } from '../../stores/relapseStore';
+import { useRelapseStore, useLatestRelapseTimestamp } from '../../stores/relapseStore';
 import { useColorScheme } from '../../stores/themeStore';
 import * as Haptics from 'expo-haptics';
-import { RotateCcw, Heart, CheckCircle } from 'lucide-react-native';
+import { AlertCircle, Leaf, CheckCircle } from 'lucide-react-native';
 import { getRandomTip, type EducationalTip } from '../../data/educationalContent';
 import { RELAPSE_TAGS } from '../../constants/tags';
 
@@ -20,12 +20,18 @@ interface RelapseModalProps {
 export default function RelapseModal({ onClose, existingRelapse }: RelapseModalProps) {
   const { addRelapse, updateRelapse } = useRelapseStore();
   const colorScheme = useColorScheme();
+  const latestRelapseTimestamp = useLatestRelapseTimestamp();
 
   const [note, setNote] = useState(existingRelapse?.note || '');
   const [selectedTags, setSelectedTags] = useState<string[]>(existingRelapse?.tags || []);
   const [timestamp] = useState(existingRelapse?.timestamp);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [recoveryTip, setRecoveryTip] = useState<EducationalTip>(getRandomTip('relapse'));
+
+  // Calculate current streak in days
+  const currentStreakDays = latestRelapseTimestamp
+    ? Math.floor((new Date().getTime() - new Date(latestRelapseTimestamp).getTime()) / (1000 * 60 * 60 * 24))
+    : -1; // -1 means no relapse history, infinite streak
 
   const toggleTag = (tag: string) => {
     setSelectedTags((prev) =>
@@ -81,15 +87,15 @@ export default function RelapseModal({ onClose, existingRelapse }: RelapseModalP
               </Text>
               {!existingRelapse && (
                 <View className="flex-row items-center gap-2">
-                  <Heart size={20} color="#10b981" strokeWidth={2.5} />
-                  <Text className="text-base tracking-wide text-emerald-800 dark:text-emerald-300">
-                    This Is Not Failure
+                  <AlertCircle size={20} color="#f59e0b" strokeWidth={2.5} />
+                  <Text className="text-base tracking-wide text-amber-700 dark:text-amber-300">
+                    Think Before You Log
                   </Text>
                 </View>
               )}
             </View>
             <View className="items-center justify-center w-16 h-16 bg-white rounded-2xl dark:bg-gray-800">
-              <RotateCcw size={34} color="#34d399" strokeWidth={2.5} />
+              <Leaf size={34} color="#f59e0b" strokeWidth={2.5} />
             </View>
           </View>
         </View>
@@ -97,12 +103,27 @@ export default function RelapseModal({ onClose, existingRelapse }: RelapseModalP
         {/* Recovery & Compassion Section - Only for new relapses */}
         {!existingRelapse && (
           <View className="px-5 mt-6">
-            {/* Recovery Tip Card */}
-            <View className="p-4 bg-emerald-50 dark:bg-emerald-950/30 rounded-xl">
-              <Text className="mb-2 text-lg font-bold text-emerald-900 dark:text-emerald-100">
+            {/* Current Streak Display */}
+            {currentStreakDays >= 0 && (
+              <View className="p-4 mb-4 bg-blue-50 dark:bg-blue-950/30 rounded-xl border border-blue-200 dark:border-blue-900/50">
+                <Text className="text-xs font-semibold uppercase text-blue-600 dark:text-blue-300 mb-1">
+                  Your Current Plant
+                </Text>
+                <Text className="text-2xl font-bold text-blue-900 dark:text-blue-100">
+                  {currentStreakDays} day{currentStreakDays !== 1 ? 's' : ''} clean
+                </Text>
+                <Text className="text-sm text-blue-800 dark:text-blue-200 mt-1">
+                  This is what you're cutting down by relapsing.
+                </Text>
+              </View>
+            )}
+
+            {/* Recovery Tip Card - Consequence-Focused */}
+            <View className="p-4 bg-amber-50 dark:bg-amber-950/30 rounded-xl border border-amber-200 dark:border-amber-900/50">
+              <Text className="mb-2 text-lg font-bold text-amber-900 dark:text-amber-100">
                 {recoveryTip.emoji} {recoveryTip.title}
               </Text>
-              <Text className="text-sm leading-6 text-emerald-800 dark:text-emerald-200">
+              <Text className="text-sm leading-6 text-amber-800 dark:text-amber-200">
                 {recoveryTip.content}
               </Text>
             </View>

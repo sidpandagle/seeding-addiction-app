@@ -2,7 +2,7 @@ import React, { memo } from 'react';
 import { View, Text, ScrollView, Pressable } from 'react-native';
 import { Zap } from 'lucide-react-native';
 import { useColorScheme } from '../../stores/themeStore';
-import { QUICK_ACTIONS, getActionColorClasses, getQuickActionCategory } from '../../data/quickActionData';
+import { QUICK_ACTIONS, getActionColorClasses, getActionDividerBorderColor, getQuickActionCategory } from '../../data/quickActionData';
 
 interface QuickActionsProps {
   onActionPress?: (categories: string[]) => void;
@@ -40,43 +40,38 @@ const QuickActionsComponent: React.FC<QuickActionsProps> = ({ onActionPress }) =
         showsHorizontalScrollIndicator={false}
         contentContainerClassName="gap-6"
       >
-        {QUICK_ACTIONS.map((action) => {
-          // Split description into bullet points (sentences)
-          const bullets = action.description
-            .split('.')
-            .map(s => s.trim())
-            .filter(s => s.length > 0);
-
-          return (
-            <Pressable
-              key={action.id}
-              onPress={() => handleActionPress(action.id)}
-              className={`p-5 w-64 rounded-2xl ${getActionColorClasses(action.colorScheme)} active:opacity-70`}
-            >
-              {/* Centered Icon */}
-              <View className="items-center mb-3">
-                <Text className="text-5xl">{action.icon}</Text>
+        {QUICK_ACTIONS.map((action) => (
+          <Pressable
+            key={action.id}
+            onPress={() => handleActionPress(action.id)}
+            className={`w-80 rounded-2xl overflow-hidden ${getActionColorClasses(action.colorScheme)}`}
+          >
+            <View className="p-5">
+              <View className="flex-row items-center gap-2 mb-0">
+                <Text className="text-2xl">{action.icon}</Text>
+                <Text className="flex-1 text-lg font-bold tracking-widest text-gray-900 dark:text-white">{action.title}</Text>
               </View>
-
-              {/* Title */}
-              <Text className="mb-3 text-base font-bold text-center text-gray-900 dark:text-white">
-                {action.title}
+              <Text className="mb-4 text-sm italic leading-5 text-gray-600 dark:text-gray-400">
+                {action.role}
               </Text>
-
-              {/* Bulleted Content */}
-              <View className="gap-1.5">
-                {bullets.map((bullet, index) => (
+              <View className="space-y-2">
+                {action.bulletPoints.map((point, index) => (
                   <View key={index} className="flex-row">
-                    <Text className="mr-2 text-sm text-gray-600 dark:text-gray-400">•</Text>
+                    <Text className="mr-2 text-sm text-gray-700 dark:text-gray-300">•</Text>
                     <Text className="flex-1 text-sm leading-5 text-gray-700 dark:text-gray-300">
-                      {bullet}
+                      {point}
                     </Text>
                   </View>
                 ))}
               </View>
-            </Pressable>
-          );
-        })}
+            </View>
+            <View className={`border-t px-5 pt-3 pb-4 ${getActionDividerBorderColor(action.colorScheme)}`}>
+              <Text className="text-sm italic leading-5 text-gray-600 dark:text-gray-400">
+                {action.supportiveMessage}
+              </Text>
+            </View>
+          </Pressable>
+        ))}
       </ScrollView>
     </View>
   );

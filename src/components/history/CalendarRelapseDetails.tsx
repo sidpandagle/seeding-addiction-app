@@ -11,7 +11,7 @@ export default function CalendarRelapseDetails({ selectedDate, entries }: Calend
     return (
       <View className="px-6 py-8 mx-6 mt-2">
         <View className="items-center p-8 bg-white dark:bg-gray-900 rounded-3xl">
-          <View className="items-center justify-center w-16 h-16 mb-4 bg-blue-50 dark:bg-blue-900/30 rounded-2xl">
+          <View className="items-center justify-center w-16 h-16 mb-4 bg-blue-50 dark:bg-blue-900/30 rounded-xl">
             <Text className="text-3xl">📅</Text>
           </View>
           <Text className="text-base font-semibold text-center text-gray-600 dark:text-gray-400">
@@ -28,9 +28,9 @@ export default function CalendarRelapseDetails({ selectedDate, entries }: Calend
     return entryDate === selectedDate;
   });
 
-  // Separate relapses and urges
+  // Separate relapses and activities
   const dayRelapses = dayEntries.filter(e => e.type === 'relapse');
-  const dayUrges = dayEntries.filter(e => e.type === 'urge');
+  const dayActivities = dayEntries.filter(e => e.type === 'activity');
 
   const formattedDate = new Date(selectedDate + 'T00:00:00').toLocaleDateString('en-US', {
     weekday: 'long',
@@ -43,7 +43,7 @@ export default function CalendarRelapseDetails({ selectedDate, entries }: Calend
     return (
       <View className="px-6 py-6 mx-6 mt-2 mb-6 bg-white dark:bg-gray-900 rounded-3xl">
         <View className="flex-row items-center gap-3 mb-4">
-          <View className="items-center justify-center w-12 h-12 bg-blue-50 dark:bg-blue-900/30 rounded-2xl">
+          <View className="items-center justify-center w-12 h-12 bg-blue-50 dark:bg-blue-900/30 rounded-xl">
             <Text className="text-2xl">✨</Text>
           </View>
           <View className="flex-1">
@@ -62,7 +62,7 @@ export default function CalendarRelapseDetails({ selectedDate, entries }: Calend
   let headerBgColor = 'bg-blue-50 dark:bg-blue-900/30';
   let headerTextColor = 'text-blue-600 dark:text-blue-400';
 
-  if (dayRelapses.length > 0 && dayUrges.length > 0) {
+  if (dayRelapses.length > 0 && dayActivities.length > 0) {
     // Mixed
     headerIcon = '📊';
     headerBgColor = 'bg-amber-50 dark:bg-amber-900/30';
@@ -73,25 +73,25 @@ export default function CalendarRelapseDetails({ selectedDate, entries }: Calend
     headerBgColor = 'bg-red-50 dark:bg-red-900/30';
     headerTextColor = 'text-red-600 dark:text-red-400';
   } else {
-    // Only urges
-    headerIcon = '🎯';
+    // Only activities
+    headerIcon = '✨';
     headerBgColor = 'bg-green-50 dark:bg-green-900/30';
     headerTextColor = 'text-green-600 dark:text-green-400';
   }
 
   return (
-    <View className="px-6 py-6 mx-6 mt-2 mb-6 bg-white border border-white dark:bg-gray-900 rounded-3xl dark:border-gray-900">
+    <View className="mx-6 mt-2 mb-6">
       <View className="flex-row items-center gap-3 mb-5">
-        <View className={`items-center justify-center w-12 h-12 rounded-2xl ${headerBgColor}`}>
+        <View className={`items-center justify-center w-12 h-12 rounded-xl ${headerBgColor}`}>
           <Text className="text-2xl">{headerIcon}</Text>
         </View>
         <View className="flex-1">
           <Text className="mb-1 text-base font-bold text-gray-900 dark:text-white">{formattedDate}</Text>
           <Text className={`text-sm font-bold ${headerTextColor}`}>
             {dayEntries.length} {dayEntries.length === 1 ? 'event' : 'events'} recorded
-            {dayRelapses.length > 0 && dayUrges.length > 0 && (
+            {dayRelapses.length > 0 && dayActivities.length > 0 && (
               <Text className="text-xs text-gray-500 dark:text-gray-400">
-                {' '}({dayRelapses.length} relapse, {dayUrges.length} urge)
+                {' '}({dayRelapses.length} relapse, {dayActivities.length} activity)
               </Text>
             )}
           </Text>
@@ -109,73 +109,169 @@ export default function CalendarRelapseDetails({ selectedDate, entries }: Calend
             return (
               <View
                 key={relapse.id}
-                className={`p-5 bg-red-50 dark:bg-red-900/20 rounded-2xl border border-red-100 dark:border-red-900/40 ${index < dayRelapses.length - 1 ? 'mb-3' : ''}`}
+                className={`relative overflow-hidden bg-white border border-gray-200 shadow-sm dark:border-gray-800 dark:bg-gray-900 rounded-xl ${index < dayRelapses.length - 1 ? 'mb-3' : ''}`}
               >
-                <View className="flex-row items-center gap-2 mb-3">
-                  <Text className="text-base">🕐</Text>
-                  <Text className="text-sm font-bold text-gray-900 dark:text-white">
-                    {new Date(relapse.timestamp).toLocaleTimeString('en-US', {
-                      hour: 'numeric',
-                      minute: '2-digit',
-                    })}
-                  </Text>
-                </View>
+                {/* Gradient accent bar - red for relapses */}
+                <View className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-red-400 to-orange-400" />
 
-                {relapse.note && (
-                  <Text className="mb-3 text-sm leading-6 text-gray-700 dark:text-gray-300">{relapse.note}</Text>
-                )}
-
-                {relapse.tags && relapse.tags.length > 0 && (
-                  <View className="flex-row flex-wrap gap-2 mt-2">
-                    {relapse.tags.map((tag: string) => (
-                      <View key={tag} className="px-4 py-2 bg-white dark:bg-gray-700 rounded-xl">
-                        <Text className="text-xs font-bold text-gray-700 dark:text-gray-300">#{tag}</Text>
+                <View className="p-5">
+                  <View className="flex-row items-start justify-between mb-3">
+                    <View className="flex-1">
+                      <View className="flex-row items-center gap-2 mb-1">
+                        <Text className="text-lg font-bold text-gray-900 dark:text-white">
+                          {new Date(relapse.timestamp).toLocaleDateString('en-US', {
+                            weekday: 'short',
+                            month: 'short',
+                            day: 'numeric',
+                            year: 'numeric',
+                          })}
+                        </Text>
                       </View>
-                    ))}
+                      <View className="flex-row items-center gap-2">
+                        <Text className="text-base">🕐</Text>
+                        <Text className="text-sm font-medium text-gray-500 dark:text-gray-400">
+                          {new Date(relapse.timestamp).toLocaleTimeString('en-US', {
+                            hour: 'numeric',
+                            minute: '2-digit',
+                          })}
+                        </Text>
+                      </View>
+                    </View>
+
+                    {/* Relapse type badge */}
+                    <View className="px-4 py-2 bg-red-50 dark:bg-red-900/30 rounded-xl">
+                      <Text className="text-xs font-bold text-red-700 dark:text-red-300">
+                        📍 Relapse
+                      </Text>
+                    </View>
                   </View>
-                )}
+
+                  {relapse.note && (
+                    <View className="p-4 mb-3 bg-gray-50 dark:bg-gray-800 rounded-xl">
+                      <Text className="text-sm leading-6 text-gray-700 dark:text-gray-300">
+                        {relapse.note}
+                      </Text>
+                    </View>
+                  )}
+
+                  {relapse.tags && relapse.tags.length > 0 && (
+                    <View className="flex-row flex-wrap gap-2 mt-2">
+                      {relapse.tags.map((tag: string) => (
+                        <View
+                          key={tag}
+                          className="px-4 py-2 bg-blue-50 dark:bg-blue-900/30 rounded-xl"
+                        >
+                          <Text className="text-xs font-bold text-blue-700 dark:text-blue-300">
+                            #{tag}
+                          </Text>
+                        </View>
+                      ))}
+                    </View>
+                  )}
+                </View>
               </View>
             );
           })}
         </View>
       )}
 
-      {/* Render urges */}
-      {dayUrges.length > 0 && (
-        <View>
+      {/* Render activities */}
+      {dayActivities.length > 0 && (
+        <View className={dayRelapses.length > 0 ? 'mt-4' : ''}>
           <Text className="mb-3 text-xs font-bold tracking-wide text-green-600 uppercase dark:text-green-400">
-            Urges Resisted ({dayUrges.length})
+            Activities Logged ({dayActivities.length})
           </Text>
-          {dayUrges.map((entry, index) => {
-            const urge = entry.data;
+          {dayActivities.map((entry, index) => {
+            const activity = entry.data;
             return (
               <View
-                key={urge.id}
-                className={`p-5 bg-green-50 dark:bg-green-900/20 rounded-2xl border border-green-100 dark:border-green-900/40 ${index < dayUrges.length - 1 ? 'mb-3' : ''}`}
+                key={activity.id}
+                className={`relative overflow-hidden bg-white border border-gray-200 shadow-sm dark:border-gray-800 dark:bg-gray-900 rounded-xl ${index < dayActivities.length - 1 ? 'mb-3' : ''}`}
               >
-                <View className="flex-row items-center gap-2 mb-3">
-                  <Text className="text-base">🕐</Text>
-                  <Text className="text-sm font-bold text-gray-900 dark:text-white">
-                    {new Date(urge.timestamp).toLocaleTimeString('en-US', {
-                      hour: 'numeric',
-                      minute: '2-digit',
-                    })}
-                  </Text>
-                </View>
+                {/* Gradient accent bar - green for activities */}
+                <View className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-green-400 to-emerald-400" />
 
-                {urge.note && (
-                  <Text className="mb-3 text-sm leading-6 text-gray-700 dark:text-gray-300">{urge.note}</Text>
-                )}
+                <View className="p-5">
+                  <View className="flex-row items-start justify-between mb-3">
+                    <View className="flex-1">
+                      <View className="flex-row items-center gap-2 mb-1">
+                        <Text className="text-lg font-bold text-gray-900 dark:text-white">
+                          {new Date(activity.timestamp).toLocaleDateString('en-US', {
+                            weekday: 'short',
+                            month: 'short',
+                            day: 'numeric',
+                            year: 'numeric',
+                          })}
+                        </Text>
+                      </View>
+                      <View className="flex-row items-center gap-2">
+                        <Text className="text-base">🕐</Text>
+                        <Text className="text-sm font-medium text-gray-500 dark:text-gray-400">
+                          {new Date(activity.timestamp).toLocaleTimeString('en-US', {
+                            hour: 'numeric',
+                            minute: '2-digit',
+                          })}
+                        </Text>
+                      </View>
+                    </View>
 
-                {urge.context && (
-                  <View className="flex-row flex-wrap gap-2 mt-2">
-                    <View className="px-4 py-2 bg-white dark:bg-gray-700 rounded-xl">
+                    {/* Activity type badge */}
+                    <View className="px-4 py-2 bg-green-50 dark:bg-green-900/30 rounded-xl">
                       <Text className="text-xs font-bold text-green-700 dark:text-green-300">
-                        Context: {urge.context}
+                        ✨ Activity
                       </Text>
                     </View>
                   </View>
-                )}
+
+                  {activity.note && (
+                    <View className="p-4 mb-3 bg-gray-50 dark:bg-gray-800 rounded-xl">
+                      <Text className="text-sm leading-6 text-gray-700 dark:text-gray-300">
+                        {activity.note}
+                      </Text>
+                    </View>
+                  )}
+
+                  {/* Activity-specific details: Duration and Urge Intensity */}
+                  <View className="gap-2 mb-3">
+                    {/* Duration */}
+                    {(activity as any).duration && (
+                      <View className="flex-row items-center gap-2 p-3 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
+                        <Text className="text-sm">⏱️</Text>
+                        <Text className="text-sm font-medium text-purple-700 dark:text-purple-300">
+                          Duration: {(activity as any).duration} minutes
+                        </Text>
+                      </View>
+                    )}
+
+                    {/* Urge Intensity */}
+                    {(activity as any).urgeIntensity !== undefined && (activity as any).urgeIntensity !== null && (
+                      <View className="flex-row items-center gap-2 p-3 bg-orange-50 dark:bg-orange-900/20 rounded-lg">
+                        <Text className="text-sm">⚡</Text>
+                        <Text className="text-sm font-medium text-orange-700 dark:text-orange-300">
+                          {(activity as any).urgeIntensity === 0
+                            ? 'No urge felt'
+                            : (activity as any).urgeIntensity === 2
+                            ? 'Low urge (1-3)'
+                            : (activity as any).urgeIntensity === 5
+                            ? 'Medium urge (4-6)'
+                            : 'High urge (7-10)'}
+                        </Text>
+                      </View>
+                    )}
+                  </View>
+
+                  {activity.categories && activity.categories.length > 0 && (
+                    <View className="flex-row flex-wrap gap-2 mt-2">
+                      {activity.categories.map((category: string) => (
+                        <View key={category} className="px-4 py-2 bg-green-50 dark:bg-green-900/30 rounded-xl">
+                          <Text className="text-xs font-bold text-green-700 dark:text-green-300">
+                            {category}
+                          </Text>
+                        </View>
+                      ))}
+                    </View>
+                  )}
+                </View>
               </View>
             );
           })}

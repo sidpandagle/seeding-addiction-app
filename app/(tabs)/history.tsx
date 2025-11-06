@@ -70,7 +70,7 @@ function HistoryScreen() {
                 Track your journey
               </Text>
             </View>
-            <View className="items-center justify-center bg-blue-100 rounded-2xl w-14 h-14 dark:bg-blue-900/30">
+            <View className="items-center justify-center bg-blue-100 rounded-xl w-14 h-14 dark:bg-blue-900/30">
               <History size={26} color="#3b82f6" strokeWidth={2.5} />
             </View>
           </View>
@@ -82,7 +82,7 @@ function HistoryScreen() {
         <Pressable
           onPress={() => setShowInsightsModal(true)}
           style={{ backgroundColor: colorScheme === 'dark' ? '#111827' : '#ffffff' }}
-          className="flex-row items-center justify-between p-5 border border-gray-200 shadow-sm dark:border-gray-800 rounded-2xl"
+          className="flex-row items-center justify-between p-5 border border-gray-200 shadow-sm dark:border-gray-800 rounded-xl"
         >
           <View className="flex-row items-center gap-3">
             <View className="items-center justify-center w-12 h-12 bg-blue-100 rounded-full dark:bg-blue-900/30">

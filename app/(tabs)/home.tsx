@@ -180,7 +180,7 @@ function DashboardScreen() {
           <Pressable
             onPress={handleHelpPress}
             style={{ backgroundColor: colorScheme === 'dark' ? 'rgba(153, 27, 27, 0.3)' : '#fecaca' }}
-            className="items-center justify-center bg-red-200 w-14 h-14 rounded-2xl active:scale-95"
+            className="items-center justify-center bg-red-200 w-14 h-14 rounded-xl active:scale-95"
           >
             <AlertCircle size={28} color="#ef4444" strokeWidth={2.5} />
           </Pressable>
@@ -213,14 +213,14 @@ function DashboardScreen() {
             {/* Log Activity - Primary Action */}
             <Pressable
               onPress={() => handleActivityPress()}
-              className="flex-1 shadow-sm bg-blue-600/90 dark:bg-blue-900/30 rounded-2xl"
+              className="flex-1 shadow-sm bg-blue-600/90 dark:bg-blue-900/30 rounded-xl"
             >
               <View className="items-center px-4 py-6">
-                <View className="items-center justify-center mb-3 rounded-2xl w-14 h-14 bg-white/5">
+                <View className="items-center justify-center mb-3 rounded-xl w-14 h-14 bg-white/5">
                   <SmilePlus size={28} color="#ffffff" strokeWidth={2.5} />
                 </View>
                 <Text className="mb-1 text-base font-bold text-center text-white">
-                  Log Activity
+                  Water Your Plant
                 </Text>
                 <Text className="text-xs text-center text-blue-100">
                   Track healthy actions
@@ -232,17 +232,17 @@ function DashboardScreen() {
             <Pressable
               onPress={handleRelapsePress}
               style={{ backgroundColor: colorScheme === 'dark' ? '#111827' : '#ffffff' }}
-              className="flex-1 shadow-sm rounded-2xl shadow-black"
+              className="flex-1 shadow-sm rounded-xl shadow-black"
             >
               <View className="items-center px-4 py-6">
-                <View className="items-center justify-center mb-3 w-14 h-14 rounded-2xl bg-emerald-50 dark:bg-emerald-950/30">
+                <View className="items-center justify-center mb-3 w-14 h-14 rounded-xl bg-emerald-50 dark:bg-emerald-950/30">
                   <RotateCcw size={28} color="#10b981" strokeWidth={2.5} />
                 </View>
                 <Text className="mb-1 text-base font-bold text-center text-gray-800 dark:text-gray-200">
-                  Record Relapse
+                  Log Relapse
                 </Text>
                 <Text className="text-xs text-center text-gray-500 dark:text-gray-400">
-                  It's okay to restart
+                  Track what happened
                 </Text>
               </View>
             </Pressable>
@@ -265,7 +265,7 @@ function DashboardScreen() {
             {/* Total Attempts */}
             <View
               style={{ backgroundColor: colorScheme === 'dark' ? '#111827' : '#ffffff' }}
-              className="relative flex-1 overflow-hidden shadow-sm shadow-black rounded-2xl"
+              className="relative flex-1 overflow-hidden border border-gray-200 shadow-sm shadow-black rounded-xl dark:border-gray-800"
             >
               <View className="p-4">
                 <Text className="mb-2 text-xs font-medium tracking-wide text-gray-600 uppercase dark:text-gray-400">
@@ -284,7 +284,7 @@ function DashboardScreen() {
             {/* Best Streak */}
             <View
               style={{ backgroundColor: colorScheme === 'dark' ? '#111827' : '#ffffff' }}
-              className="relative flex-1 overflow-hidden shadow-sm shadow-black rounded-2xl"
+              className="relative flex-1 overflow-hidden border border-gray-200 shadow-sm shadow-black rounded-xl dark:border-gray-800"
             >
               <View className="p-4">
                 <Text className="mb-2 text-xs font-medium tracking-wide text-gray-600 uppercase dark:text-gray-400">
@@ -311,7 +311,7 @@ function DashboardScreen() {
             {/* Activities Logged */}
             <View
               style={{ backgroundColor: colorScheme === 'dark' ? '#111827' : '#ffffff' }}
-              className="relative flex-1 overflow-hidden shadow-sm shadow-black rounded-2xl"
+              className="relative flex-1 overflow-hidden border border-gray-200 shadow-sm shadow-black rounded-xl dark:border-gray-800"
             >
               <View className="p-4">
                 <Text className="mb-2 text-xs font-medium tracking-wide text-gray-600 uppercase dark:text-gray-400">
@@ -330,7 +330,7 @@ function DashboardScreen() {
             {/* Success Rate */}
             <View
               style={{ backgroundColor: colorScheme === 'dark' ? '#111827' : '#ffffff' }}
-              className="relative flex-1 overflow-hidden shadow-sm shadow-black rounded-2xl"
+              className="relative flex-1 overflow-hidden border border-gray-200 shadow-sm shadow-black rounded-xl dark:border-gray-800"
             >
               <View className="p-4">
                 <Text className="mb-2 text-xs font-medium tracking-wide text-gray-600 uppercase dark:text-gray-400">

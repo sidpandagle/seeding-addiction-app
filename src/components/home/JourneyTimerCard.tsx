@@ -83,7 +83,7 @@ const ProgressIndicator: React.FC<{ progress: number; colorScheme: 'light' | 'da
                     }}
                     className="items-center justify-center w-3 h-3 rounded-full bg-emerald-500 dark:bg-emerald-400"
                   >
-                    <View className="w-1.5 h-1.5 bg-white rounded-full" />
+                    {/* <View className="w-1.5 h-1.5 bg-white rounded-full" /> */}
                   </Animated.View>
                 ) : (
                   // Static node
@@ -172,7 +172,7 @@ const JourneyTimerCardComponent: React.FC<JourneyTimerCardProps> = ({
       {/* Card with Background Icon - Same style as Daily Inspiration */}
       <View
         style={{ backgroundColor: colorScheme === 'dark' ? '#111827' : '#ffffff' }}
-        className="relative overflow-hidden border border-gray-200 shadow-md rounded-2xl dark:border-gray-700"
+        className="relative overflow-hidden border border-gray-200 shadow-md rounded-2xl dark:border-gray-800"
       >
         <View className="p-6">
           {/* Decorative Background Icon - Bottom Right */}

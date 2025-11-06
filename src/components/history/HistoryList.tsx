@@ -75,7 +75,7 @@ export default function HistoryList({ entries }: HistoryListProps) {
             <View className="flex-row gap-2.5">
               <Pressable
                 onPress={() => setSelectedTag(null)}
-                className={`px-5 py-3 rounded-2xl ${selectedTag === null
+                className={`px-5 py-3 rounded-xl ${selectedTag === null
                     ? 'bg-blue-600 dark:bg-blue-600'
                     : 'bg-white dark:bg-gray-900'
                   }`}
@@ -96,7 +96,7 @@ export default function HistoryList({ entries }: HistoryListProps) {
                   <Pressable
                     key={tag}
                     onPress={() => setSelectedTag(tag)}
-                    className={`px-5 py-3 rounded-2xl ${selectedTag === tag
+                    className={`px-5 py-3 rounded-xl ${selectedTag === tag
                         ? 'bg-blue-600 dark:bg-blue-600'
                         : 'bg-white dark:bg-gray-900'
                       }`}
@@ -116,7 +116,7 @@ export default function HistoryList({ entries }: HistoryListProps) {
       }
       ListEmptyComponent={
         <View className="items-center justify-center px-6 py-20">
-          <View className="items-center justify-center w-24 h-24 mb-5 bg-blue-50 dark:bg-blue-900/30 rounded-3xl">
+          <View className="items-center justify-center w-24 h-24 mb-5 bg-blue-50 dark:bg-blue-900/30 rounded-xl">
             <Text className="text-5xl">✨</Text>
           </View>
           <Text className="mb-2 text-xl font-bold text-gray-900 dark:text-white">
@@ -132,7 +132,7 @@ export default function HistoryList({ entries }: HistoryListProps) {
         const data = item.data;
 
         return (
-          <View className="relative p-6 mx-6 mb-4 overflow-hidden bg-white border border-gray-200 shadow-sm dark:border-gray-800 dark:bg-gray-900 rounded-3xl">
+          <View className="relative p-6 mx-6 mb-4 overflow-hidden bg-white border border-gray-200 shadow-sm dark:border-gray-800 dark:bg-gray-900 rounded-xl">
             {/* Gradient accent - different colors for relapse vs urge */}
             {isRelapse ? (
               <View className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-red-400 to-orange-400" />
@@ -172,10 +172,41 @@ export default function HistoryList({ entries }: HistoryListProps) {
             </View>
 
             {data.note && (
-              <View className="p-4 mb-3 bg-gray-50 dark:bg-gray-800 rounded-2xl">
+              <View className="p-4 mb-3 bg-gray-50 dark:bg-gray-800 rounded-xl">
                 <Text className="text-sm leading-6 text-gray-700 dark:text-gray-300">
                   {data.note}
                 </Text>
+              </View>
+            )}
+
+            {/* Activity-specific details: Duration and Urge Intensity */}
+            {!isRelapse && (
+              <View className="gap-2 mb-3">
+                {/* Duration */}
+                {(data as any).duration && (
+                  <View className="flex-row items-center gap-2 p-3 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
+                    <Text className="text-sm">⏱️</Text>
+                    <Text className="text-sm font-medium text-purple-700 dark:text-purple-300">
+                      Duration: {(data as any).duration} minutes
+                    </Text>
+                  </View>
+                )}
+
+                {/* Urge Intensity */}
+                {(data as any).urgeIntensity !== undefined && (data as any).urgeIntensity !== null && (
+                  <View className="flex-row items-center gap-2 p-3 bg-orange-50 dark:bg-orange-900/20 rounded-lg">
+                    <Text className="text-sm">⚡</Text>
+                    <Text className="text-sm font-medium text-orange-700 dark:text-orange-300">
+                      {(data as any).urgeIntensity === 0
+                        ? 'No urge felt'
+                        : (data as any).urgeIntensity === 2
+                        ? 'Low urge (1-3)'
+                        : (data as any).urgeIntensity === 5
+                        ? 'Medium urge (4-6)'
+                        : 'High urge (7-10)'}
+                    </Text>
+                  </View>
+                )}
               </View>
             )}
 

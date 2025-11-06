@@ -11,6 +11,7 @@ const initDB = async (): Promise<void> => {
 
   dbInstance = await SQLite.openDatabaseAsync('seeding.db');
 
+  // Create base tables without new columns
   await dbInstance.execAsync(`
     CREATE TABLE IF NOT EXISTS relapse (
       id TEXT PRIMARY KEY NOT NULL,
@@ -38,21 +39,46 @@ const initDB = async (): Promise<void> => {
     );
   `);
 
+  // Migration: Add new columns if they don't exist (separate from CREATE TABLE)
+  // Use individual execAsync calls to avoid batch failures
+  try {
+    await dbInstance.execAsync('ALTER TABLE activity ADD COLUMN duration INTEGER');
+  } catch (error) {
+    // Column already exists, ignore error
+  }
+
+  try {
+    await dbInstance.execAsync('ALTER TABLE activity ADD COLUMN urgeIntensity INTEGER');
+  } catch (error) {
+    // Column already exists, ignore error
+  }
+
+  // Create index for urgeIntensity if it doesn't exist
+  try {
+    await dbInstance.execAsync('CREATE INDEX IF NOT EXISTS idx_activity_urgeIntensity ON activity(urgeIntensity)');
+  } catch (error) {
+    // Index already exists, ignore error
+  }
+
   // Migration: Update existing single-category data to array format
   // This is backward compatible - we'll handle both formats in the helpers
-  const existingActivities = await dbInstance.getAllAsync<{ id: string; category: string | null }>(
-    'SELECT id, category FROM activity WHERE category IS NOT NULL AND category NOT LIKE \'[%\''
-  );
+  try {
+    const existingActivities = await dbInstance.getAllAsync<{ id: string; category: string | null }>(
+      'SELECT id, category FROM activity WHERE category IS NOT NULL AND category NOT LIKE \'[%\''
+    );
 
-  for (const activity of existingActivities) {
-    if (activity.category && !activity.category.startsWith('[')) {
-      // Convert single category to JSON array
-      const categoryArray = JSON.stringify([activity.category]);
-      await dbInstance.runAsync(
-        'UPDATE activity SET category = ? WHERE id = ?',
-        [categoryArray, activity.id]
-      );
+    for (const activity of existingActivities) {
+      if (activity.category && !activity.category.startsWith('[')) {
+        // Convert single category to JSON array
+        const categoryArray = JSON.stringify([activity.category]);
+        await dbInstance.runAsync(
+          'UPDATE activity SET category = ? WHERE id = ?',
+          [categoryArray, activity.id]
+        );
+      }
     }
+  } catch (error) {
+    // Table might be empty or migration already done, ignore
   }
 };
 
@@ -103,6 +129,8 @@ export interface Activity {
   timestamp: string; // ISO8601 format
   note?: string;
   categories?: string[]; // Multiple categories (e.g., ["🏃 Physical", "👥 Social"])
+  duration?: number; // Duration in minutes (optional)
+  urgeIntensity?: number | null; // Urge intensity 1-10 or null if no urge (optional)
 }
 
 /**
@@ -112,4 +140,6 @@ export interface ActivityInput {
   timestamp?: string;
   note?: string;
   categories?: string[];
+  duration?: number; // Duration in minutes (optional)
+  urgeIntensity?: number | null; // Urge intensity 1-10 or null if no urge (optional)
 }

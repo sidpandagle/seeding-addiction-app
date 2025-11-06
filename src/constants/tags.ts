@@ -28,6 +28,14 @@ export const ACTIVITY_CATEGORIES = [
   '🧘 Mindfulness',
   '🎯 Productive',
   '🌳 Nature',
+  '💤 Rest/Sleep',
+  '🍎 Healthy Eating',
+  '🧹 Organizing',
+  '🎮 Hobbies',
+  '💼 Work/Career',
+  '🙏 Spiritual',
+  '📖 Reading',
+  '🎵 Music',
   '✨ Other',
 ] as const;
 
