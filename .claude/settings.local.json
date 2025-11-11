@@ -31,7 +31,9 @@
       "Bash(.\\android\\gradlew.bat assembleRelease:*)",
       "Bash(./gradlew.bat assembleRelease:*)",
       "Bash(npm start:*)",
-      "Bash(timeout 10)"
+      "Bash(timeout 10)",
+      "Bash(npx expo config:*)",
+      "Bash(git log:*)"
     ],
     "deny": [],
     "ask": []

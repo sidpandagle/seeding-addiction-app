@@ -39,27 +39,6 @@ const initDB = async (): Promise<void> => {
     );
   `);
 
-  // Migration: Add new columns if they don't exist (separate from CREATE TABLE)
-  // Use individual execAsync calls to avoid batch failures
-  try {
-    await dbInstance.execAsync('ALTER TABLE activity ADD COLUMN duration INTEGER');
-  } catch (error) {
-    // Column already exists, ignore error
-  }
-
-  try {
-    await dbInstance.execAsync('ALTER TABLE activity ADD COLUMN urgeIntensity INTEGER');
-  } catch (error) {
-    // Column already exists, ignore error
-  }
-
-  // Create index for urgeIntensity if it doesn't exist
-  try {
-    await dbInstance.execAsync('CREATE INDEX IF NOT EXISTS idx_activity_urgeIntensity ON activity(urgeIntensity)');
-  } catch (error) {
-    // Index already exists, ignore error
-  }
-
   // Migration: Update existing single-category data to array format
   // This is backward compatible - we'll handle both formats in the helpers
   try {
@@ -129,8 +108,6 @@ export interface Activity {
   timestamp: string; // ISO8601 format
   note?: string;
   categories?: string[]; // Multiple categories (e.g., ["🏃 Physical", "👥 Social"])
-  duration?: number; // Duration in minutes (optional)
-  urgeIntensity?: number | null; // Urge intensity 1-10 or null if no urge (optional)
 }
 
 /**
@@ -140,6 +117,4 @@ export interface ActivityInput {
   timestamp?: string;
   note?: string;
   categories?: string[];
-  duration?: number; // Duration in minutes (optional)
-  urgeIntensity?: number | null; // Urge intensity 1-10 or null if no urge (optional)
 }

@@ -205,12 +205,10 @@ export const addActivity = async (input: ActivityInput): Promise<Activity> => {
   // Sanitize inputs
   const note = sanitizeString(input.note, 5000) || null;
   const categories = input.categories ? JSON.stringify(input.categories) : null;
-  const duration = input.duration || null;
-  const urgeIntensity = input.urgeIntensity ?? null;
 
   await db.runAsync(
-    'INSERT INTO activity (id, timestamp, note, category, duration, urgeIntensity) VALUES (?, ?, ?, ?, ?, ?)',
-    [id, timestamp, note, categories, duration, urgeIntensity]
+    'INSERT INTO activity (id, timestamp, note, category) VALUES (?, ?, ?, ?)',
+    [id, timestamp, note, categories]
   );
 
   return {
@@ -218,8 +216,6 @@ export const addActivity = async (input: ActivityInput): Promise<Activity> => {
     timestamp,
     note: note || undefined,
     categories: input.categories,
-    duration: input.duration,
-    urgeIntensity: input.urgeIntensity,
   };
 };
 
@@ -244,8 +240,6 @@ export const getActivities = async (limit?: number, offset: number = 0): Promise
     timestamp: string;
     note: string | null;
     category: string | null;
-    duration: number | null;
-    urgeIntensity: number | null;
   }>(query, params);
 
   return rows.map((row) => ({
@@ -253,8 +247,6 @@ export const getActivities = async (limit?: number, offset: number = 0): Promise
     timestamp: row.timestamp,
     note: row.note || undefined,
     categories: row.category ? JSON.parse(row.category) : undefined,
-    duration: row.duration || undefined,
-    urgeIntensity: row.urgeIntensity !== null ? row.urgeIntensity : undefined,
   }));
 };
 

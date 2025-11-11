@@ -231,35 +231,6 @@ export default function CalendarRelapseDetails({ selectedDate, entries }: Calend
                     </View>
                   )}
 
-                  {/* Activity-specific details: Duration and Urge Intensity */}
-                  <View className="gap-2 mb-3">
-                    {/* Duration */}
-                    {(activity as any).duration && (
-                      <View className="flex-row items-center gap-2 p-3 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
-                        <Text className="text-sm">⏱️</Text>
-                        <Text className="text-sm font-medium text-purple-700 dark:text-purple-300">
-                          Duration: {(activity as any).duration} minutes
-                        </Text>
-                      </View>
-                    )}
-
-                    {/* Urge Intensity */}
-                    {(activity as any).urgeIntensity !== undefined && (activity as any).urgeIntensity !== null && (
-                      <View className="flex-row items-center gap-2 p-3 bg-orange-50 dark:bg-orange-900/20 rounded-lg">
-                        <Text className="text-sm">⚡</Text>
-                        <Text className="text-sm font-medium text-orange-700 dark:text-orange-300">
-                          {(activity as any).urgeIntensity === 0
-                            ? 'No urge felt'
-                            : (activity as any).urgeIntensity === 2
-                            ? 'Low urge (1-3)'
-                            : (activity as any).urgeIntensity === 5
-                            ? 'Medium urge (4-6)'
-                            : 'High urge (7-10)'}
-                        </Text>
-                      </View>
-                    )}
-                  </View>
-
                   {activity.categories && activity.categories.length > 0 && (
                     <View className="flex-row flex-wrap gap-2 mt-2">
                       {activity.categories.map((category: string) => (

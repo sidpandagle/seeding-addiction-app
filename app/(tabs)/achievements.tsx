@@ -57,7 +57,7 @@ export default function AchievementsScreen() {
       <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'} />
 
       {/* Elegant Header */}
-      <View className="pt-16 pb-6">
+      <View className="pt-16 pb-2">
         <View className="px-6">
           <View className="flex-row items-center justify-between">
             <View className="flex-1">
@@ -79,7 +79,7 @@ export default function AchievementsScreen() {
       <ScrollView
         className="flex-1"
         showsVerticalScrollIndicator={false}
-        contentContainerClassName="pb-8"
+        contentContainerClassName="pb-4"
       >
         {/* Progress Section Above Achievements */}
         <View className="px-6 mt-6">

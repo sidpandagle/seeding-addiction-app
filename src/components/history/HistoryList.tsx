@@ -77,7 +77,7 @@ export default function HistoryList({ entries }: HistoryListProps) {
                 onPress={() => setSelectedTag(null)}
                 className={`px-5 py-3 rounded-xl ${selectedTag === null
                     ? 'bg-blue-600 dark:bg-blue-600'
-                    : 'bg-white dark:bg-gray-900'
+                    : 'bg-black dark:bg-gray-900'
                   }`}
               >
                 <Text
@@ -176,37 +176,6 @@ export default function HistoryList({ entries }: HistoryListProps) {
                 <Text className="text-sm leading-6 text-gray-700 dark:text-gray-300">
                   {data.note}
                 </Text>
-              </View>
-            )}
-
-            {/* Activity-specific details: Duration and Urge Intensity */}
-            {!isRelapse && (
-              <View className="gap-2 mb-3">
-                {/* Duration */}
-                {(data as any).duration && (
-                  <View className="flex-row items-center gap-2 p-3 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
-                    <Text className="text-sm">⏱️</Text>
-                    <Text className="text-sm font-medium text-purple-700 dark:text-purple-300">
-                      Duration: {(data as any).duration} minutes
-                    </Text>
-                  </View>
-                )}
-
-                {/* Urge Intensity */}
-                {(data as any).urgeIntensity !== undefined && (data as any).urgeIntensity !== null && (
-                  <View className="flex-row items-center gap-2 p-3 bg-orange-50 dark:bg-orange-900/20 rounded-lg">
-                    <Text className="text-sm">⚡</Text>
-                    <Text className="text-sm font-medium text-orange-700 dark:text-orange-300">
-                      {(data as any).urgeIntensity === 0
-                        ? 'No urge felt'
-                        : (data as any).urgeIntensity === 2
-                        ? 'Low urge (1-3)'
-                        : (data as any).urgeIntensity === 5
-                        ? 'Medium urge (4-6)'
-                        : 'High urge (7-10)'}
-                    </Text>
-                  </View>
-                )}
               </View>
             )}
 

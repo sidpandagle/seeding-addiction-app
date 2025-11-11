@@ -37,10 +37,6 @@ export default function ActivityModal({ onClose, preSelectedCategories = [] }: A
   const [selectedCategories, setSelectedCategories] = useState<string[]>(preSelectedCategories);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [activityTip, setActivityTip] = useState<EducationalTip>(getRandomTip('activity'));
-  const [duration, setDuration] = useState<number | null>(null);
-  const [showCustomDuration, setShowCustomDuration] = useState(false);
-  const [customDurationInput, setCustomDurationInput] = useState('');
-  const [urgeIntensity, setUrgeIntensity] = useState<number | null>(null);
   const [reflectionPrompt] = useState(getRandomPrompt());
 
   // Calculate weekly activity count
@@ -116,41 +112,16 @@ export default function ActivityModal({ onClose, preSelectedCategories = [] }: A
     );
   };
 
-  // Handle duration button selection
-  const handleDurationSelect = (minutes: number) => {
-    setDuration(minutes);
-    setShowCustomDuration(false);
-  };
-
-  // Handle custom duration confirmation
-  const handleCustomDuration = () => {
-    const mins = parseInt(customDurationInput, 10);
-    if (!isNaN(mins) && mins > 0) {
-      setDuration(mins);
-      setShowCustomDuration(false);
-      setCustomDurationInput('');
-    }
-  };
-
-  // Handle urge intensity selection
-  const handleUrgeIntensitySelect = (intensity: number | null) => {
-    setUrgeIntensity(intensity);
-  };
-
   const handleSave = async () => {
     try {
       setIsSubmitting(true);
 
-      // Use custom duration if shown, otherwise use selected duration
-      const finalDuration = showCustomDuration && customDurationInput ? parseInt(customDurationInput, 10) : duration;
       const timestamp = new Date().toISOString();
 
       await addActivity({
         timestamp,
         note: note.trim() || undefined,
         categories: selectedCategories.length > 0 ? selectedCategories : undefined,
-        duration: finalDuration || undefined,
-        urgeIntensity: urgeIntensity !== undefined ? urgeIntensity : undefined,
       });
 
       // Calculate celebration stats
@@ -210,7 +181,7 @@ export default function ActivityModal({ onClose, preSelectedCategories = [] }: A
         </View>
 
         {/* Activity Streak & Statistics Section */}
-        <View className="px-5 mt-6">
+        <View className="px-5 mt-2">
           {/* Weekly Activity Count */}
           <View className="p-4 mb-3 border border-green-200 bg-green-50 dark:bg-green-950/30 rounded-xl dark:border-green-900/50">
             <Text className="mb-1 text-xs font-semibold text-green-600 uppercase dark:text-green-300">
@@ -234,16 +205,6 @@ export default function ActivityModal({ onClose, preSelectedCategories = [] }: A
               </Text>
             </View>
           )}
-
-          {/* Activity Tip Card */}
-          {/* <View className="p-4 bg-blue-100 dark:bg-blue-800/30 rounded-xl">
-            <Text className="mb-2 text-lg font-bold text-blue-900 dark:text-blue-100">
-              {activityTip.emoji} {activityTip.title}
-            </Text>
-            <Text className="text-sm leading-6 text-blue-800 dark:text-blue-200">
-              {activityTip.content}
-            </Text>
-          </View> */}
         </View>
 
         {/* Content Card */}
@@ -266,167 +227,13 @@ export default function ActivityModal({ onClose, preSelectedCategories = [] }: A
               />
             </View>
 
-            {/* Duration Tracking */}
-            <View className="mb-6">
-              <Text className="mb-3 text-xs font-semibold tracking-wide text-gray-500 uppercase dark:text-gray-400">
-                ⏱️ How long did this take? (Optional)
-              </Text>
-              {!showCustomDuration ? (
-                <>
-                  <View className="flex-row gap-2 mb-2">
-                    {[5, 15, 30, 60].map((minutes) => (
-                      <Pressable
-                        key={minutes}
-                        onPress={() => handleDurationSelect(minutes)}
-                        className={`flex-1 py-2 rounded-lg ${
-                          duration === minutes
-                            ? 'bg-blue-600 dark:bg-blue-700'
-                            : 'bg-gray-100 dark:bg-gray-800'
-                        }`}
-                      >
-                        <Text
-                          className={`text-sm font-semibold text-center ${
-                            duration === minutes
-                              ? 'text-white'
-                              : 'text-gray-700 dark:text-gray-300'
-                          }`}
-                        >
-                          {minutes}m
-                        </Text>
-                      </Pressable>
-                    ))}
-                  </View>
-                  <Pressable
-                    onPress={() => setShowCustomDuration(true)}
-                    className="py-2 border border-gray-300 rounded-lg dark:border-gray-600"
-                  >
-                    <Text className="text-sm font-semibold text-center text-gray-700 dark:text-gray-300">
-                      Custom
-                    </Text>
-                  </Pressable>
-                </>
-              ) : (
-                <View className="flex-row gap-2">
-                  <TextInput
-                    value={customDurationInput}
-                    onChangeText={setCustomDurationInput}
-                    placeholder="Minutes"
-                    placeholderTextColor={colorScheme === 'dark' ? '#9CA3AF' : '#6B7280'}
-                    keyboardType="number-pad"
-                    className="flex-1 p-2 text-gray-900 rounded-lg bg-gray-50 dark:bg-gray-800 dark:text-white"
-                  />
-                  <Pressable
-                    onPress={handleCustomDuration}
-                    className="px-4 py-2 bg-blue-600 rounded-lg dark:bg-blue-700"
-                  >
-                    <Text className="text-sm font-semibold text-white">Set</Text>
-                  </Pressable>
-                  <Pressable
-                    onPress={() => {
-                      setShowCustomDuration(false);
-                      setCustomDurationInput('');
-                    }}
-                    className="px-4 py-2 bg-gray-200 rounded-lg dark:bg-gray-700"
-                  >
-                    <Text className="text-sm font-semibold text-gray-700 dark:text-gray-300">Cancel</Text>
-                  </Pressable>
-                </View>
-              )}
-              {duration && !showCustomDuration && (
-                <Text className="mt-2 text-xs text-gray-600 dark:text-gray-400">
-                  Selected: {duration} minutes
-                </Text>
-              )}
-            </View>
-
-            {/* Urge Intensity Tracking */}
-            <View className="mb-6">
-              <Text className="mb-3 text-xs font-semibold tracking-wide text-gray-500 uppercase dark:text-gray-400">
-                ⚡ Did this help fight an urge? (Optional)
-              </Text>
-              <View className="gap-2">
-                <Pressable
-                  onPress={() => handleUrgeIntensitySelect(null)}
-                  className={`py-3 px-4 rounded-lg ${
-                    urgeIntensity === null
-                      ? 'bg-blue-600 dark:bg-blue-700'
-                      : 'bg-gray-100 dark:bg-gray-800'
-                  }`}
-                >
-                  <Text
-                    className={`font-semibold ${
-                      urgeIntensity === null
-                        ? 'text-white'
-                        : 'text-gray-700 dark:text-gray-300'
-                    }`}
-                  >
-                    No urge
-                  </Text>
-                </Pressable>
-                <Pressable
-                  onPress={() => handleUrgeIntensitySelect(2)}
-                  className={`py-3 px-4 rounded-lg ${
-                    urgeIntensity === 2
-                      ? 'bg-yellow-500 dark:bg-yellow-600'
-                      : 'bg-gray-100 dark:bg-gray-800'
-                  }`}
-                >
-                  <Text
-                    className={`font-semibold ${
-                      urgeIntensity === 2
-                        ? 'text-white'
-                        : 'text-gray-700 dark:text-gray-300'
-                    }`}
-                  >
-                    Low urge (1-3)
-                  </Text>
-                </Pressable>
-                <Pressable
-                  onPress={() => handleUrgeIntensitySelect(5)}
-                  className={`py-3 px-4 rounded-lg ${
-                    urgeIntensity === 5
-                      ? 'bg-orange-500 dark:bg-orange-600'
-                      : 'bg-gray-100 dark:bg-gray-800'
-                  }`}
-                >
-                  <Text
-                    className={`font-semibold ${
-                      urgeIntensity === 5
-                        ? 'text-white'
-                        : 'text-gray-700 dark:text-gray-300'
-                    }`}
-                  >
-                    Medium urge (4-6)
-                  </Text>
-                </Pressable>
-                <Pressable
-                  onPress={() => handleUrgeIntensitySelect(8)}
-                  className={`py-3 px-4 rounded-lg ${
-                    urgeIntensity === 8
-                      ? 'bg-red-500 dark:bg-red-600'
-                      : 'bg-gray-100 dark:bg-gray-800'
-                  }`}
-                >
-                  <Text
-                    className={`font-semibold ${
-                      urgeIntensity === 8
-                        ? 'text-white'
-                        : 'text-gray-700 dark:text-gray-300'
-                    }`}
-                  >
-                    High urge (7-10)
-                  </Text>
-                </Pressable>
-              </View>
-            </View>
-
             {/* Category Selection */}
             <View>
               <View className="flex-row items-center justify-between mb-3">
                 <Text className="text-xs font-semibold tracking-wide text-gray-500 uppercase dark:text-gray-400">
                   Activity Type (Optional)
                 </Text>
-                <View className="px-2 py-1 bg-blue-100 rounded-full dark:bg-blue-900/30">
+                <View className="px-2 py-1 bg-blue-100 rounded-full dark:bg-blue-600/30">
                   <Text className="text-xs font-semibold text-blue-700 dark:text-blue-300">
                     {selectedCategories.length} selected
                   </Text>

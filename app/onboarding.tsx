@@ -81,12 +81,12 @@ export default function OnboardingScreen() {
         contentContainerClassName="pb-8"
       >
         {/* Hero Section */}
-        <View className="px-6 pt-20 pb-8">
+        <View className="px-6 pt-20 pb-2">
           <Animated.View
             entering={FadeInUp.duration(600).delay(100)}
-            className="items-center mb-8"
+            className="items-center mt-4 mb-4"
           >
-            <View className="items-center justify-center mb-6 bg-gradient-to-br from-emerald-100 to-teal-100 dark:from-emerald-900/30 dark:to-teal-900/30 w-28 h-28 rounded-3xl">
+            <View className="items-center justify-center mb-0 bg-gradient-to-br from-emerald-100 to-teal-100 dark:from-emerald-900/30 dark:to-teal-900/30 w-28 h-28 rounded-3xl">
               <Sparkles size={48} color="#10b981" strokeWidth={2.5} />
             </View>
 
@@ -98,17 +98,10 @@ export default function OnboardingScreen() {
               Your personal growth companion
             </Text>
           </Animated.View>
-
-          <Animated.Text
-            entering={FadeInUp.duration(600).delay(200)}
-            className="mb-8 text-base text-center font-regular text-gray-600 dark:text-gray-400"
-          >
-            Begin your journey of self-improvement with privacy-focused tracking and meaningful insights
-          </Animated.Text>
         </View>
 
         {/* Features Grid */}
-        <View className="px-6 mb-8">
+        <View className="px-6">
           {features.map((feature, index) => {
             const Icon = feature.icon;
             return (
@@ -129,7 +122,7 @@ export default function OnboardingScreen() {
                     <Text className="mb-1 text-base font-bold text-gray-900 dark:text-white">
                       {feature.title}
                     </Text>
-                    <Text className="text-sm font-regular text-gray-600 dark:text-gray-400">
+                    <Text className="text-sm text-gray-600 font-regular dark:text-gray-400">
                       {feature.description}
                     </Text>
                   </View>
@@ -166,7 +159,7 @@ export default function OnboardingScreen() {
 
           <Animated.Text
             entering={FadeInUp.duration(600).delay(800)}
-            className="mt-6 text-sm text-center font-regular text-gray-500 dark:text-gray-500"
+            className="mt-6 text-sm text-center text-gray-500 font-regular dark:text-gray-500"
           >
             Your data stays secure on your device.{'\n'}No account required.
           </Animated.Text>
