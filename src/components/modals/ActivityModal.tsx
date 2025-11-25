@@ -1,5 +1,6 @@
-import { View, Text, TextInput, Pressable, ScrollView, KeyboardAvoidingView, Platform, Alert } from 'react-native';
+import { View, Text, TextInput, Pressable, ScrollView, KeyboardAvoidingView, Platform } from 'react-native';
 import { useState, useEffect } from 'react';
+import * as Haptics from 'expo-haptics';
 import { useActivityStore } from '../../stores/activityStore';
 import { useColorScheme } from '../../stores/themeStore';
 // Icon options for Activity Modal header (current: SmilePlus)
@@ -8,6 +9,9 @@ import { SmilePlus, CheckCircle, Clock, Zap } from 'lucide-react-native';
 import { getRandomTip, type EducationalTip } from '../../data/educationalContent';
 import { ACTIVITY_CATEGORIES } from '../../constants/tags';
 import { getCelebrationMessage, calculateCelebrationStats } from '../../utils/celebrationMessages';
+import CustomAlert from '../common/CustomAlert';
+import { useAlert } from '../../hooks/useAlert';
+import { getLocalDateString } from '../../utils/dateHelpers';
 
 interface ActivityModalProps {
   onClose: () => void;
@@ -39,6 +43,9 @@ export default function ActivityModal({ onClose, preSelectedCategories = [] }: A
   const [activityTip, setActivityTip] = useState<EducationalTip>(getRandomTip('activity'));
   const [reflectionPrompt] = useState(getRandomPrompt());
 
+  // Alert state
+  const { alertState, showAlert, hideAlert } = useAlert();
+
   // Calculate weekly activity count
   const getWeeklyActivityCount = (): number => {
     const now = new Date();
@@ -46,7 +53,7 @@ export default function ActivityModal({ onClose, preSelectedCategories = [] }: A
     return activities.filter(a => new Date(a.timestamp) > weekAgo).length;
   };
 
-  // Calculate days in a row
+  // Calculate days in a row using local date strings
   const getDaysInARow = (): number => {
     if (activities.length === 0) return 0;
 
@@ -54,18 +61,21 @@ export default function ActivityModal({ onClose, preSelectedCategories = [] }: A
       new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
     );
 
+    // Get local date strings for all activities
+    const activityDates = sortedActivities.map(a =>
+      getLocalDateString(a.timestamp)
+    );
+
     let daysInARow = 1;
     const today = new Date();
-    today.setHours(0, 0, 0, 0);
 
-    for (let i = 0; i < sortedActivities.length - 1; i++) {
-      const currentDate = new Date(sortedActivities[i].timestamp);
-      const nextDate = new Date(sortedActivities[i + 1].timestamp);
-      currentDate.setHours(0, 0, 0, 0);
-      nextDate.setHours(0, 0, 0, 0);
+    // Check consecutive days backwards from today
+    for (let i = 1; i < activityDates.length + 1; i++) {
+      const checkDate = new Date(today);
+      checkDate.setDate(today.getDate() - i);
+      const checkDateStr = getLocalDateString(checkDate.toISOString());
 
-      const dayDiff = (currentDate.getTime() - nextDate.getTime()) / (24 * 60 * 60 * 1000);
-      if (dayDiff === 1) {
+      if (activityDates.includes(checkDateStr)) {
         daysInARow++;
       } else {
         break;
@@ -103,13 +113,23 @@ export default function ActivityModal({ onClose, preSelectedCategories = [] }: A
   const daysInARow = getDaysInARow();
   const mostCommon = getMostCommonCategory();
 
-  // Toggle category selection (multi-select)
-  const toggleCategory = (category: string) => {
-    setSelectedCategories((prev) =>
-      prev.includes(category)
-        ? prev.filter((c) => c !== category)
-        : [...prev, category]
-    );
+  // Toggle category selection (multi-select, max 5)
+  const toggleCategory = async (category: string) => {
+    setSelectedCategories((prev) => {
+      if (prev.includes(category)) {
+        // Deselect if already selected
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+        return prev.filter((c) => c !== category);
+      } else if (prev.length < 5) {
+        // Select if under limit
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+        return [...prev, category];
+      } else {
+        // At limit, show error haptic
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+        return prev;
+      }
+    });
   };
 
   const handleSave = async () => {
@@ -135,16 +155,20 @@ export default function ActivityModal({ onClose, preSelectedCategories = [] }: A
 
       // Show celebration if there's a milestone
       if (celebration) {
-        Alert.alert(celebration.emoji, celebration.message, [
-          {
+        showAlert({
+          type: 'success',
+          title: 'Great Progress!',
+          message: celebration.message,
+          buttons: [{
             text: 'Amazing! 🎉',
             onPress: () => {
+              hideAlert();
               setTimeout(() => {
                 onClose();
               }, 100);
             },
-          },
-        ]);
+          }],
+        });
       } else {
         // Brief delay for feedback
         setTimeout(() => {
@@ -231,11 +255,19 @@ export default function ActivityModal({ onClose, preSelectedCategories = [] }: A
             <View>
               <View className="flex-row items-center justify-between mb-3">
                 <Text className="text-xs font-semibold tracking-wide text-gray-500 uppercase dark:text-gray-400">
-                  Activity Type (Optional)
+                  Activity Type (Max 5)
                 </Text>
-                <View className="px-2 py-1 bg-blue-100 rounded-full dark:bg-blue-600/30">
-                  <Text className="text-xs font-semibold text-blue-700 dark:text-blue-300">
-                    {selectedCategories.length} selected
+                <View className={`px-2 py-1 rounded-full ${
+                  selectedCategories.length >= 5
+                    ? 'bg-amber-100 dark:bg-amber-900/30'
+                    : 'bg-blue-100 dark:bg-blue-600/30'
+                }`}>
+                  <Text className={`text-xs font-semibold ${
+                    selectedCategories.length >= 5
+                      ? 'text-amber-700 dark:text-amber-300'
+                      : 'text-blue-700 dark:text-blue-300'
+                  }`}>
+                    {selectedCategories.length}/5 selected
                   </Text>
                 </View>
               </View>
@@ -243,13 +275,17 @@ export default function ActivityModal({ onClose, preSelectedCategories = [] }: A
               <View className="flex-row flex-wrap gap-2">
                 {ACTIVITY_CATEGORIES.map((category) => {
                   const isSelected = selectedCategories.includes(category);
+                  const isDisabled = !isSelected && selectedCategories.length >= 5;
                   return (
                     <Pressable
                       key={category}
                       onPress={() => toggleCategory(category)}
+                      disabled={isDisabled}
                       className={`px-4 py-2.5 rounded-full flex-row items-center gap-2 ${
                         isSelected
                           ? 'bg-blue-600 dark:bg-blue-800/30'
+                          : isDisabled
+                          ? 'bg-gray-100/50 dark:bg-gray-800/50 opacity-50'
                           : 'bg-gray-100 dark:bg-gray-800'
                       }`}
                     >
@@ -257,6 +293,8 @@ export default function ActivityModal({ onClose, preSelectedCategories = [] }: A
                         className={`text-sm font-semibold ${
                           isSelected
                             ? 'text-white'
+                            : isDisabled
+                            ? 'text-gray-400 dark:text-gray-600'
                             : 'text-gray-700 dark:text-gray-300'
                         }`}
                       >
@@ -305,6 +343,19 @@ export default function ActivityModal({ onClose, preSelectedCategories = [] }: A
           </Pressable>
         </View>
       </ScrollView>
+
+      {/* Custom Alert */}
+      {alertState && (
+        <CustomAlert
+          visible={alertState.visible}
+          type={alertState.type}
+          title={alertState.title}
+          message={alertState.message}
+          buttons={alertState.buttons}
+          onDismiss={hideAlert}
+          dismissOnBackdrop={alertState.dismissOnBackdrop}
+        />
+      )}
     </KeyboardAvoidingView>
   );
 }

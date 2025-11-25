@@ -1,7 +1,6 @@
 import React from 'react';
 import { View, Text } from 'react-native';
 import Animated, { FadeIn, ZoomInRotate } from 'react-native-reanimated';
-import { LinearGradient } from 'expo-linear-gradient';
 import { useThemeStore } from '../../stores/themeStore';
 import type { Achievement } from '../../utils/growthStages';
 
@@ -36,14 +35,11 @@ export default function AchievementBadge({
   // Color configurations based on unlock status
   const colors = achievement.isUnlocked
     ? {
-      gradient: ['#FFD700', '#FFA500'], // Golden gradient for unlocked
       background: isDark ? '#2C2C2E' : '#FFFFFF',
-      border: '#FFD700',
       text: isDark ? '#FFFFFF' : '#212121',
       opacity: 1,
     }
     : {
-      gradient: ['#757575', '#9E9E9E'], // Gray for locked
       background: isDark ? '#2C2C2E' : '#F5F5F5',
       border: isDark ? '#38383A' : '#E0E0E0',
       text: isDark ? '#ABABAB' : '#BDBDBD',
@@ -56,29 +52,16 @@ export default function AchievementBadge({
       <View
         className={`items-center justify-center rounded-full border-3 ${
           achievement.isUnlocked
-            ? 'bg-white dark:bg-gray-800 border-yellow-500'
+            ? 'bg-white dark:bg-gray-800 border-emerald-500 dark:border-emerald-600'
             : 'bg-gray-100 dark:bg-gray-800 border-gray-300 dark:border-gray-700'
         }`}
         style={{ width: config.badge, height: config.badge }}
       >
         {achievement.isUnlocked ? (
-          // Unlocked: Show gradient glow effect
-          <>
-            <View className="absolute" style={{ width: config.badge, height: config.badge }}>
-              <LinearGradient
-                colors={[colors.gradient[0], colors.gradient[1], 'transparent']}
-                style={{
-                  width: '100%',
-                  height: '100%',
-                  borderRadius: config.badge / 2,
-                  opacity: 0.3,
-                }}
-              />
-            </View>
-            <Text style={{ fontSize: config.emoji, opacity: colors.opacity }}>
-              {achievement.emoji}
-            </Text>
-          </>
+          // Unlocked: Simple emerald border, no gradient
+          <Text style={{ fontSize: config.emoji, opacity: colors.opacity }}>
+            {achievement.emoji}
+          </Text>
         ) : (
           // Locked: Show grayscale emoji with lock overlay
           <View className="items-center justify-center">

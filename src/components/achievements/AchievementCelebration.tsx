@@ -1,7 +1,6 @@
 import React, { useEffect } from 'react';
 import { View, Text, Modal, Pressable } from 'react-native';
 import Animated, { FadeIn, ZoomIn, ZoomOut, SlideInUp } from 'react-native-reanimated';
-import { LinearGradient } from 'expo-linear-gradient';
 import { Achievement } from './AchievementBadge';
 import * as Haptics from 'expo-haptics';
 
@@ -43,25 +42,10 @@ export default function AchievementCelebration({
           className="mx-6"
         >
           <View className="p-8 bg-white rounded-3xl dark:bg-gray-800">
-            {/* Confetti Effect Background */}
-            <View className="absolute inset-0 overflow-hidden rounded-3xl">
-              <LinearGradient
-                colors={['#FFD700', '#FFA500', 'transparent']}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 1 }}
-                style={{
-                  position: 'absolute',
-                  width: '200%',
-                  height: '200%',
-                  opacity: 0.1,
-                }}
-              />
-            </View>
-
             {/* Content */}
             <View className="items-center">
               {/* Achievement Unlocked Label */}
-              <Text className="mb-4 text-sm font-semibold tracking-wide uppercase text-yellow-500">
+              <Text className="mb-4 text-sm font-semibold tracking-wide uppercase text-emerald-600 dark:text-emerald-400">
                 🎉 Achievement Unlocked 🎉
               </Text>
 
@@ -71,17 +55,10 @@ export default function AchievementCelebration({
               >
                 <View className="relative items-center justify-center">
                   {/* Glow Effect */}
-                  <View className="absolute" style={{ width: 140, height: 140 }}>
-                    <LinearGradient
-                      colors={['#FFD700', '#FFA500', 'transparent']}
-                      style={{
-                        width: '100%',
-                        height: '100%',
-                        borderRadius: 70,
-                        opacity: 0.4,
-                      }}
-                    />
-                  </View>
+                  <View
+                    className="absolute bg-emerald-500/20 dark:bg-emerald-400/20 rounded-full"
+                    style={{ width: 140, height: 140 }}
+                  />
 
                   {/* Badge Circle */}
                   <View
@@ -126,9 +103,9 @@ export default function AchievementCelebration({
               >
                 <Pressable
                   onPress={onClose}
-                  className="py-4 rounded-2xl active:opacity-80 bg-yellow-500"
+                  className="py-4 rounded-2xl active:opacity-80 bg-emerald-600 dark:bg-emerald-700"
                 >
-                  <Text className="text-lg font-semibold text-center text-gray-900">
+                  <Text className="text-lg font-semibold text-center text-white">
                     Continue
                   </Text>
                 </Pressable>

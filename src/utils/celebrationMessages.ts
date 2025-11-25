@@ -3,9 +3,10 @@
  * Shows encouraging messages based on milestones
  */
 
+import { getLocalDateString } from './dateHelpers';
+
 export interface CelebrationMessage {
   message: string;
-  emoji: string;
   milestone: 'monthly' | 'weekly' | 'streak' | 'first';
 }
 
@@ -22,7 +23,6 @@ export const getCelebrationMessage = (
   if (isFirstActivity) {
     return {
       message: "You've started watering your plant! 🌱 This is the beginning of growth.",
-      emoji: '🌱',
       milestone: 'first',
     };
   }
@@ -31,7 +31,6 @@ export const getCelebrationMessage = (
   if (daysInARow === 3) {
     return {
       message: '🔥 3 days in a row! You\'re building momentum!',
-      emoji: '🔥',
       milestone: 'streak',
     };
   }
@@ -39,7 +38,6 @@ export const getCelebrationMessage = (
   if (daysInARow === 7) {
     return {
       message: '🔥 A whole week of growth! That\'s incredible!',
-      emoji: '🔥',
       milestone: 'streak',
     };
   }
@@ -47,7 +45,6 @@ export const getCelebrationMessage = (
   if (daysInARow === 14) {
     return {
       message: '🚀 2 weeks of consistency! You\'re unstoppable!',
-      emoji: '🚀',
       milestone: 'streak',
     };
   }
@@ -56,7 +53,6 @@ export const getCelebrationMessage = (
   if (totalActivitiesThisWeek === 5) {
     return {
       message: '🎉 5 activities this week! You\'re watering daily!',
-      emoji: '🎉',
       milestone: 'weekly',
     };
   }
@@ -65,7 +61,6 @@ export const getCelebrationMessage = (
   if (totalActivitiesThisMonth === 10) {
     return {
       message: '🏆 10 activities this month! You\'re committed to growth!',
-      emoji: '🏆',
       milestone: 'monthly',
     };
   }
@@ -73,7 +68,6 @@ export const getCelebrationMessage = (
   if (totalActivitiesThisMonth === 20) {
     return {
       message: '👑 20 activities this month! You\'re a growth champion!',
-      emoji: '👑',
       milestone: 'monthly',
     };
   }
@@ -81,7 +75,6 @@ export const getCelebrationMessage = (
   if (totalActivitiesThisMonth === 30) {
     return {
       message: '⭐ 30 activities in a month! You\'re legendary!',
-      emoji: '⭐',
       milestone: 'monthly',
     };
   }
@@ -90,7 +83,6 @@ export const getCelebrationMessage = (
   if (totalActivitiesThisWeek === 3) {
     return {
       message: '💪 3 activities this week! Keep it up!',
-      emoji: '💪',
       milestone: 'weekly',
     };
   }
@@ -111,7 +103,6 @@ export const calculateCelebrationStats = (
   isFirstActivity: boolean;
 } => {
   const now = new Date();
-  const currentDate = new Date(currentActivityTimestamp);
 
   // Month boundaries
   const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
@@ -128,21 +119,27 @@ export const calculateCelebrationStats = (
     return date > weekAgo;
   }).length + 1; // +1 for current activity
 
-  // Calculate days in a row
+  // Calculate days in a row using local date strings
   const sortedActivities = [...activities]
     .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
 
   let daysInARow = 1;
-  currentDate.setHours(0, 0, 0, 0);
 
-  for (let i = 0; i < sortedActivities.length; i++) {
-    const actDate = new Date(sortedActivities[i].timestamp);
-    actDate.setHours(0, 0, 0, 0);
+  // Convert all activities to local date strings
+  const activityDateStrings = sortedActivities.map(a =>
+    getLocalDateString(a.timestamp)
+  );
 
-    const dayDiff = (currentDate.getTime() - actDate.getTime()) / (24 * 60 * 60 * 1000);
-    if (dayDiff === daysInARow) {
+  // Check consecutive days backwards from current date
+  const currentDateObj = new Date(currentActivityTimestamp);
+  for (let i = 1; i < 365; i++) { // Reasonable upper limit
+    const checkDate = new Date(currentDateObj);
+    checkDate.setDate(checkDate.getDate() - i);
+    const checkDateStr = getLocalDateString(checkDate.toISOString());
+
+    if (activityDateStrings.includes(checkDateStr)) {
       daysInARow++;
-    } else if (dayDiff > daysInARow) {
+    } else {
       break;
     }
   }

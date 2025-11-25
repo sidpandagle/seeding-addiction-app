@@ -151,3 +151,30 @@ export function validateCategory(categories: string | string[] | undefined): str
 
   return true;
 }
+
+/**
+ * Validate journey start date timestamp
+ * @param timestamp - ISO8601 timestamp string for journey start
+ * @returns true if valid, error message if invalid
+ */
+export function validateJourneyStartDate(timestamp: string): string | true {
+  // Check if it's a valid date string
+  const date = new Date(timestamp);
+  if (isNaN(date.getTime())) {
+    return 'Invalid date format';
+  }
+
+  // Check if date is in the future
+  const now = Date.now();
+  if (date.getTime() > now) {
+    return 'Journey start cannot be in the future';
+  }
+
+  // Check if date is too far in the past (before year 2000)
+  const minAllowedTime = new Date('2000-01-01').getTime();
+  if (date.getTime() < minAllowedTime) {
+    return 'Journey start is too far in the past';
+  }
+
+  return true;
+}

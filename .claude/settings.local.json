@@ -33,7 +33,8 @@
       "Bash(npm start:*)",
       "Bash(timeout 10)",
       "Bash(npx expo config:*)",
-      "Bash(git log:*)"
+      "Bash(git log:*)",
+      "Bash(find:*)"
     ],
     "deny": [],
     "ask": []

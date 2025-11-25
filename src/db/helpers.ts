@@ -6,7 +6,8 @@ import {
   sanitizeString,
   validateTags,
   validateNote,
-  validateCategory
+  validateCategory,
+  validateJourneyStartDate
 } from '../utils/validation';
 
 /**
@@ -34,6 +35,12 @@ export const getJourneyStart = async (): Promise<string | null> => {
  * Set the journey start timestamp
  */
 export const setJourneyStart = async (timestamp: string): Promise<void> => {
+  // Validate the journey start date
+  const validation = validateJourneyStartDate(timestamp);
+  if (validation !== true) {
+    throw new Error(validation);
+  }
+
   const db = await getDatabase();
 
   await db.runAsync(

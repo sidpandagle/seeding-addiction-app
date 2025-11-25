@@ -1,8 +1,10 @@
-import { View, Text } from 'react-native';
+import { View, Text, Pressable } from 'react-native';
+import { useState } from 'react';
 import { PieChart } from 'react-native-gifted-charts';
 import { useColorScheme } from '../../stores/themeStore';
 import type { Relapse, Activity } from '../../db/schema';
-import { Sparkles, RotateCcw } from 'lucide-react-native';
+import { Sparkles, RotateCcw, Info } from 'lucide-react-native';
+import ChartExplanationModal from './ChartExplanationModal';
 
 interface ResistanceRatioChartProps {
   relapses: Relapse[];
@@ -11,6 +13,7 @@ interface ResistanceRatioChartProps {
 
 export default function ResistanceRatioChart({ relapses, activities }: ResistanceRatioChartProps) {
   const colorScheme = useColorScheme();
+  const [showExplanation, setShowExplanation] = useState(false);
 
   const activityCount = activities.length;
   const relapseCount = relapses.length;
@@ -53,10 +56,21 @@ export default function ResistanceRatioChart({ relapses, activities }: Resistanc
 
   return (
     <View className="p-5 mb-4 bg-white border border-gray-200 dark:bg-gray-900 dark:border-gray-700 rounded-2xl">
-      <Text className="mb-1 text-lg font-bold text-gray-900 dark:text-white">Engagement Ratio</Text>
-      <Text className="mb-6 text-sm text-gray-600 dark:text-gray-400">
-        Your engagement rate: positive activities vs relapses.
-      </Text>
+      <View className="flex-row items-start justify-between mb-1">
+        <View className="flex-1">
+          <Text className="text-lg font-bold text-gray-900 dark:text-white">Engagement Ratio</Text>
+          <Text className="mt-1 text-sm text-gray-600 dark:text-gray-400">
+            Your engagement rate: positive activities vs relapses.
+          </Text>
+        </View>
+        <Pressable
+          onPress={() => setShowExplanation(true)}
+          className="items-center justify-center w-8 h-8 ml-2 bg-gray-100 rounded-full dark:bg-gray-800 active:bg-gray-200 dark:active:bg-gray-700"
+        >
+          <Info size={16} color={colorScheme === 'dark' ? '#9ca3af' : '#6b7280'} strokeWidth={2.5} />
+        </Pressable>
+      </View>
+      <View className="h-2" />
 
       {/* Chart Container */}
       <View className="items-center py-4">
@@ -159,6 +173,13 @@ export default function ResistanceRatioChart({ relapses, activities }: Resistanc
           </Text>
         </View>
       )}
+
+      {/* Explanation Modal */}
+      <ChartExplanationModal
+        visible={showExplanation}
+        onClose={() => setShowExplanation(false)}
+        chartType="resistance"
+      />
     </View>
   );
 }

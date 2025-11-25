@@ -1,4 +1,4 @@
-import { View, Text, Pressable, Alert, ScrollView, Switch, Modal, Linking } from 'react-native';
+import { View, Text, Pressable, ScrollView, Switch, Modal, Linking } from 'react-native';
 import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useState, useEffect } from 'react';
@@ -13,8 +13,12 @@ import {
 } from '../../src/services/security';
 import { useRelapseStore } from '../../src/stores/relapseStore';
 import { useColorScheme, useThemeStore } from '../../src/stores/themeStore';
-import { Settings2, Palette, Lock, Database, Sun, Moon, Shield, Trash2, Info, Brain, Coffee } from 'lucide-react-native';
+import { Settings2, Palette, Lock, Database, Sun, Moon, Shield, Trash2, Info, Brain, Coffee, BookOpen } from 'lucide-react-native';
 import RecoveryEducationModal from '../../src/components/modals/RecoveryEducationModal';
+import CustomAlert from '../../src/components/common/CustomAlert';
+import ConfirmationDialog from '../../src/components/common/ConfirmationDialog';
+import { useAlert } from '../../src/hooks/useAlert';
+import HowToUseModal from '../../src/components/modals/HowToUseModal';
 
 export default function SettingsScreen() {
   const router = useRouter();
@@ -24,6 +28,11 @@ export default function SettingsScreen() {
   const [biometricAvailable, setBiometricAvailable] = useState(false);
   const [authMethodName, setAuthMethodName] = useState('Biometric');
   const [showEducationModal, setShowEducationModal] = useState(false);
+  const [showHowToUseModal, setShowHowToUseModal] = useState(false);
+
+  // Alert state
+  const { alertState, showAlert, hideAlert } = useAlert();
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
 
   // Animation values for theme buttons
   const lightButtonScale = useSharedValue(1);
@@ -72,69 +81,89 @@ export default function SettingsScreen() {
       if (value) {
         // Enabling lock - verify biometric is available
         if (!biometricAvailable) {
-          Alert.alert(
-            'Biometric Not Available',
-            'Your device does not have biometric authentication set up. Please enable Face ID, Touch ID, or fingerprint authentication in your device settings.',
-            [{ text: 'OK' }]
-          );
+          showAlert({
+            type: 'info',
+            title: 'Biometric Not Available',
+            message: 'Your device does not have biometric authentication set up. Please enable Face ID, Touch ID, or fingerprint authentication in your device settings.',
+            buttons: [{ text: 'OK', onPress: hideAlert }],
+            dismissOnBackdrop: true,
+          });
           return;
         }
 
         // Ask user to authenticate before enabling
         const authenticated = await authenticateUser('Authenticate to enable app lock');
         if (!authenticated) {
-          Alert.alert('Authentication Failed', 'Could not enable app lock.');
+          showAlert({
+            type: 'error',
+            title: 'Authentication Failed',
+            message: 'Could not enable app lock.',
+            buttons: [{ text: 'OK', onPress: hideAlert }],
+          });
           return;
         }
 
         await setAppLockEnabled(true);
         setAppLockEnabledState(true);
-        Alert.alert(
-          'App Lock Enabled',
-          `${authMethodName} protection is now active. You'll need to authenticate when opening the app.`,
-          [{ text: 'OK' }]
-        );
+        showAlert({
+          type: 'success',
+          title: 'App Lock Enabled',
+          message: `${authMethodName} protection is now active. You'll need to authenticate when opening the app.`,
+          buttons: [{ text: 'OK', onPress: hideAlert }],
+        });
       } else {
         // Disabling lock - require authentication first
         const authenticated = await authenticateUser('Authenticate to disable app lock');
         if (!authenticated) {
-          Alert.alert('Authentication Failed', 'Could not disable app lock.');
+          showAlert({
+            type: 'error',
+            title: 'Authentication Failed',
+            message: 'Could not disable app lock.',
+            buttons: [{ text: 'OK', onPress: hideAlert }],
+          });
           return;
         }
 
         await setAppLockEnabled(false);
         setAppLockEnabledState(false);
-        Alert.alert('App Lock Disabled', 'App lock has been turned off.', [{ text: 'OK' }]);
+        showAlert({
+          type: 'success',
+          title: 'App Lock Disabled',
+          message: 'App lock has been turned off.',
+          buttons: [{ text: 'OK', onPress: hideAlert }],
+        });
       }
     } catch (error) {
       console.error('Error toggling app lock:', error);
-      Alert.alert('Error', 'Could not update app lock setting.');
+      showAlert({
+        type: 'error',
+        title: 'Error',
+        message: 'Could not update app lock setting.',
+        buttons: [{ text: 'OK', onPress: hideAlert }],
+      });
     }
   };
 
   const handleResetData = () => {
-    Alert.alert(
-      'Reset All Data',
-      'This will permanently delete all your relapse records and journey start date. This action cannot be undone.',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Reset',
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              // Reset database
-              await resetAllData();
+    setShowConfirmDialog(true);
+  };
 
-              router.replace('/');
-            } catch (error) {
-              console.error('Error resetting data:', error);
-              Alert.alert('Error', 'Could not reset data. Please try again.');
-            }
-          },
-        },
-      ]
-    );
+  const confirmResetData = async () => {
+    try {
+      // Reset database
+      await resetAllData();
+      setShowConfirmDialog(false);
+      router.replace('/');
+    } catch (error) {
+      console.error('Error resetting data:', error);
+      setShowConfirmDialog(false);
+      showAlert({
+        type: 'error',
+        title: 'Error',
+        message: 'Could not reset data. Please try again.',
+        buttons: [{ text: 'OK', onPress: hideAlert }],
+      });
+    }
   };
 
   const handleBuyMeCoffee = async () => {
@@ -146,11 +175,21 @@ export default function SettingsScreen() {
       if (supported) {
         await Linking.openURL(url);
       } else {
-        Alert.alert('Error', 'Unable to open link. Please try again later.');
+        showAlert({
+          type: 'error',
+          title: 'Error',
+          message: 'Unable to open link. Please try again later.',
+          buttons: [{ text: 'OK', onPress: hideAlert }],
+        });
       }
     } catch (error) {
       console.error('Error opening Buy Me a Coffee:', error);
-      Alert.alert('Error', 'Could not open support page.');
+      showAlert({
+        type: 'error',
+        title: 'Error',
+        message: 'Could not open support page.',
+        buttons: [{ text: 'OK', onPress: hideAlert }],
+      });
     }
   };
 
@@ -312,6 +351,38 @@ export default function SettingsScreen() {
           </Pressable>
         </View>
 
+        {/* How to Use Section */}
+        <View className="px-6 mt-6">
+          <View className="flex-row items-center gap-2 mb-3">
+            <BookOpen size={18} color={colorScheme === 'dark' ? '#10b981' : '#059669'} strokeWidth={2.5} />
+            <Text className="text-sm font-bold tracking-wider text-gray-600 uppercase dark:text-gray-400">
+              Guide
+            </Text>
+          </View>
+
+          <Pressable
+            onPress={() => setShowHowToUseModal(true)}
+            className="p-5 bg-white border border-white dark:bg-gray-900 dark:border-gray-900 rounded-2xl active:opacity-70"
+          >
+            <View className="flex-row items-center justify-between">
+              <View className="flex-row items-center flex-1">
+                <View className="items-center justify-center w-10 h-10 mr-3 rounded-full bg-emerald-50 dark:bg-emerald-900/30">
+                  <BookOpen size={20} color="#10b981" strokeWidth={2.5} />
+                </View>
+                <View className="flex-1">
+                  <Text className="text-base font-bold text-gray-900 dark:text-white">
+                    How to Use This App
+                  </Text>
+                  <Text className="mt-0.5 text-sm text-gray-500 dark:text-gray-400">
+                    Learn about features & tracking
+                  </Text>
+                </View>
+              </View>
+              <Text className="text-xl font-medium text-emerald-600 dark:text-emerald-400">→</Text>
+            </View>
+          </Pressable>
+        </View>
+
         {/* Support Section */}
         <View className="px-6 mt-6">
           <View className="flex-row items-center gap-2 mb-3">
@@ -407,6 +478,41 @@ export default function SettingsScreen() {
       >
         <RecoveryEducationModal onClose={() => setShowEducationModal(false)} />
       </Modal>
+
+      {/* How to Use Modal */}
+      <Modal
+        visible={showHowToUseModal}
+        animationType="slide"
+        presentationStyle="pageSheet"
+        onRequestClose={() => setShowHowToUseModal(false)}
+      >
+        <HowToUseModal onClose={() => setShowHowToUseModal(false)} />
+      </Modal>
+
+      {/* Custom Alert */}
+      {alertState && (
+        <CustomAlert
+          visible={alertState.visible}
+          type={alertState.type}
+          title={alertState.title}
+          message={alertState.message}
+          buttons={alertState.buttons}
+          onDismiss={hideAlert}
+          dismissOnBackdrop={alertState.dismissOnBackdrop}
+        />
+      )}
+
+      {/* Confirmation Dialog */}
+      <ConfirmationDialog
+        visible={showConfirmDialog}
+        title="Reset All Data"
+        message="This will permanently delete all your relapse records and journey start date. This action cannot be undone."
+        confirmText="Reset"
+        cancelText="Cancel"
+        onConfirm={confirmResetData}
+        onCancel={() => setShowConfirmDialog(false)}
+        isDestructive={true}
+      />
     </View>
   );
 }

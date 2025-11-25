@@ -1,8 +1,11 @@
-import { View, Text, useWindowDimensions } from 'react-native';
+import { View, Text, useWindowDimensions, Pressable } from 'react-native';
+import { useState } from 'react';
 import { BarChart } from 'react-native-gifted-charts';
+import { Info } from 'lucide-react-native';
 import { useColorScheme } from '../../stores/themeStore';
 import { calculateWeeklyPattern } from '../../utils/chartHelpers';
 import type { Relapse } from '../../db/schema';
+import ChartExplanationModal from './ChartExplanationModal';
 
 interface WeeklyPatternChartProps {
   relapses: Relapse[];
@@ -11,6 +14,7 @@ interface WeeklyPatternChartProps {
 export default function WeeklyPatternChart({ relapses }: WeeklyPatternChartProps) {
   const colorScheme = useColorScheme();
   const { width: screenWidth } = useWindowDimensions();
+  const [showExplanation, setShowExplanation] = useState(false);
   const weeklyData = calculateWeeklyPattern(relapses);
 
   // Calculate dynamic bar width and spacing (7 days of the week)
@@ -70,12 +74,21 @@ export default function WeeklyPatternChart({ relapses }: WeeklyPatternChartProps
 
   return (
     <View className="p-5 mb-4 bg-white border border-gray-200 dark:bg-gray-900 dark:border-gray-700 rounded-2xl">
-      <View className="flex flex-row items-center gap-3 mb-0">
-        <Text className="mb-1 text-lg font-bold text-gray-900 dark:text-white">Weekly Pattern</Text>
-        {/* <Text className="text-xs font-medium text-blue-600 dark:text-blue-400">
-          {weekRange}
-        </Text> */}
+      <View className="flex-row items-start justify-between mb-1">
+        <View className="flex-1">
+          <Text className="text-lg font-bold text-gray-900 dark:text-white">Weekly Pattern</Text>
+          <Text className="mt-1 text-sm text-gray-600 dark:text-gray-400">
+            Identify your vulnerable days of the week.
+          </Text>
+        </View>
+        <Pressable
+          onPress={() => setShowExplanation(true)}
+          className="items-center justify-center w-8 h-8 ml-2 bg-gray-100 rounded-full dark:bg-gray-800 active:bg-gray-200 dark:active:bg-gray-700"
+        >
+          <Info size={16} color={colorScheme === 'dark' ? '#9ca3af' : '#6b7280'} strokeWidth={2.5} />
+        </Pressable>
       </View>
+      <View className="h-2" />
       <Text className="mb-4 text-sm text-gray-600 dark:text-gray-400">
         {relapses.length === 0
           ? 'No data yet. Keep tracking to see your patterns.'
@@ -120,6 +133,13 @@ export default function WeeklyPatternChart({ relapses }: WeeklyPatternChartProps
           </Text>
         </View>
       )}
+
+      {/* Explanation Modal */}
+      <ChartExplanationModal
+        visible={showExplanation}
+        onClose={() => setShowExplanation(false)}
+        chartType="weekly"
+      />
     </View>
   );
 }

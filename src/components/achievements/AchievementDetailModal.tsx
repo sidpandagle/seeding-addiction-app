@@ -1,7 +1,6 @@
 import React from 'react';
 import { View, Text, Modal, Pressable, ScrollView } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
-import { LinearGradient } from 'expo-linear-gradient';
 import { useColorScheme } from '../../stores/themeStore';
 import { Achievement } from './AchievementBadge';
 import { X } from 'lucide-react-native';
@@ -52,12 +51,7 @@ export default function AchievementDetailModal({
           {/* Header */}
           <View className="relative">
             {achievement.isUnlocked ? (
-              <LinearGradient
-                colors={['#FFD700', '#FFA500']}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 1 }}
-                className="px-6 pt-8 pb-6"
-              >
+              <View className="px-6 pt-8 pb-6 bg-emerald-600 dark:bg-emerald-800">
                 <Pressable
                   onPress={onClose}
                   className="absolute items-center justify-center w-10 h-10 rounded-full top-4 right-4 bg-black/10 active:bg-black/20"
@@ -73,7 +67,7 @@ export default function AchievementDetailModal({
                     <Text className="text-sm font-semibold text-white">Unlocked</Text>
                   </View>
                 </View>
-              </LinearGradient>
+              </View>
             ) : (
               <View className="px-6 pt-8 pb-6 bg-gray-100 dark:bg-gray-700">
                 <Pressable
@@ -143,12 +137,12 @@ export default function AchievementDetailModal({
             {/* Motivational Message */}
             <View className={`p-4 rounded-xl ${
               achievement.isUnlocked
-                ? 'bg-yellow-50 dark:bg-yellow-900/20'
+                ? 'bg-emerald-50 dark:bg-emerald-900/20'
                 : 'bg-gray-100 dark:bg-gray-700'
             }`}>
               <Text className={`text-sm text-center ${
                 achievement.isUnlocked
-                  ? 'text-yellow-900 dark:text-yellow-200'
+                  ? 'text-emerald-900 dark:text-emerald-200'
                   : 'text-gray-600 dark:text-gray-300'
               }`}>
                 {achievement.isUnlocked
@@ -164,7 +158,7 @@ export default function AchievementDetailModal({
               onPress={onClose}
               className={`w-full py-4 rounded-2xl ${
                 achievement.isUnlocked
-                  ? 'bg-yellow-500 active:bg-yellow-600'
+                  ? 'bg-emerald-600 dark:bg-emerald-700 active:bg-emerald-700 dark:active:bg-emerald-800'
                   : 'bg-gray-600 dark:bg-gray-700 active:bg-gray-700 dark:active:bg-gray-800'
               }`}
             >

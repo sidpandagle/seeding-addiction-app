@@ -1,5 +1,6 @@
 import { View, Text } from 'react-native';
 import type { HistoryEntry } from '../../types/history';
+import { getLocalDateString } from '../../utils/dateHelpers';
 
 interface CalendarRelapseDetailsProps {
   selectedDate: string | null;
@@ -24,7 +25,7 @@ export default function CalendarRelapseDetails({ selectedDate, entries }: Calend
 
   // Filter entries for the selected date
   const dayEntries = entries.filter((entry) => {
-    const entryDate = new Date(entry.data.timestamp).toISOString().split('T')[0];
+    const entryDate = getLocalDateString(entry.data.timestamp);
     return entryDate === selectedDate;
   });
 

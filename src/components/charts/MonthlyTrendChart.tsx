@@ -1,8 +1,11 @@
-import { View, Text, useWindowDimensions } from 'react-native';
+import { View, Text, useWindowDimensions, Pressable } from 'react-native';
+import { useState } from 'react';
 import { LineChart } from 'react-native-gifted-charts';
+import { Info } from 'lucide-react-native';
 import { useColorScheme } from '../../stores/themeStore';
 import { calculateMonthlyTrend } from '../../utils/chartHelpers';
 import type { Relapse } from '../../db/schema';
+import ChartExplanationModal from './ChartExplanationModal';
 
 interface MonthlyTrendChartProps {
   relapses: Relapse[];
@@ -11,6 +14,7 @@ interface MonthlyTrendChartProps {
 export default function MonthlyTrendChart({ relapses }: MonthlyTrendChartProps) {
   const colorScheme = useColorScheme();
   const { width: screenWidth } = useWindowDimensions();
+  const [showExplanation, setShowExplanation] = useState(false);
   const monthlyData = calculateMonthlyTrend(relapses, 6);
 
   // Calculate dynamic chart width (account for container padding: 5 * 4 = 20px on each side)
@@ -64,12 +68,23 @@ export default function MonthlyTrendChart({ relapses }: MonthlyTrendChartProps) 
 
   return (
     <View className="p-5 mb-4 bg-white border border-gray-200 dark:bg-gray-900 dark:border-gray-700 rounded-2xl">
-      <Text className="mb-0 text-lg font-bold text-gray-900 dark:text-white">Monthly Trend</Text>
-      <Text className="mb-4 text-sm text-gray-600 dark:text-gray-400">
-        {relapses.length === 0
-          ? 'Start tracking to see your progress over time.'
-          : 'Your journey over the last 6 months.'}
-      </Text>
+      <View className="flex-row items-start justify-between mb-1">
+        <View className="flex-1">
+          <Text className="text-lg font-bold text-gray-900 dark:text-white">Monthly Trend</Text>
+          <Text className="mt-1 text-sm text-gray-600 dark:text-gray-400">
+            {relapses.length === 0
+              ? 'Start tracking to see your progress over time.'
+              : 'Your journey over the last 6 months.'}
+          </Text>
+        </View>
+        <Pressable
+          onPress={() => setShowExplanation(true)}
+          className="items-center justify-center w-8 h-8 ml-2 bg-gray-100 rounded-full dark:bg-gray-800 active:bg-gray-200 dark:active:bg-gray-700"
+        >
+          <Info size={16} color={colorScheme === 'dark' ? '#9ca3af' : '#6b7280'} strokeWidth={2.5} />
+        </Pressable>
+      </View>
+      <View className="h-2" />
 
       {/* Chart */}
       <View className="items-center py-2">
@@ -138,6 +153,13 @@ export default function MonthlyTrendChart({ relapses }: MonthlyTrendChartProps) 
           </Text>
         </View>
       )}
+
+      {/* Explanation Modal */}
+      <ChartExplanationModal
+        visible={showExplanation}
+        onClose={() => setShowExplanation(false)}
+        chartType="monthly"
+      />
     </View>
   );
 }

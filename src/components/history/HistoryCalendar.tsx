@@ -3,6 +3,7 @@ import { View } from 'react-native';
 import { Calendar, DateData } from 'react-native-calendars';
 import { useColorScheme } from '../../stores/themeStore';
 import type { HistoryEntry } from '../../types/history';
+import { getLocalDateString, getTodayLocalDateString } from '../../utils/dateHelpers';
 
 interface HistoryCalendarProps {
   entries: HistoryEntry[];
@@ -29,7 +30,7 @@ const HistoryCalendar = React.memo(function HistoryCalendar({
     const dateGroups: { [key: string]: { hasRelapse: boolean; hasActivity: boolean } } = {};
 
     entries.forEach((entry) => {
-      const dateKey = new Date(entry.data.timestamp).toISOString().split('T')[0];
+      const dateKey = getLocalDateString(entry.data.timestamp);
       if (!dateGroups[dateKey]) {
         dateGroups[dateKey] = { hasRelapse: false, hasActivity: false };
       }
@@ -110,7 +111,7 @@ const HistoryCalendar = React.memo(function HistoryCalendar({
     }
 
     // Mark today
-    const today = new Date().toISOString().split('T')[0];
+    const today = getTodayLocalDateString();
     if (!marks[today]) {
       marks[today] = {
         marked: true,
