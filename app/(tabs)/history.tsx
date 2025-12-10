@@ -1,10 +1,11 @@
 import { View, Text, TouchableOpacity, ScrollView, Modal, Pressable } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { useState, useEffect, memo, useMemo } from 'react';
-import { History, BarChart3 } from 'lucide-react-native';
+import { History, BarChart3, Lock } from 'lucide-react-native';
 import { useRelapseStore } from '../../src/stores/relapseStore';
 import { useActivityStore } from '../../src/stores/activityStore';
 import { useColorScheme } from '../../src/stores/themeStore';
+import { usePremium } from '../../src/hooks/usePremium';
 import { getJourneyStart } from '../../src/db/helpers';
 import { useJourneyStats } from '../../src/hooks/useJourneyStats';
 import { calculateUserStats } from '../../src/utils/statsHelpers';
@@ -13,6 +14,7 @@ import HistoryList from '../../src/components/history/HistoryList';
 import HistoryCalendar from '../../src/components/history/HistoryCalendar';
 import CalendarRelapseDetails from '../../src/components/history/CalendarRelapseDetails';
 import InsightsModal from '../../src/components/history/InsightsModal';
+import { PaywallModal } from '../../src/components/premium/PaywallModal';
 import { createRelapseEntry, createActivityEntry, sortHistoryEntries, type HistoryEntry } from '../../src/types/history';
 
 type ViewMode = 'list' | 'calendar';
@@ -22,10 +24,12 @@ function HistoryScreen() {
   const { relapses } = useRelapseStore();
   const { activities, loadActivities } = useActivityStore();
   const stats = useJourneyStats();
+  const { isPremium } = usePremium();
   const [journeyStart, setJourneyStart] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<ViewMode>('list');
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [showInsightsModal, setShowInsightsModal] = useState(false);
+  const [showPaywallModal, setShowPaywallModal] = useState(false);
 
   // Load activities when component mounts
   useEffect(() => {
@@ -80,7 +84,13 @@ function HistoryScreen() {
       {/* View Advanced Insights Button */}
       <View className="px-6 pb-0">
         <Pressable
-          onPress={() => setShowInsightsModal(true)}
+          onPress={() => {
+            if (isPremium) {
+              setShowInsightsModal(true);
+            } else {
+              setShowPaywallModal(true);
+            }
+          }}
           style={{ backgroundColor: colorScheme === 'dark' ? '#111827' : '#ffffff' }}
           className="flex-row items-center justify-between p-5 border border-gray-200 shadow-sm dark:border-gray-800 rounded-xl"
         >
@@ -89,9 +99,16 @@ function HistoryScreen() {
               <BarChart3 size={22} color="#3b82f6" strokeWidth={2.5} />
             </View>
             <View className="flex-1">
-              <Text className="text-base font-bold text-gray-900 dark:text-white">
-                View Advanced Insights
-              </Text>
+              <View className="flex-row items-center gap-2">
+                <Text className="text-base font-bold text-gray-900 dark:text-white">
+                  View Advanced Insights
+                </Text>
+                {!isPremium && (
+                  <View className="px-2 py-0.5 bg-purple-100 dark:bg-purple-900/30 rounded-full">
+                    <Text className="text-xs font-semibold text-purple-700 dark:text-purple-300">PRO</Text>
+                  </View>
+                )}
+              </View>
               <Text className="text-sm text-gray-500 dark:text-gray-400">
                 {historyEntries.length >= 2
                   ? 'Detailed patterns & analytics'
@@ -99,6 +116,9 @@ function HistoryScreen() {
               </Text>
             </View>
           </View>
+          {!isPremium && (
+            <Lock size={18} color={colorScheme === 'dark' ? '#9CA3AF' : '#6B7280'} strokeWidth={2.5} />
+          )}
         </Pressable>
       </View>
 
@@ -110,7 +130,7 @@ function HistoryScreen() {
       {/* Content Views */}
       <View className="flex-1">
         {viewMode === 'list' ? (
-          <HistoryList entries={historyEntries} />
+          <HistoryList entries={historyEntries} onUpgradePress={() => setShowPaywallModal(true)} />
         ) : (
           <ScrollView
             className="flex-1"
@@ -139,6 +159,12 @@ function HistoryScreen() {
       >
         <InsightsModal onClose={() => setShowInsightsModal(false)} />
       </Modal>
+
+      {/* Paywall Modal */}
+      <PaywallModal
+        visible={showPaywallModal}
+        onClose={() => setShowPaywallModal(false)}
+      />
     </View>
   );
 }

@@ -4,12 +4,16 @@ import { ChevronLeft, TrendingUp, TrendingDown, Calendar, Target, X } from 'luci
 import { useRelapses } from '../../stores/relapseStore';
 import { useActivityStore } from '../../stores/activityStore';
 import { useColorScheme } from '../../stores/themeStore';
-import { getJourneyStart } from '../../db/helpers';
+import { getJourneyStart, getLastRelapseTime } from '../../db/helpers';
 import { calculateUserStats } from '../../utils/statsHelpers';
 import { MS_PER_DAY } from '../../constants/timeUnits';
 import WeeklyPatternChart from '../charts/WeeklyPatternChart';
 import MonthlyTrendChart from '../charts/MonthlyTrendChart';
 import ResistanceRatioChart from '../charts/ResistanceRatioChart';
+import ComparativeStatsCard from '../charts/ComparativeStatsCard';
+import MilestonePredictionsCard from '../charts/MilestonePredictionsCard';
+import ActivityEffectivenessCard from '../charts/ActivityEffectivenessCard';
+import StreakHeatmapCard from '../charts/StreakHeatmapCard';
 
 interface InsightsModalProps {
   onClose: () => void;
@@ -22,14 +26,18 @@ const InsightsModal = React.memo(function InsightsModal({ onClose }: InsightsMod
   const relapses = useRelapses();
   const activities = useActivityStore((state) => state.activities);
   const [journeyStart, setJourneyStart] = useState<string | null>(null);
+  const [lastRelapseTime, setLastRelapseTime] = useState<number | null>(null);
 
   useEffect(() => {
-    const loadJourneyStart = async () => {
+    const loadJourneyData = async () => {
       const start = await getJourneyStart();
       setJourneyStart(start);
+
+      const lastRelapse = await getLastRelapseTime();
+      setLastRelapseTime(lastRelapse);
     };
-    loadJourneyStart();
-  }, []);
+    loadJourneyData();
+  }, [relapses]);
 
   const insights = useMemo(() => {
     // Calculate basic stats using shared utility
@@ -169,6 +177,38 @@ const InsightsModal = React.memo(function InsightsModal({ onClose }: InsightsMod
 
         {/* Monthly Trend Chart */}
         <MonthlyTrendChart relapses={relapses} />
+
+        {/* Pro Features Section Header */}
+        <View className="flex-row items-center mt-6 mb-4">
+          <View className="flex-1 h-px bg-gray-200 dark:bg-gray-700" />
+          <Text className="px-4 text-sm font-bold text-emerald-600 dark:text-emerald-400">
+            PRO INSIGHTS
+          </Text>
+          <View className="flex-1 h-px bg-gray-200 dark:bg-gray-700" />
+        </View>
+
+        {/* Streak Heatmap */}
+        <StreakHeatmapCard
+          relapses={relapses}
+          activities={activities}
+          journeyStartTime={journeyStart ? new Date(journeyStart).getTime() : null}
+        />
+
+        {/* Comparative Stats */}
+        <ComparativeStatsCard relapses={relapses} activities={activities} />
+
+        {/* Milestone Predictions */}
+        <MilestonePredictionsCard
+          journeyStartTime={journeyStart ? new Date(journeyStart).getTime() : null}
+          lastRelapseTime={lastRelapseTime}
+        />
+
+        {/* Activity Effectiveness */}
+        <ActivityEffectivenessCard
+          relapses={relapses}
+          activities={activities}
+          journeyStartTime={journeyStart ? new Date(journeyStart).getTime() : null}
+        />
 
         {/* Motivational Message */}
         <View className="p-5 mb-12 bg-white dark:bg-gray-900 rounded-2xl">

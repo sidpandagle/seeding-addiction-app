@@ -13,22 +13,48 @@ import {
 } from '../../src/services/security';
 import { useRelapseStore } from '../../src/stores/relapseStore';
 import { useColorScheme, useThemeStore } from '../../src/stores/themeStore';
-import { Settings2, Palette, Lock, Database, Sun, Moon, Shield, Trash2, Info, Brain, Coffee, BookOpen } from 'lucide-react-native';
+import { useSubscriptionStore } from '../../src/stores/subscriptionStore';
+import { useNotificationStore } from '../../src/stores/notificationStore';
+import { usePremium } from '../../src/hooks/usePremium';
+import { Settings2, Palette, Lock, Database, Sun, Moon, Shield, Trash2, Info, Brain, Coffee, BookOpen, Crown, Star, Bell, Clock, Sparkles, Trophy, Download, FileText } from 'lucide-react-native';
+import { exportService } from '../../src/services/exportService';
 import RecoveryEducationModal from '../../src/components/modals/RecoveryEducationModal';
 import CustomAlert from '../../src/components/common/CustomAlert';
 import ConfirmationDialog from '../../src/components/common/ConfirmationDialog';
 import { useAlert } from '../../src/hooks/useAlert';
 import HowToUseModal from '../../src/components/modals/HowToUseModal';
+import { PaywallModal } from '../../src/components/premium/PaywallModal';
+import { CustomerCenter } from '../../src/components/premium/CustomerCenter';
+import DateTimePicker from '@react-native-community/datetimepicker';
 
 export default function SettingsScreen() {
   const router = useRouter();
   const colorScheme = useColorScheme();
   const resetAllData = useRelapseStore((state) => state.resetAllData);
+  const { isPremium, expirationDate, willRenew } = usePremium();
   const [appLockEnabled, setAppLockEnabledState] = useState(false);
   const [biometricAvailable, setBiometricAvailable] = useState(false);
   const [authMethodName, setAuthMethodName] = useState('Biometric');
   const [showEducationModal, setShowEducationModal] = useState(false);
   const [showHowToUseModal, setShowHowToUseModal] = useState(false);
+  const [showPaywallModal, setShowPaywallModal] = useState(false);
+  const [showCustomerCenter, setShowCustomerCenter] = useState(false);
+  const [showTimePicker, setShowTimePicker] = useState(false);
+
+  // Notification state
+  const {
+    isInitialized: notificationsInitialized,
+    isEnabled: notificationsEnabled,
+    dailyReminderTime,
+    randomNotificationsEnabled,
+    milestoneNotificationsEnabled,
+    initialize: initializeNotifications,
+    setEnabled: setNotificationsEnabled,
+    setDailyReminder,
+    clearDailyReminder,
+    setRandomNotifications,
+    setMilestoneNotifications,
+  } = useNotificationStore();
 
   // Alert state
   const { alertState, showAlert, hideAlert } = useAlert();
@@ -74,6 +100,7 @@ export default function SettingsScreen() {
     };
 
     loadSecuritySettings();
+    initializeNotifications();
   }, []);
 
   const handleAppLockToggle = async (value: boolean) => {
@@ -188,6 +215,100 @@ export default function SettingsScreen() {
         type: 'error',
         title: 'Error',
         message: 'Could not open support page.',
+        buttons: [{ text: 'OK', onPress: hideAlert }],
+      });
+    }
+  };
+
+  const handleNotificationsToggle = async (value: boolean) => {
+    await setNotificationsEnabled(value);
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+  };
+
+  const handleDailyReminderToggle = async (value: boolean) => {
+    if (value) {
+      setShowTimePicker(true);
+    } else {
+      await clearDailyReminder();
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    }
+  };
+
+  const handleTimeSelected = async (event: any, selectedDate?: Date) => {
+    setShowTimePicker(false);
+    if (event.type === 'set' && selectedDate) {
+      const hour = selectedDate.getHours();
+      const minute = selectedDate.getMinutes();
+      await setDailyReminder(hour, minute);
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    }
+  };
+
+  const handleRandomNotificationsToggle = async (value: boolean) => {
+    await setRandomNotifications(value);
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+  };
+
+  const handleMilestoneNotificationsToggle = async (value: boolean) => {
+    await setMilestoneNotifications(value);
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+  };
+
+  const formatReminderTime = (time: { hour: number; minute: number } | null) => {
+    if (!time) return 'Not set';
+    const period = time.hour >= 12 ? 'PM' : 'AM';
+    const displayHour = time.hour % 12 || 12;
+    const displayMinute = time.minute.toString().padStart(2, '0');
+    return `${displayHour}:${displayMinute} ${period}`;
+  };
+
+  const handleExportCSV = async () => {
+    if (!isPremium) {
+      setShowPaywallModal(true);
+      return;
+    }
+
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    const success = await exportService.exportToCSV();
+
+    if (success) {
+      showAlert({
+        type: 'success',
+        title: 'Export Ready',
+        message: 'Your journey data has been exported successfully.',
+        buttons: [{ text: 'OK', onPress: hideAlert }],
+      });
+    } else {
+      showAlert({
+        type: 'error',
+        title: 'Export Failed',
+        message: 'Could not export your data. Please try again.',
+        buttons: [{ text: 'OK', onPress: hideAlert }],
+      });
+    }
+  };
+
+  const handleExportReport = async () => {
+    if (!isPremium) {
+      setShowPaywallModal(true);
+      return;
+    }
+
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    const success = await exportService.exportToText();
+
+    if (success) {
+      showAlert({
+        type: 'success',
+        title: 'Report Ready',
+        message: 'Your journey report has been generated.',
+        buttons: [{ text: 'OK', onPress: hideAlert }],
+      });
+    } else {
+      showAlert({
+        type: 'error',
+        title: 'Export Failed',
+        message: 'Could not generate report. Please try again.',
         buttons: [{ text: 'OK', onPress: hideAlert }],
       });
     }
@@ -319,6 +440,188 @@ export default function SettingsScreen() {
           </View>
         </View>
 
+        {/* Notifications Section */}
+        <View className="px-6 mt-6">
+          <View className="flex-row items-center gap-2 mb-3">
+            <Bell size={18} color={colorScheme === 'dark' ? '#10b981' : '#059669'} strokeWidth={2.5} />
+            <Text className="text-sm font-bold tracking-wider text-gray-600 uppercase dark:text-gray-400">
+              Notifications
+            </Text>
+          </View>
+
+          <View className="p-5 bg-white border border-white dark:bg-gray-900 dark:border-gray-900 rounded-2xl">
+            {/* Master Toggle */}
+            <View className="flex-row items-center justify-between pb-4 mb-4 border-b border-gray-100 dark:border-gray-800">
+              <View className="flex-row items-center flex-1">
+                <View className="items-center justify-center w-10 h-10 mr-3 rounded-full bg-emerald-50 dark:bg-emerald-900/30">
+                  <Bell size={20} color="#10b981" strokeWidth={2.5} />
+                </View>
+                <View className="flex-1">
+                  <Text className="text-base font-bold text-gray-900 dark:text-white">
+                    Enable Notifications
+                  </Text>
+                  <Text className="mt-0.5 text-sm text-gray-500 dark:text-gray-400">
+                    {notificationsInitialized ? 'Reminders & motivation' : 'Setting up...'}
+                  </Text>
+                </View>
+              </View>
+              <Switch
+                value={notificationsEnabled}
+                onValueChange={handleNotificationsToggle}
+                disabled={!notificationsInitialized}
+                trackColor={{ false: '#d1d5db', true: '#10b981' }}
+                thumbColor={notificationsEnabled ? '#ffffff' : '#f3f4f6'}
+              />
+            </View>
+
+            {/* Daily Reminder */}
+            <View className={`flex-row items-center justify-between py-3 ${!notificationsEnabled ? 'opacity-50' : ''}`}>
+              <View className="flex-row items-center flex-1">
+                <View className="items-center justify-center w-10 h-10 mr-3 rounded-full bg-blue-50 dark:bg-blue-900/30">
+                  <Clock size={20} color="#3b82f6" strokeWidth={2.5} />
+                </View>
+                <View className="flex-1">
+                  <Text className="text-base font-bold text-gray-900 dark:text-white">
+                    Daily Reminder
+                  </Text>
+                  <Text className="mt-0.5 text-sm text-gray-500 dark:text-gray-400">
+                    {formatReminderTime(dailyReminderTime)}
+                  </Text>
+                </View>
+              </View>
+              <Switch
+                value={!!dailyReminderTime}
+                onValueChange={handleDailyReminderToggle}
+                disabled={!notificationsEnabled}
+                trackColor={{ false: '#d1d5db', true: '#3b82f6' }}
+                thumbColor={dailyReminderTime ? '#ffffff' : '#f3f4f6'}
+              />
+            </View>
+
+            {/* Random Motivation */}
+            <View className={`flex-row items-center justify-between py-3 ${!notificationsEnabled ? 'opacity-50' : ''}`}>
+              <View className="flex-row items-center flex-1">
+                <View className="items-center justify-center w-10 h-10 mr-3 rounded-full bg-purple-50 dark:bg-purple-900/30">
+                  <Sparkles size={20} color="#a855f7" strokeWidth={2.5} />
+                </View>
+                <View className="flex-1">
+                  <Text className="text-base font-bold text-gray-900 dark:text-white">
+                    Random Motivation
+                  </Text>
+                  <Text className="mt-0.5 text-sm text-gray-500 dark:text-gray-400">
+                    Encouraging messages throughout the day
+                  </Text>
+                </View>
+              </View>
+              <Switch
+                value={randomNotificationsEnabled}
+                onValueChange={handleRandomNotificationsToggle}
+                disabled={!notificationsEnabled}
+                trackColor={{ false: '#d1d5db', true: '#a855f7' }}
+                thumbColor={randomNotificationsEnabled ? '#ffffff' : '#f3f4f6'}
+              />
+            </View>
+
+            {/* Milestone Alerts */}
+            <View className={`flex-row items-center justify-between py-3 ${!notificationsEnabled ? 'opacity-50' : ''}`}>
+              <View className="flex-row items-center flex-1">
+                <View className="items-center justify-center w-10 h-10 mr-3 rounded-full bg-amber-50 dark:bg-amber-900/30">
+                  <Trophy size={20} color="#f59e0b" strokeWidth={2.5} />
+                </View>
+                <View className="flex-1">
+                  <Text className="text-base font-bold text-gray-900 dark:text-white">
+                    Milestone Alerts
+                  </Text>
+                  <Text className="mt-0.5 text-sm text-gray-500 dark:text-gray-400">
+                    Get notified when you're close to achievements
+                  </Text>
+                </View>
+              </View>
+              <Switch
+                value={milestoneNotificationsEnabled}
+                onValueChange={handleMilestoneNotificationsToggle}
+                disabled={!notificationsEnabled}
+                trackColor={{ false: '#d1d5db', true: '#f59e0b' }}
+                thumbColor={milestoneNotificationsEnabled ? '#ffffff' : '#f3f4f6'}
+              />
+            </View>
+          </View>
+        </View>
+
+        {/* Premium Section */}
+        <View className="px-6 mt-6">
+          <View className="flex-row items-center gap-2 mb-3">
+            <Crown size={18} color={colorScheme === 'dark' ? '#fbbf24' : '#f59e0b'} strokeWidth={2.5} />
+            <Text className="text-sm font-bold tracking-wider text-gray-600 uppercase dark:text-gray-400">
+              Premium
+            </Text>
+          </View>
+
+          {isPremium ? (
+            <View className="p-5 bg-gradient-to-br from-purple-500 to-pink-500 dark:from-purple-600 dark:to-pink-600 rounded-2xl">
+              <View className="flex-row items-center mb-4">
+                <View className="items-center justify-center w-12 h-12 mr-3 bg-white rounded-full dark:bg-white/90">
+                  <Star size={24} color="#a855f7" fill="#a855f7" strokeWidth={2} />
+                </View>
+                <View className="flex-1">
+                  <Text className="text-lg font-bold text-white">
+                    Seeding Pro
+                  </Text>
+                  <Text className="mt-0.5 text-sm text-purple-100">
+                    Active subscription
+                  </Text>
+                </View>
+              </View>
+
+              {expirationDate && (
+                <View className="p-3 mb-3 bg-white/10 rounded-xl">
+                  <Text className="text-xs font-semibold text-purple-100">
+                    {willRenew ? 'Renews on' : 'Expires on'}
+                  </Text>
+                  <Text className="mt-1 text-sm font-bold text-white">
+                    {new Date(expirationDate).toLocaleDateString('en-US', {
+                      year: 'numeric',
+                      month: 'long',
+                      day: 'numeric'
+                    })}
+                  </Text>
+                </View>
+              )}
+
+              <Pressable
+                onPress={() => setShowCustomerCenter(true)}
+                className="p-3 bg-white rounded-xl dark:bg-white/90 active:opacity-70"
+              >
+                <Text className="font-semibold text-center text-purple-600">
+                  Manage Subscription
+                </Text>
+              </Pressable>
+            </View>
+          ) : (
+            <Pressable
+              onPress={() => setShowPaywallModal(true)}
+              className="p-5 overflow-hidden bg-white border border-white dark:bg-gray-900 dark:border-gray-900 rounded-2xl active:opacity-70"
+            >
+              <View className="flex-row items-center justify-between">
+                <View className="flex-row items-center flex-1">
+                  <View className="items-center justify-center w-10 h-10 mr-3 rounded-full bg-amber-50 dark:bg-amber-900/30">
+                    <Crown size={20} color="#f59e0b" strokeWidth={2.5} />
+                  </View>
+                  <View className="flex-1">
+                    <Text className="text-base font-bold text-gray-900 dark:text-white">
+                      Upgrade to Pro
+                    </Text>
+                    <Text className="mt-0.5 text-sm text-gray-500 dark:text-gray-400">
+                      Unlock all premium features
+                    </Text>
+                  </View>
+                </View>
+                <Text className="text-xl font-medium text-amber-600 dark:text-amber-400">→</Text>
+              </View>
+            </Pressable>
+          )}
+        </View>
+
         {/* Education Section */}
         <View className="px-6 mt-6">
           <View className="flex-row items-center gap-2 mb-3">
@@ -413,6 +716,65 @@ export default function SettingsScreen() {
               <Text className="text-xl font-medium text-amber-600 dark:text-amber-400">→</Text>
             </View>
           </Pressable>
+        </View>
+
+        {/* Export Section (Pro) */}
+        <View className="px-6 mt-6">
+          <View className="flex-row items-center gap-2 mb-3">
+            <Download size={18} color={colorScheme === 'dark' ? '#3b82f6' : '#2563eb'} strokeWidth={2.5} />
+            <Text className="text-sm font-bold tracking-wider text-gray-600 uppercase dark:text-gray-400">
+              Export Data
+            </Text>
+            {!isPremium && (
+              <View className="px-2 py-0.5 bg-purple-100 dark:bg-purple-900/30 rounded-full">
+                <Text className="text-xs font-semibold text-purple-700 dark:text-purple-300">PRO</Text>
+              </View>
+            )}
+          </View>
+
+          <View className="p-5 bg-white border border-white dark:bg-gray-900 dark:border-gray-900 rounded-2xl">
+            {/* CSV Export */}
+            <Pressable
+              onPress={handleExportCSV}
+              className="flex-row items-center justify-between pb-4 mb-4 border-b border-gray-100 dark:border-gray-800 active:opacity-70"
+            >
+              <View className="flex-row items-center flex-1">
+                <View className="items-center justify-center w-10 h-10 mr-3 rounded-full bg-blue-50 dark:bg-blue-900/30">
+                  <Download size={20} color="#3b82f6" strokeWidth={2.5} />
+                </View>
+                <View className="flex-1">
+                  <Text className="text-base font-bold text-gray-900 dark:text-white">
+                    Export to CSV
+                  </Text>
+                  <Text className="mt-0.5 text-sm text-gray-500 dark:text-gray-400">
+                    Full data for spreadsheets
+                  </Text>
+                </View>
+              </View>
+              {!isPremium && <Lock size={18} color="#9CA3AF" strokeWidth={2.5} />}
+            </Pressable>
+
+            {/* Report Export */}
+            <Pressable
+              onPress={handleExportReport}
+              className="flex-row items-center justify-between active:opacity-70"
+            >
+              <View className="flex-row items-center flex-1">
+                <View className="items-center justify-center w-10 h-10 mr-3 rounded-full bg-green-50 dark:bg-green-900/30">
+                  <FileText size={20} color="#10b981" strokeWidth={2.5} />
+                </View>
+                <View className="flex-1">
+                  <Text className="text-base font-bold text-gray-900 dark:text-white">
+                    Share Report
+                  </Text>
+                  <Text className="mt-0.5 text-sm text-gray-500 dark:text-gray-400">
+                    Formatted summary for therapy
+                  </Text>
+                </View>
+              </View>
+              {!isPremium && <Lock size={18} color="#9CA3AF" strokeWidth={2.5} />}
+            </Pressable>
+          </View>
         </View>
 
         {/* Data Section */}
@@ -513,6 +875,32 @@ export default function SettingsScreen() {
         onCancel={() => setShowConfirmDialog(false)}
         isDestructive={true}
       />
+
+      {/* Paywall Modal */}
+      <PaywallModal
+        visible={showPaywallModal}
+        onClose={() => setShowPaywallModal(false)}
+      />
+
+      {/* Customer Center */}
+      <CustomerCenter
+        visible={showCustomerCenter}
+        onClose={() => setShowCustomerCenter(false)}
+      />
+
+      {/* Time Picker for Daily Reminder */}
+      {showTimePicker && (
+        <DateTimePicker
+          value={dailyReminderTime
+            ? new Date(new Date().setHours(dailyReminderTime.hour, dailyReminderTime.minute, 0, 0))
+            : new Date(new Date().setHours(9, 0, 0, 0))
+          }
+          mode="time"
+          is24Hour={false}
+          display="spinner"
+          onChange={handleTimeSelected}
+        />
+      )}
     </View>
   );
 }

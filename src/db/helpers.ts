@@ -318,3 +318,14 @@ export const deleteAppSetting = async (key: string): Promise<void> => {
   const db = await getDatabase();
   await db.runAsync('DELETE FROM app_settings WHERE key = ?', [key]);
 };
+
+/**
+ * Get the timestamp of the most recent relapse
+ */
+export const getLastRelapseTime = async (): Promise<number | null> => {
+  const db = await getDatabase();
+  const result = await db.getFirstAsync<{ timestamp: string }>(
+    'SELECT timestamp FROM relapse ORDER BY timestamp DESC LIMIT 1'
+  );
+  return result ? new Date(result.timestamp).getTime() : null;
+};

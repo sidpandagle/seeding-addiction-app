@@ -1,14 +1,20 @@
 import { FlatList, View, Text, Pressable, ScrollView } from 'react-native';
 import { useState, useMemo } from 'react';
+import { Lock, Crown } from 'lucide-react-native';
 import type { HistoryEntry } from '../../types/history';
 import { RELAPSE_TAGS, ACTIVITY_CATEGORIES } from '../../constants/tags';
+import { usePremium } from '../../hooks/usePremium';
 
 interface HistoryListProps {
   entries: HistoryEntry[];
+  onUpgradePress?: () => void;
 }
 
-export default function HistoryList({ entries }: HistoryListProps) {
+const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
+
+export default function HistoryList({ entries, onUpgradePress }: HistoryListProps) {
   const [selectedTag, setSelectedTag] = useState<string | null>(null);
+  const { isPremium } = usePremium();
 
   // Get all unique tags/categories from both relapses and activities
   const allTags = useMemo(() => {
@@ -31,8 +37,23 @@ export default function HistoryList({ entries }: HistoryListProps) {
     return Array.from(tags).sort();
   }, [entries]);
 
+  // Filter entries for free users (30 days only)
+  const timeFilteredEntries = useMemo(() => {
+    if (isPremium) return entries;
+
+    const thirtyDaysAgo = Date.now() - THIRTY_DAYS_MS;
+    return entries.filter(e => new Date(e.data.timestamp).getTime() >= thirtyDaysAgo);
+  }, [entries, isPremium]);
+
+  // Count entries older than 30 days (for showing upgrade prompt)
+  const olderEntriesCount = useMemo(() => {
+    if (isPremium) return 0;
+    const thirtyDaysAgo = Date.now() - THIRTY_DAYS_MS;
+    return entries.filter(e => new Date(e.data.timestamp).getTime() < thirtyDaysAgo).length;
+  }, [entries, isPremium]);
+
   const filteredEntries = useMemo(() => {
-    let filtered = entries;
+    let filtered = timeFilteredEntries;
 
     // Filter by tag (applies to both relapses and activities)
     if (selectedTag) {
@@ -47,7 +68,7 @@ export default function HistoryList({ entries }: HistoryListProps) {
     }
 
     return filtered;
-  }, [entries, selectedTag]);
+  }, [timeFilteredEntries, selectedTag]);
 
   return (
     <FlatList
@@ -126,6 +147,31 @@ export default function HistoryList({ entries }: HistoryListProps) {
             {selectedTag ? 'Try adjusting your filters' : 'Start your journey by tracking events'}
           </Text>
         </View>
+      }
+      ListFooterComponent={
+        olderEntriesCount > 0 && onUpgradePress ? (
+          <Pressable
+            onPress={onUpgradePress}
+            className="mx-6 mb-6 p-5 bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 rounded-2xl"
+          >
+            <View className="flex-row items-center gap-3">
+              <View className="items-center justify-center w-12 h-12 bg-purple-100 dark:bg-purple-900/40 rounded-full">
+                <Lock size={22} color="#a855f7" strokeWidth={2.5} />
+              </View>
+              <View className="flex-1">
+                <View className="flex-row items-center gap-2">
+                  <Text className="text-base font-bold text-purple-900 dark:text-purple-100">
+                    {olderEntriesCount} older entries hidden
+                  </Text>
+                </View>
+                <Text className="text-sm text-purple-700 dark:text-purple-300">
+                  Upgrade to Pro to view your complete history
+                </Text>
+              </View>
+              <Crown size={20} color="#a855f7" strokeWidth={2.5} />
+            </View>
+          </Pressable>
+        ) : null
       }
       renderItem={({ item }) => {
         const isRelapse = item.type === 'relapse';

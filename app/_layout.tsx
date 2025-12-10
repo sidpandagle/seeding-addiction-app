@@ -5,6 +5,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { enableScreens } from 'react-native-screens';
 import { useRelapseStore } from '../src/stores/relapseStore';
 import { useColorScheme as useColorSchemeStore } from '../src/stores/themeStore';
+import { useSubscriptionStore } from '../src/stores/subscriptionStore';
 import { AppLock } from '../src/components/common/AppLock';
 import { ThemeTransitionOverlay } from '../src/components/common/ThemeTransitionOverlay';
 import { initializeEncryptionKey } from '../src/services/security';
@@ -29,6 +30,7 @@ SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
   const loadRelapses = useRelapseStore((state) => state.loadRelapses);
+  const initializeSubscriptions = useSubscriptionStore((state) => state.initialize);
   const colorScheme = useColorSchemeStore();
   const { setColorScheme } = useColorScheme();
   const [isReady, setIsReady] = useState(false);
@@ -54,6 +56,7 @@ export default function RootLayout() {
         await Promise.all([
           initializeDatabase(),
           initializeEncryptionKey(),
+          initializeSubscriptions(),
         ]);
 
         // Load initial data BEFORE marking as ready to prevent timer glitches
@@ -71,7 +74,7 @@ export default function RootLayout() {
     };
 
     initialize();
-  }, [loadRelapses]);
+  }, [loadRelapses, initializeSubscriptions]);
 
 
   // Hide splash screen when everything is ready

@@ -1,9 +1,10 @@
 import { View, Text, TextInput, Pressable, ScrollView, KeyboardAvoidingView, Platform } from 'react-native';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRelapseStore, useLatestRelapseTimestamp } from '../../stores/relapseStore';
 import { useColorScheme } from '../../stores/themeStore';
+import { useCustomTagsStore } from '../../stores/customTagsStore';
 import * as Haptics from 'expo-haptics';
-import { AlertCircle, Leaf, CheckCircle } from 'lucide-react-native';
+import { AlertCircle, Leaf, CheckCircle, Plus, X } from 'lucide-react-native';
 import { getRandomTip, type EducationalTip } from '../../data/educationalContent';
 import { RELAPSE_TAGS } from '../../constants/tags';
 
@@ -21,12 +22,23 @@ export default function RelapseModal({ onClose, existingRelapse }: RelapseModalP
   const { addRelapse, updateRelapse } = useRelapseStore();
   const colorScheme = useColorScheme();
   const latestRelapseTimestamp = useLatestRelapseTimestamp();
+  const { customTags, loadCustomTags, addCustomTag, removeCustomTag } = useCustomTagsStore();
 
   const [note, setNote] = useState(existingRelapse?.note || '');
   const [selectedTags, setSelectedTags] = useState<string[]>(existingRelapse?.tags || []);
   const [timestamp] = useState(existingRelapse?.timestamp);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [recoveryTip, setRecoveryTip] = useState<EducationalTip>(getRandomTip('relapse'));
+  const [showAddTag, setShowAddTag] = useState(false);
+  const [newTagName, setNewTagName] = useState('');
+
+  // Load custom tags on mount
+  useEffect(() => {
+    loadCustomTags();
+  }, []);
+
+  // Combine default and custom tags
+  const allTags = [...RELAPSE_TAGS, ...customTags];
 
   // Calculate current streak in days
   const currentStreakDays = latestRelapseTimestamp
@@ -37,6 +49,31 @@ export default function RelapseModal({ onClose, existingRelapse }: RelapseModalP
     setSelectedTags((prev) =>
       prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag]
     );
+  };
+
+  const handleAddCustomTag = async () => {
+    const trimmed = newTagName.trim();
+    if (!trimmed) return;
+
+    const success = await addCustomTag(trimmed);
+    if (success) {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      setNewTagName('');
+      setShowAddTag(false);
+    } else {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+    }
+  };
+
+  const handleRemoveCustomTag = async (tag: string) => {
+    await removeCustomTag(tag);
+    // Also remove from selected if it was selected
+    setSelectedTags(prev => prev.filter(t => t !== tag));
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+  };
+
+  const isCustomTag = (tag: string) => {
+    return customTags.includes(tag);
   };
 
 
@@ -176,23 +213,29 @@ export default function RelapseModal({ onClose, existingRelapse }: RelapseModalP
                 </View>
               </View>
               <View className="flex-row flex-wrap gap-2">
-                {RELAPSE_TAGS.map((tag) => {
+                {allTags.map((tag) => {
                   const isSelected = selectedTags.includes(tag);
+                  const isCustom = isCustomTag(tag);
                   return (
                     <Pressable
                       key={tag}
                       onPress={() => toggleTag(tag)}
+                      onLongPress={isCustom ? () => handleRemoveCustomTag(tag) : undefined}
                       className={`px-4 py-2.5 rounded-full flex-row items-center gap-2 ${
                         isSelected
                           ? 'bg-emerald-600 dark:bg-emerald-700'
-                          : 'bg-gray-100 dark:bg-gray-700'
+                          : isCustom
+                            ? 'bg-purple-100 dark:bg-purple-900/30'
+                            : 'bg-gray-100 dark:bg-gray-700'
                       }`}
                     >
                       <Text
                         className={`text-sm font-semibold ${
                           isSelected
                             ? 'text-white'
-                            : 'text-gray-700 dark:text-gray-300'
+                            : isCustom
+                              ? 'text-purple-700 dark:text-purple-300'
+                              : 'text-gray-700 dark:text-gray-300'
                         }`}
                       >
                         {tag}
@@ -203,7 +246,55 @@ export default function RelapseModal({ onClose, existingRelapse }: RelapseModalP
                     </Pressable>
                   );
                 })}
+
+                {/* Add Custom Tag Button */}
+                {!showAddTag ? (
+                  <Pressable
+                    onPress={() => setShowAddTag(true)}
+                    className="px-4 py-2.5 rounded-full flex-row items-center gap-2 border-2 border-dashed border-gray-300 dark:border-gray-600"
+                  >
+                    <Plus size={16} color={colorScheme === 'dark' ? '#9CA3AF' : '#6B7280'} strokeWidth={2.5} />
+                    <Text className="text-sm font-semibold text-gray-500 dark:text-gray-400">
+                      Add Tag
+                    </Text>
+                  </Pressable>
+                ) : (
+                  <View className="flex-row items-center w-full gap-2 mt-2">
+                    <TextInput
+                      value={newTagName}
+                      onChangeText={setNewTagName}
+                      placeholder="Enter tag name..."
+                      placeholderTextColor={colorScheme === 'dark' ? '#9CA3AF' : '#6B7280'}
+                      className="flex-1 px-4 py-3 text-sm font-medium text-gray-900 bg-gray-100 dark:bg-gray-700 rounded-xl dark:text-white"
+                      autoFocus
+                      maxLength={20}
+                      onSubmitEditing={handleAddCustomTag}
+                    />
+                    <Pressable
+                      onPress={handleAddCustomTag}
+                      className="items-center justify-center w-10 h-10 bg-emerald-600 rounded-xl"
+                    >
+                      <CheckCircle size={20} color="#FFFFFF" strokeWidth={2.5} />
+                    </Pressable>
+                    <Pressable
+                      onPress={() => {
+                        setShowAddTag(false);
+                        setNewTagName('');
+                      }}
+                      className="items-center justify-center w-10 h-10 bg-gray-200 dark:bg-gray-700 rounded-xl"
+                    >
+                      <X size={20} color={colorScheme === 'dark' ? '#9CA3AF' : '#6B7280'} strokeWidth={2.5} />
+                    </Pressable>
+                  </View>
+                )}
               </View>
+
+              {/* Hint for custom tags */}
+              {customTags.length > 0 && (
+                <Text className="mt-3 text-xs text-gray-400 dark:text-gray-500">
+                  Long press custom tags to remove them
+                </Text>
+              )}
             </View>
           </View>
         </View>
