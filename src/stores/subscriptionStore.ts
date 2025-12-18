@@ -1,185 +1,232 @@
 import { create } from 'zustand';
-import {
-  CustomerInfo,
-  PurchasesOfferings,
-  PurchasesPackage,
-} from 'react-native-purchases';
-import { revenueCatService } from '../services/revenueCatService';
+import { persist, createJSONStorage } from 'zustand/middleware';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { SUBSCRIPTION_PLANS, SubscriptionPlan } from '../config/subscriptionPlans';
 
 interface SubscriptionState {
   // State
   isPremium: boolean;
   isLoading: boolean;
-  customerInfo: CustomerInfo | null;
-  offerings: PurchasesOfferings | null;
   error: string | null;
 
   // Subscription details
+  selectedPlan: SubscriptionPlan | null;
   expirationDate: string | null;
   willRenew: boolean;
   productIdentifier: string | null;
 
+  // Mock mode for development
+  mockPremiumEnabled: boolean;
+
   // Actions
   initialize: () => Promise<void>;
   checkPremiumStatus: () => Promise<void>;
-  loadOfferings: () => Promise<void>;
-  purchasePackage: (pkg: PurchasesPackage) => Promise<boolean>;
+  getPlans: () => SubscriptionPlan[];
+  purchasePlan: (plan: SubscriptionPlan) => Promise<boolean>;
   restorePurchases: () => Promise<boolean>;
-  refreshCustomerInfo: () => Promise<void>;
-  setUserId: (userId: string) => Promise<void>;
-  logout: () => Promise<void>;
+  toggleMockPremium: () => void;
+  cancelSubscription: () => void;
+  logout: () => void;
 }
 
-export const useSubscriptionStore = create<SubscriptionState>((set, get) => ({
-  // Initial state
-  isPremium: false,
-  isLoading: false,
-  customerInfo: null,
-  offerings: null,
-  error: null,
-  expirationDate: null,
-  willRenew: false,
-  productIdentifier: null,
+export const useSubscriptionStore = create<SubscriptionState>()(
+  persist(
+    (set, get) => ({
+      // Initial state
+      isPremium: false,
+      isLoading: false,
+      error: null,
+      selectedPlan: null,
+      expirationDate: null,
+      willRenew: false,
+      productIdentifier: null,
+      mockPremiumEnabled: false,
 
-  // Initialize RevenueCat and check status
-  initialize: async () => {
-    set({ isLoading: true, error: null });
+      // Initialize subscription state
+      initialize: async () => {
+        set({ isLoading: true, error: null });
 
-    try {
-      await revenueCatService.initialize();
-      await get().checkPremiumStatus();
-      await get().loadOfferings();
-    } catch (error: any) {
-      console.error('[SubscriptionStore] Initialize error:', error);
-      set({ error: error.message || 'Failed to initialize subscriptions' });
-    } finally {
-      set({ isLoading: false });
-    }
-  },
+        try {
+          // In mock mode, just check the stored premium state
+          await get().checkPremiumStatus();
+          console.log('[SubscriptionStore] Initialized (mock mode)');
+        } catch (error: any) {
+          console.error('[SubscriptionStore] Initialize error:', error);
+          set({ error: error.message || 'Failed to initialize subscriptions' });
+        } finally {
+          set({ isLoading: false });
+        }
+      },
 
-  // Check if user has premium access
-  checkPremiumStatus: async () => {
-    try {
-      const subscriptionInfo = await revenueCatService.getSubscriptionInfo();
+      // Check if user has premium access
+      checkPremiumStatus: async () => {
+        const { mockPremiumEnabled, expirationDate } = get();
 
-      set({
-        isPremium: subscriptionInfo.isPremium,
-        expirationDate: subscriptionInfo.expirationDate || null,
-        willRenew: subscriptionInfo.willRenew || false,
-        productIdentifier: subscriptionInfo.productIdentifier || null,
-      });
-    } catch (error: any) {
-      console.error('[SubscriptionStore] Check premium status error:', error);
-      set({ error: error.message || 'Failed to check premium status' });
-    }
-  },
+        // Check if subscription has expired
+        if (expirationDate) {
+          const expDate = new Date(expirationDate);
+          if (expDate < new Date()) {
+            // Subscription expired
+            set({
+              isPremium: false,
+              expirationDate: null,
+              willRenew: false,
+              selectedPlan: null,
+              productIdentifier: null,
+            });
+            return;
+          }
+        }
 
-  // Load available offerings
-  loadOfferings: async () => {
-    set({ isLoading: true, error: null });
+        set({ isPremium: mockPremiumEnabled });
+      },
 
-    try {
-      const offerings = await revenueCatService.getOfferings();
-      set({ offerings });
-    } catch (error: any) {
-      console.error('[SubscriptionStore] Load offerings error:', error);
-      set({ error: error.message || 'Failed to load offerings' });
-    } finally {
-      set({ isLoading: false });
-    }
-  },
+      // Get available plans
+      getPlans: () => {
+        return SUBSCRIPTION_PLANS;
+      },
 
-  // Purchase a package
-  purchasePackage: async (pkg: PurchasesPackage) => {
-    set({ isLoading: true, error: null });
+      // Purchase a plan (mock implementation)
+      purchasePlan: async (plan: SubscriptionPlan) => {
+        set({ isLoading: true, error: null });
 
-    try {
-      const result = await revenueCatService.purchasePackage(pkg);
+        try {
+          // Simulate purchase delay
+          await new Promise((resolve) => setTimeout(resolve, 1000));
 
-      set({
-        isPremium: result.isPremium,
-        customerInfo: result.customerInfo,
-      });
+          // Calculate expiration date based on plan period
+          let expirationDate: string | null = null;
+          const now = new Date();
 
-      // Refresh subscription info
-      await get().checkPremiumStatus();
+          switch (plan.period) {
+            case 'weekly':
+              expirationDate = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000).toISOString();
+              break;
+            case 'monthly':
+              expirationDate = new Date(now.setMonth(now.getMonth() + 1)).toISOString();
+              break;
+            case 'yearly':
+              expirationDate = new Date(now.setFullYear(now.getFullYear() + 1)).toISOString();
+              break;
+            case 'lifetime':
+              // Lifetime = 100 years from now
+              expirationDate = new Date(now.setFullYear(now.getFullYear() + 100)).toISOString();
+              break;
+          }
 
-      return result.isPremium;
-    } catch (error: any) {
-      if (!error.userCancelled) {
-        console.error('[SubscriptionStore] Purchase error:', error);
+          set({
+            isPremium: true,
+            mockPremiumEnabled: true,
+            selectedPlan: plan,
+            expirationDate,
+            willRenew: plan.period !== 'lifetime',
+            productIdentifier: plan.id,
+          });
+
+          console.log('[SubscriptionStore] Mock purchase successful:', plan.name);
+          return true;
+        } catch (error: any) {
+          console.error('[SubscriptionStore] Purchase error:', error);
+          set({ error: error.message || 'Failed to complete purchase' });
+          return false;
+        } finally {
+          set({ isLoading: false });
+        }
+      },
+
+      // Restore purchases (mock implementation)
+      restorePurchases: async () => {
+        set({ isLoading: true, error: null });
+
+        try {
+          // Simulate restore delay
+          await new Promise((resolve) => setTimeout(resolve, 1000));
+
+          // In mock mode, just return current state
+          const { mockPremiumEnabled } = get();
+
+          if (mockPremiumEnabled) {
+            console.log('[SubscriptionStore] Purchases restored');
+            return true;
+          }
+
+          console.log('[SubscriptionStore] No purchases to restore');
+          return false;
+        } catch (error: any) {
+          console.error('[SubscriptionStore] Restore purchases error:', error);
+          set({ error: error.message || 'Failed to restore purchases' });
+          return false;
+        } finally {
+          set({ isLoading: false });
+        }
+      },
+
+      // Toggle mock premium status (for development testing)
+      toggleMockPremium: () => {
+        const { mockPremiumEnabled } = get();
+        const newStatus = !mockPremiumEnabled;
+
+        if (newStatus) {
+          // Enable premium with monthly plan as default
+          const monthlyPlan = SUBSCRIPTION_PLANS.find((p) => p.period === 'monthly');
+          const now = new Date();
+          const expirationDate = new Date(now.setMonth(now.getMonth() + 1)).toISOString();
+
+          set({
+            isPremium: true,
+            mockPremiumEnabled: true,
+            selectedPlan: monthlyPlan || null,
+            expirationDate,
+            willRenew: true,
+            productIdentifier: monthlyPlan?.id || null,
+          });
+        } else {
+          // Disable premium
+          set({
+            isPremium: false,
+            mockPremiumEnabled: false,
+            selectedPlan: null,
+            expirationDate: null,
+            willRenew: false,
+            productIdentifier: null,
+          });
+        }
+
+        console.log('[SubscriptionStore] Mock premium toggled:', newStatus);
+      },
+
+      // Cancel subscription
+      cancelSubscription: () => {
         set({
-          error: error.message || 'Failed to complete purchase',
+          willRenew: false,
         });
-      }
-      return false;
-    } finally {
-      set({ isLoading: false });
+        console.log('[SubscriptionStore] Subscription cancelled (will not renew)');
+      },
+
+      // Logout / reset
+      logout: () => {
+        set({
+          isPremium: false,
+          mockPremiumEnabled: false,
+          selectedPlan: null,
+          expirationDate: null,
+          willRenew: false,
+          productIdentifier: null,
+        });
+        console.log('[SubscriptionStore] Logged out');
+      },
+    }),
+    {
+      name: 'seeding-subscription-storage',
+      storage: createJSONStorage(() => AsyncStorage),
+      partialize: (state) => ({
+        isPremium: state.isPremium,
+        mockPremiumEnabled: state.mockPremiumEnabled,
+        selectedPlan: state.selectedPlan,
+        expirationDate: state.expirationDate,
+        willRenew: state.willRenew,
+        productIdentifier: state.productIdentifier,
+      }),
     }
-  },
-
-  // Restore previous purchases
-  restorePurchases: async () => {
-    set({ isLoading: true, error: null });
-
-    try {
-      const result = await revenueCatService.restorePurchases();
-
-      set({
-        isPremium: result.isPremium,
-        customerInfo: result.customerInfo,
-      });
-
-      // Refresh subscription info
-      await get().checkPremiumStatus();
-
-      return result.isPremium;
-    } catch (error: any) {
-      console.error('[SubscriptionStore] Restore purchases error:', error);
-      set({ error: error.message || 'Failed to restore purchases' });
-      return false;
-    } finally {
-      set({ isLoading: false });
-    }
-  },
-
-  // Refresh customer info
-  refreshCustomerInfo: async () => {
-    try {
-      const customerInfo = await revenueCatService.getCustomerInfo();
-      set({ customerInfo });
-      await get().checkPremiumStatus();
-    } catch (error: any) {
-      console.error('[SubscriptionStore] Refresh customer info error:', error);
-      set({ error: error.message || 'Failed to refresh customer info' });
-    }
-  },
-
-  // Set user ID
-  setUserId: async (userId: string) => {
-    try {
-      await revenueCatService.setUserId(userId);
-      await get().refreshCustomerInfo();
-    } catch (error: any) {
-      console.error('[SubscriptionStore] Set user ID error:', error);
-      set({ error: error.message || 'Failed to set user ID' });
-    }
-  },
-
-  // Logout
-  logout: async () => {
-    try {
-      await revenueCatService.logout();
-      set({
-        isPremium: false,
-        customerInfo: null,
-        expirationDate: null,
-        willRenew: false,
-        productIdentifier: null,
-      });
-    } catch (error: any) {
-      console.error('[SubscriptionStore] Logout error:', error);
-      set({ error: error.message || 'Failed to logout' });
-    }
-  },
-}));
+  )
+);

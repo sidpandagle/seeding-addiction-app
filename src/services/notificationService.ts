@@ -213,25 +213,32 @@ class NotificationService {
 
   /**
    * Schedule random motivational notifications throughout the day
+   * Uses fixed times to prevent duplicate/inconsistent scheduling
    */
   async scheduleRandomNotifications(): Promise<void> {
-    // Cancel existing random notifications
+    // Cancel existing random notifications first
     const scheduled = await Notifications.getAllScheduledNotificationsAsync();
-    for (const notif of scheduled) {
-      if (notif.identifier.startsWith('random-')) {
-        await Notifications.cancelScheduledNotificationAsync(notif.identifier);
-      }
+    const randomNotifications = scheduled.filter(n => n.identifier.startsWith('random-'));
+
+    for (const notif of randomNotifications) {
+      await Notifications.cancelScheduledNotificationAsync(notif.identifier);
     }
 
-    // Schedule 2-3 random notifications per day at varied times
+    // Use fixed times to prevent scheduling inconsistencies
+    // Morning, afternoon, and evening motivational messages
     const times = [
-      { hour: 10, minute: Math.floor(Math.random() * 60) },
-      { hour: 15, minute: Math.floor(Math.random() * 60) },
-      { hour: 20, minute: Math.floor(Math.random() * 60) },
+      { hour: 10, minute: 30 },  // 10:30 AM
+      { hour: 15, minute: 0 },   // 3:00 PM
+      { hour: 20, minute: 30 },  // 8:30 PM
     ];
 
+    // Use deterministic message selection based on index
+    // This ensures consistent notifications each day
     for (let i = 0; i < times.length; i++) {
-      const message = MOTIVATIONAL_MESSAGES[Math.floor(Math.random() * MOTIVATIONAL_MESSAGES.length)];
+      // Rotate through messages daily using day of week
+      const dayOffset = new Date().getDay();
+      const messageIndex = (i + dayOffset) % MOTIVATIONAL_MESSAGES.length;
+      const message = MOTIVATIONAL_MESSAGES[messageIndex];
 
       await Notifications.scheduleNotificationAsync({
         identifier: `random-${i}`,
@@ -249,7 +256,7 @@ class NotificationService {
       });
     }
 
-    console.log('[Notifications] Random notifications scheduled');
+    console.log('[Notifications] Random notifications scheduled at fixed times');
   }
 
   /**
@@ -265,6 +272,24 @@ class NotificationService {
    */
   async setMilestoneNotificationsEnabled(enabled: boolean): Promise<void> {
     await setAppSetting(MILESTONE_NOTIFICATIONS_KEY, enabled ? 'true' : 'false');
+
+    if (!enabled) {
+      // Cancel all milestone notifications when disabled
+      await this.cancelMilestoneNotifications();
+    }
+  }
+
+  /**
+   * Cancel all scheduled milestone notifications
+   */
+  async cancelMilestoneNotifications(): Promise<void> {
+    const scheduled = await Notifications.getAllScheduledNotificationsAsync();
+    for (const notif of scheduled) {
+      if (notif.identifier.startsWith('milestone-')) {
+        await Notifications.cancelScheduledNotificationAsync(notif.identifier);
+      }
+    }
+    console.log('[Notifications] Milestone notifications cancelled');
   }
 
   /**

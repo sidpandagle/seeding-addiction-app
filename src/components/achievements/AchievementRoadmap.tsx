@@ -2,23 +2,63 @@ import React from 'react';
 import { View, Text, Pressable } from 'react-native';
 import { useColorScheme } from '../../stores/themeStore';
 import { Achievement } from '../../utils/growthStages';
-import { MapPin, Lock, CheckCircle2 } from 'lucide-react-native';
+import { MapPin, Lock, CheckCircle2, Calendar } from 'lucide-react-native';
 
 interface AchievementRoadmapProps {
   achievements: Achievement[];
   onAchievementPress: (achievement: Achievement) => void;
+  referenceTime?: number | null; // Time reference for calculating predicted dates
 }
 
 /**
  * Visual roadmap display for achievements
  * Shows a vertical journey path with nodes for each achievement
  */
-export default function AchievementRoadmap({ achievements, onAchievementPress }: AchievementRoadmapProps) {
+export default function AchievementRoadmap({ achievements, onAchievementPress, referenceTime }: AchievementRoadmapProps) {
   const colorScheme = useColorScheme();
 
   // Find the current achievement (last unlocked or first locked)
   const currentIndex = achievements.findIndex((a) => !a.isUnlocked);
   const activeIndex = currentIndex === -1 ? achievements.length - 1 : currentIndex;
+
+  // Calculate predicted date for an achievement based on its threshold
+  const getPredictedDate = (threshold: number): { date: Date; daysUntil: number } | null => {
+    if (!referenceTime) return null;
+
+    const targetTime = referenceTime + threshold;
+    const now = Date.now();
+    const daysUntil = Math.ceil((targetTime - now) / (24 * 60 * 60 * 1000));
+
+    return {
+      date: new Date(targetTime),
+      daysUntil,
+    };
+  };
+
+  // Format the predicted date
+  const formatPredictedDate = (date: Date): string => {
+    return date.toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+    });
+  };
+
+  // Format days until achievement
+  const formatDaysUntil = (days: number): string => {
+    if (days <= 0) return 'Today!';
+    if (days === 1) return 'Tomorrow';
+    if (days < 7) return `${days} days`;
+    if (days < 30) {
+      const weeks = Math.floor(days / 7);
+      return `~${weeks}w`;
+    }
+    if (days < 365) {
+      const months = Math.floor(days / 30);
+      return `~${months}mo`;
+    }
+    const years = Math.floor(days / 365);
+    return `~${years}y`;
+  };
 
   const formatDuration = (threshold: number) => {
     const totalMinutes = threshold / (60 * 1000);
@@ -154,6 +194,25 @@ export default function AchievementRoadmap({ achievements, onAchievementPress }:
                     Unlocked {new Date(achievement.unlockedAt).toLocaleDateString()}
                   </Text>
                 )}
+
+                {/* Predicted date for locked achievements */}
+                {!isUnlocked && (() => {
+                  const prediction = getPredictedDate(achievement.threshold);
+                  if (!prediction) return null;
+
+                  return (
+                    <View className="flex-row items-center mt-2 gap-1.5">
+                      <Calendar size={12} color={isCurrent ? '#f59e0b' : '#9ca3af'} strokeWidth={2} />
+                      <Text className={`text-xs font-medium ${
+                        isCurrent
+                          ? 'text-amber-600 dark:text-amber-400'
+                          : 'text-gray-400 dark:text-gray-500'
+                      }`}>
+                        {formatPredictedDate(prediction.date)} ({formatDaysUntil(prediction.daysUntil)})
+                      </Text>
+                    </View>
+                  );
+                })()}
               </View>
             </Pressable>
 

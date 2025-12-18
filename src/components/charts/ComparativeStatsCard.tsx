@@ -1,6 +1,7 @@
-import React, { useMemo } from 'react';
-import { View, Text } from 'react-native';
-import { TrendingUp, TrendingDown, Minus, Activity, AlertCircle } from 'lucide-react-native';
+import React, { useMemo, useState } from 'react';
+import { View, Text, Pressable } from 'react-native';
+import { TrendingUp, TrendingDown, Minus, Activity, AlertCircle, Info, X } from 'lucide-react-native';
+import { useColorScheme } from '../../stores/themeStore';
 import type { Relapse } from '../../db/schema';
 import type { Activity as ActivityType } from '../../db/schema';
 
@@ -26,6 +27,10 @@ const ComparativeStatsCard: React.FC<ComparativeStatsCardProps> = ({
   relapses,
   activities,
 }) => {
+  const colorScheme = useColorScheme();
+  const isDark = colorScheme === 'dark';
+  const [showInfo, setShowInfo] = useState(false);
+
   const comparisons = useMemo(() => {
     const now = new Date();
     const results: Comparison[] = [];
@@ -77,19 +82,19 @@ const ComparativeStatsCard: React.FC<ComparativeStatsCardProps> = ({
       periodLabel: { current: 'This month', previous: 'Last month' },
     });
 
-    // Last 7 Days vs Previous 7 Days
-    const last7DaysStart = new Date(now);
-    last7DaysStart.setDate(now.getDate() - 7);
-    last7DaysStart.setHours(0, 0, 0, 0);
+    // Last 30 Days vs Previous 30 Days
+    const last30DaysStart = new Date(now);
+    last30DaysStart.setDate(now.getDate() - 30);
+    last30DaysStart.setHours(0, 0, 0, 0);
 
-    const prev7DaysStart = new Date(last7DaysStart);
-    prev7DaysStart.setDate(prev7DaysStart.getDate() - 7);
+    const prev30DaysStart = new Date(last30DaysStart);
+    prev30DaysStart.setDate(prev30DaysStart.getDate() - 30);
 
     results.push({
-      label: 'Last 7 Days',
-      current: getStats(last7DaysStart, now),
-      previous: getStats(prev7DaysStart, last7DaysStart),
-      periodLabel: { current: 'Last 7 days', previous: 'Previous 7 days' },
+      label: 'Last 30 Days',
+      current: getStats(last30DaysStart, now),
+      previous: getStats(prev30DaysStart, last30DaysStart),
+      periodLabel: { current: 'Last 30 days', previous: 'Previous 30 days' },
     });
 
     return results;
@@ -129,7 +134,7 @@ const ComparativeStatsCard: React.FC<ComparativeStatsCardProps> = ({
 
   if (relapses.length === 0 && activities.length === 0) {
     return (
-      <View className="p-5 mb-4 bg-white dark:bg-gray-900 rounded-2xl">
+      <View className="p-5 mb-4 bg-white border border-gray-200 dark:bg-gray-900 dark:border-gray-800 rounded-2xl">
         <View className="flex-row items-center mb-3">
           <View className="items-center justify-center w-10 h-10 mr-3 rounded-full bg-blue-100 dark:bg-blue-900/40">
             <Activity size={20} color="#3b82f6" />
@@ -146,20 +151,42 @@ const ComparativeStatsCard: React.FC<ComparativeStatsCardProps> = ({
   }
 
   return (
-    <View className="p-5 mb-4 bg-white dark:bg-gray-900 rounded-2xl">
-      <View className="flex-row items-center mb-4">
-        <View className="items-center justify-center w-10 h-10 mr-3 rounded-full bg-blue-100 dark:bg-blue-900/40">
-          <Activity size={20} color="#3b82f6" />
+    <View className="p-5 mb-4 bg-white border border-gray-200 dark:bg-gray-900 dark:border-gray-800 rounded-2xl">
+      {/* Header */}
+      <View className="flex-row items-center justify-between mb-4">
+        <View className="flex-row items-center flex-1">
+          <View className="items-center justify-center w-10 h-10 mr-3 rounded-full bg-blue-100 dark:bg-blue-900/40">
+            <Activity size={20} color="#3b82f6" />
+          </View>
+          <View>
+            <Text className="text-lg font-bold text-gray-900 dark:text-white">
+              Comparative Stats
+            </Text>
+            <Text className="text-xs text-gray-500 dark:text-gray-400">
+              Track your progress over time
+            </Text>
+          </View>
         </View>
-        <View>
-          <Text className="text-lg font-bold text-gray-900 dark:text-white">
-            Comparative Stats
-          </Text>
-          <Text className="text-xs text-gray-500 dark:text-gray-400">
-            Track your progress over time
-          </Text>
-        </View>
+        <Pressable
+          onPress={() => setShowInfo(!showInfo)}
+          className="items-center justify-center w-8 h-8 rounded-full bg-gray-100 dark:bg-gray-800"
+        >
+          {showInfo ? (
+            <X size={16} color={isDark ? '#9CA3AF' : '#6B7280'} />
+          ) : (
+            <Info size={16} color={isDark ? '#9CA3AF' : '#6B7280'} />
+          )}
+        </Pressable>
       </View>
+
+      {/* Info Card */}
+      {showInfo && (
+        <View className="p-3 mb-4 rounded-xl bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800">
+          <Text className="text-xs font-medium text-blue-800 dark:text-blue-200 leading-4">
+            Compare your progress across different time periods. Green arrows mean improvement (fewer relapses or more activities). Track weekly and monthly trends to see your growth!
+          </Text>
+        </View>
+      )}
 
       {comparisons.map((comparison, index) => (
         <View

@@ -94,7 +94,7 @@ function HistoryScreen() {
           style={{ backgroundColor: colorScheme === 'dark' ? '#111827' : '#ffffff' }}
           className="flex-row items-center justify-between p-5 border border-gray-200 shadow-sm dark:border-gray-800 rounded-xl"
         >
-          <View className="flex-row items-center gap-3">
+          <View className="flex-row items-center flex-1 gap-3">
             <View className="items-center justify-center w-12 h-12 bg-blue-100 rounded-full dark:bg-blue-900/30">
               <BarChart3 size={22} color="#3b82f6" strokeWidth={2.5} />
             </View>
@@ -117,7 +117,9 @@ function HistoryScreen() {
             </View>
           </View>
           {!isPremium && (
-            <Lock size={18} color={colorScheme === 'dark' ? '#9CA3AF' : '#6B7280'} strokeWidth={2.5} />
+            <View className="ml-3">
+              <Lock size={20} color={colorScheme === 'dark' ? '#9CA3AF' : '#6B7280'} strokeWidth={2.5} />
+            </View>
           )}
         </Pressable>
       </View>

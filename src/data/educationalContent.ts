@@ -333,3 +333,38 @@ export function getRandomGreatMan() {
   const randomIndex = Math.floor(Math.random() * GREAT_MEN_WISDOM.length);
   return GREAT_MEN_WISDOM[randomIndex];
 }
+
+// Play the Tape Forward - Visualize consequences
+export const TAPE_FORWARD = {
+  giveIn: [
+    "The shame lasts hours",
+    "The pleasure lasts seconds",
+    "You'll be back here, wishing you hadn't",
+    "You'll feel drained, foggy, disappointed",
+  ],
+  resist: [
+    "Energy stays intact",
+    "Pride builds with every minute",
+    "Tonight, you sleep with a clear conscience",
+    "You prove you're in control",
+  ],
+};
+
+// Enhanced Physical Actions - Specific, immediate
+export const PHYSICAL_SHOCK_ACTIONS = [
+  { icon: "🧊", action: "Cold water on face/wrists (30 sec)" },
+  { icon: "🏃", action: "10 burpees or jumping jacks" },
+  { icon: "🚿", action: "Cold shower (even 30 sec works)" },
+  { icon: "🫁", action: "Hold breath 30 sec, exhale slowly" },
+  { icon: "✊", action: "Squeeze ice cubes until they melt" },
+  { icon: "🧍", action: "Doorway press: push arms out hard" },
+];
+
+// Environment Change Tips
+export const ENVIRONMENT_TIPS = [
+  "Leave the room you're in",
+  "Go where others can see you",
+  "Step outside — fresh air resets the brain",
+  "Turn on ALL the lights",
+  "Change your body position",
+];

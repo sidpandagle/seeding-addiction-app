@@ -5,6 +5,7 @@ import { useRelapseStore } from '../../src/stores/relapseStore';
 import { useActivityStore } from '../../src/stores/activityStore';
 import { useColorScheme } from '../../src/stores/themeStore';
 import { useAchievementStore } from '../../src/stores/achievementStore';
+import { useNotificationStore } from '../../src/stores/notificationStore';
 import RelapseModal from '../../src/components/modals/RelapseModal';
 import ActivityModal from '../../src/components/modals/ActivityModal';
 import EmergencyHelpModal from '../../src/components/modals/EmergencyHelpModal';
@@ -14,9 +15,9 @@ import { StoicWisdomCard } from '../../src/components/home/StoicWisdomCard';
 import AchievementCelebration from '../../src/components/achievements/AchievementCelebration';
 import { getNewlyUnlockedAchievements, Achievement } from '../../src/utils/growthStages';
 import { calculateUserStats } from '../../src/utils/statsHelpers';
-// Icon options for Log Activity (current: SmilePlus)
+// Icon options for Log Activity (current: Sprout)
 // Available alternatives: Heart, HeartHandshake, Zap, Award, Trophy, CheckCircle, Star, SmilePlus
-import { SmilePlus, AlertCircle, RotateCcw, TrendingUp, Award, Heart, Sparkles } from 'lucide-react-native';
+import { Sprout, AlertCircle, RotateCcw, TrendingUp, Award, Heart, Sparkles } from 'lucide-react-native';
 import { useJourneyStats } from '../../src/hooks/useJourneyStats';
 import InsightsModal from '../../src/components/history/InsightsModal';
 
@@ -28,6 +29,7 @@ function DashboardScreen() {
   const [showHelpModal, setShowHelpModal] = useState(false);
   const [showInsightsModal, setShowInsightsModal] = useState(false);
   const relapses = useRelapseStore((state) => state.relapses);
+  const journeyStartTime = useRelapseStore((state) => state.journeyStartTime);
   const activities = useActivityStore((state) => state.activities);
   const loadActivities = useActivityStore((state) => state.loadActivities);
   const [celebrationAchievement, setCelebrationAchievement] = useState<Achievement | null>(null);
@@ -37,6 +39,13 @@ function DashboardScreen() {
   const lastCheckedElapsedTime = useAchievementStore((state) => state.lastCheckedElapsedTime);
   const setLastCheckedElapsedTime = useAchievementStore((state) => state.setLastCheckedElapsedTime);
   const achievementStoreHydrated = useAchievementStore((state) => state._hasHydrated);
+
+  // Notification store for milestone scheduling
+  const {
+    isEnabled: notificationsEnabled,
+    milestoneNotificationsEnabled,
+    scheduleUpcomingMilestones
+  } = useNotificationStore();
 
   // Use centralized hook for journey stats (now optimized - no continuous updates)
   const stats = useJourneyStats();
@@ -52,6 +61,25 @@ function DashboardScreen() {
 
     return () => task.cancel();
   }, [relapses, loadActivities]);
+
+  // Schedule milestone notifications when journey data is available
+  useEffect(() => {
+    if (!journeyStartTime || !notificationsEnabled || !milestoneNotificationsEnabled) return;
+
+    const task = InteractionManager.runAfterInteractions(() => {
+      // Get the last relapse time if any relapses exist
+      const lastRelapseTime = relapses.length > 0
+        ? new Date(relapses[0].timestamp).getTime()
+        : null;
+
+      scheduleUpcomingMilestones(
+        new Date(journeyStartTime).getTime(),
+        lastRelapseTime
+      );
+    });
+
+    return () => task.cancel();
+  }, [journeyStartTime, relapses, notificationsEnabled, milestoneNotificationsEnabled, scheduleUpcomingMilestones]);
 
   // Check for missed achievements on app open (runs once after hydration)
   useEffect(() => {
@@ -213,16 +241,16 @@ function DashboardScreen() {
             {/* Log Activity - Primary Action */}
             <Pressable
               onPress={() => handleActivityPress()}
-              className="flex-1 shadow-sm bg-blue-600/90 dark:bg-blue-900/30 rounded-xl"
+              className="flex-1 border shadow-sm bg-emerald-100 dark:bg-emerald-950/30 border-emerald-300 dark:border-emerald-700 rounded-xl"
             >
               <View className="items-center px-4 py-6">
-                <View className="items-center justify-center mb-3 rounded-xl w-14 h-14 bg-white/5">
-                  <SmilePlus size={28} color="#ffffff" strokeWidth={2.5} />
+                <View className="items-center justify-center mb-3 rounded-lg w-14 h-14">
+                  <Sprout size={40} color="#10b981" strokeWidth={2} />
                 </View>
-                <Text className="mb-1 text-base font-bold text-center text-white">
+                <Text className="mb-1 text-base font-bold text-center dark:text-white">
                   Water Your Plant
                 </Text>
-                <Text className="text-xs text-center text-blue-100">
+                <Text className="text-xs text-center dark:text-white">
                   Track healthy actions
                 </Text>
               </View>

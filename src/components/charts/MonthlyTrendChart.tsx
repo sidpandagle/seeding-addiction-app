@@ -1,11 +1,10 @@
 import { View, Text, useWindowDimensions, Pressable } from 'react-native';
 import { useState } from 'react';
 import { LineChart } from 'react-native-gifted-charts';
-import { Info } from 'lucide-react-native';
+import { Info, X } from 'lucide-react-native';
 import { useColorScheme } from '../../stores/themeStore';
 import { calculateMonthlyTrend } from '../../utils/chartHelpers';
 import type { Relapse } from '../../db/schema';
-import ChartExplanationModal from './ChartExplanationModal';
 
 interface MonthlyTrendChartProps {
   relapses: Relapse[];
@@ -13,8 +12,9 @@ interface MonthlyTrendChartProps {
 
 export default function MonthlyTrendChart({ relapses }: MonthlyTrendChartProps) {
   const colorScheme = useColorScheme();
+  const isDark = colorScheme === 'dark';
   const { width: screenWidth } = useWindowDimensions();
-  const [showExplanation, setShowExplanation] = useState(false);
+  const [showInfo, setShowInfo] = useState(false);
   const monthlyData = calculateMonthlyTrend(relapses, 6);
 
   // Calculate dynamic chart width (account for container padding: 5 * 4 = 20px on each side)
@@ -78,12 +78,25 @@ export default function MonthlyTrendChart({ relapses }: MonthlyTrendChartProps) 
           </Text>
         </View>
         <Pressable
-          onPress={() => setShowExplanation(true)}
+          onPress={() => setShowInfo(!showInfo)}
           className="items-center justify-center w-8 h-8 ml-2 bg-gray-100 rounded-full dark:bg-gray-800 active:bg-gray-200 dark:active:bg-gray-700"
         >
-          <Info size={16} color={colorScheme === 'dark' ? '#9ca3af' : '#6b7280'} strokeWidth={2.5} />
+          {showInfo ? (
+            <X size={16} color={isDark ? '#9CA3AF' : '#6B7280'} />
+          ) : (
+            <Info size={16} color={isDark ? '#9ca3af' : '#6b7280'} strokeWidth={2.5} />
+          )}
         </Pressable>
       </View>
+
+      {/* Info Card */}
+      {showInfo && (
+        <View className="p-3 mt-2 mb-2 rounded-xl bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800">
+          <Text className="text-xs font-medium text-blue-800 dark:text-blue-200 leading-4">
+            This chart shows your relapse frequency over 6 months. A downward trend means progress! Don't worry about short-term fluctuations — focus on the overall direction.
+          </Text>
+        </View>
+      )}
       <View className="h-2" />
 
       {/* Chart */}
@@ -118,7 +131,6 @@ export default function MonthlyTrendChart({ relapses }: MonthlyTrendChartProps) 
           textFontSize={10}
           textColor={colorScheme === 'dark' ? '#10b981' : '#059669'}
           areaChart
-          curved
           isAnimated
           animationDuration={1000}
           animateOnDataChange
@@ -154,12 +166,6 @@ export default function MonthlyTrendChart({ relapses }: MonthlyTrendChartProps) 
         </View>
       )}
 
-      {/* Explanation Modal */}
-      <ChartExplanationModal
-        visible={showExplanation}
-        onClose={() => setShowExplanation(false)}
-        chartType="monthly"
-      />
     </View>
   );
 }

@@ -89,24 +89,6 @@ export default function HowToUseModal({ onClose }: HowToUseModalProps) {
     },
   ];
 
-  const commonQuestions = [
-    {
-      question: "What's the plant metaphor?",
-      answer: "Activities = watering your plant; growth stages = your progress from seed to tree.",
-    },
-    {
-      question: "Should I track every relapse?",
-      answer: "Honesty helps identify patterns, no judgment. Every restart is progress.",
-    },
-    {
-      question: "How do achievements unlock?",
-      answer: "Automatically based on elapsed time since your last relapse.",
-    },
-    {
-      question: "Is my data really private?",
-      answer: "Yes—100% local storage, no accounts, no sync. Your data never leaves your device.",
-    },
-  ];
 
   return (
     <View className="flex-1 bg-gray-50 dark:bg-gray-950">
@@ -187,7 +169,7 @@ export default function HowToUseModal({ onClose }: HowToUseModalProps) {
         {/* Pro Tips & Common Questions */}
         <View className="px-6 mt-2 mb-6">
           <Text className="mb-4 text-lg font-bold text-gray-900 dark:text-white">
-            💡 Pro Tips & Common Questions
+            💡 What else?
           </Text>
 
           {/* Pro Tips */}
@@ -211,23 +193,6 @@ export default function HowToUseModal({ onClose }: HowToUseModalProps) {
               </View>
             );
           })}
-
-          {/* Common Questions */}
-          <View className="mt-6">
-            <Text className="mb-3 text-base font-bold text-gray-900 dark:text-white">
-              Frequently Asked Questions
-            </Text>
-            {commonQuestions.map((qa, index) => (
-              <View key={index} className="p-4 mb-3 bg-white border border-gray-200 dark:bg-gray-900 dark:border-gray-700 rounded-xl">
-                <Text className="mb-2 text-sm font-bold text-gray-900 dark:text-white">
-                  Q: {qa.question}
-                </Text>
-                <Text className="text-sm leading-5 text-gray-600 dark:text-gray-400">
-                  {qa.answer}
-                </Text>
-              </View>
-            ))}
-          </View>
 
           {/* Final Tip */}
           <View className="p-4 mt-3 border-2 border-emerald-200 bg-emerald-50 dark:bg-emerald-900/20 dark:border-emerald-800 rounded-xl">

@@ -13,7 +13,6 @@ import {
 } from '../../src/services/security';
 import { useRelapseStore } from '../../src/stores/relapseStore';
 import { useColorScheme, useThemeStore } from '../../src/stores/themeStore';
-import { useSubscriptionStore } from '../../src/stores/subscriptionStore';
 import { useNotificationStore } from '../../src/stores/notificationStore';
 import { usePremium } from '../../src/hooks/usePremium';
 import { Settings2, Palette, Lock, Database, Sun, Moon, Shield, Trash2, Info, Brain, Coffee, BookOpen, Crown, Star, Bell, Clock, Sparkles, Trophy, Download, FileText } from 'lucide-react-native';
@@ -23,6 +22,7 @@ import CustomAlert from '../../src/components/common/CustomAlert';
 import ConfirmationDialog from '../../src/components/common/ConfirmationDialog';
 import { useAlert } from '../../src/hooks/useAlert';
 import HowToUseModal from '../../src/components/modals/HowToUseModal';
+import AboutModal from '../../src/components/modals/AboutModal';
 import { PaywallModal } from '../../src/components/premium/PaywallModal';
 import { CustomerCenter } from '../../src/components/premium/CustomerCenter';
 import DateTimePicker from '@react-native-community/datetimepicker';
@@ -37,6 +37,7 @@ export default function SettingsScreen() {
   const [authMethodName, setAuthMethodName] = useState('Biometric');
   const [showEducationModal, setShowEducationModal] = useState(false);
   const [showHowToUseModal, setShowHowToUseModal] = useState(false);
+  const [showAboutModal, setShowAboutModal] = useState(false);
   const [showPaywallModal, setShowPaywallModal] = useState(false);
   const [showCustomerCenter, setShowCustomerCenter] = useState(false);
   const [showTimePicker, setShowTimePicker] = useState(false);
@@ -338,7 +339,7 @@ export default function SettingsScreen() {
         </View>
       </View>
 
-      <ScrollView 
+      <ScrollView
         className="flex-1"
         showsVerticalScrollIndicator={false}
         contentContainerClassName="pb-8"
@@ -352,7 +353,7 @@ export default function SettingsScreen() {
             </Text>
           </View>
 
-          <View className="p-5 bg-white border border-white dark:bg-gray-900 dark:border-gray-900 rounded-2xl">
+          <View className="p-5 bg-white border border-gray-200 dark:bg-gray-900 dark:border-gray-800 rounded-2xl">
             <Text className="mb-4 text-base font-bold text-gray-900 dark:text-white">
               Theme
             </Text>
@@ -369,9 +370,8 @@ export default function SettingsScreen() {
                 <Text className="flex-1 text-base font-semibold text-gray-900 dark:text-white">
                   Light Mode
                 </Text>
-                <View className={`w-6 h-6 rounded-full border-2 items-center justify-center ${
-                  colorScheme === 'light' ? 'border-emerald-500' : 'border-gray-300 dark:border-gray-600'
-                }`}>
+                <View className={`w-6 h-6 rounded-full border-2 items-center justify-center ${colorScheme === 'light' ? 'border-emerald-500' : 'border-gray-300 dark:border-gray-600'
+                  }`}>
                   {colorScheme === 'light' && (
                     <View className="w-3 h-3 rounded-full bg-emerald-500" />
                   )}
@@ -391,9 +391,8 @@ export default function SettingsScreen() {
                 <Text className="flex-1 text-base font-semibold text-gray-900 dark:text-white">
                   Dark Mode
                 </Text>
-                <View className={`w-6 h-6 rounded-full border-2 items-center justify-center ${
-                  colorScheme === 'dark' ? 'border-emerald-500' : 'border-gray-300 dark:border-gray-600'
-                }`}>
+                <View className={`w-6 h-6 rounded-full border-2 items-center justify-center ${colorScheme === 'dark' ? 'border-emerald-500' : 'border-gray-300 dark:border-gray-600'
+                  }`}>
                   {colorScheme === 'dark' && (
                     <View className="w-3 h-3 rounded-full bg-emerald-500" />
                   )}
@@ -403,41 +402,78 @@ export default function SettingsScreen() {
           </View>
         </View>
 
-        {/* Security Section */}
+        {/* Premium Section */}
         <View className="px-6 mt-6">
           <View className="flex-row items-center gap-2 mb-3">
-            <Shield size={18} color={colorScheme === 'dark' ? '#3b82f6' : '#2563eb'} strokeWidth={2.5} />
+            <Crown size={18} color={colorScheme === 'dark' ? '#fbbf24' : '#f59e0b'} strokeWidth={2.5} />
             <Text className="text-sm font-bold tracking-wider text-gray-600 uppercase dark:text-gray-400">
-              Security
+              Premium
             </Text>
           </View>
 
-          <View className="p-5 bg-white border border-white dark:bg-gray-900 dark:border-gray-900 rounded-2xl">
-            <View className="flex-row items-center justify-between">
-              <View className="flex-row items-center flex-1">
-                <View className="items-center justify-center w-10 h-10 mr-3 rounded-full bg-blue-50 dark:bg-blue-900/30">
-                  <Lock size={20} color="#3b82f6" strokeWidth={2.5} />
+          {isPremium ? (
+            <View className="p-5 bg-white border border-gray-200 dark:bg-gray-900 dark:border-gray-800 rounded-2xl">
+              <View className="flex-row items-center mb-4">
+                <View className="items-center justify-center w-12 h-12 mr-3 bg-purple-100 rounded-full dark:bg-purple-900/30">
+                  <Star size={24} color="#a855f7" fill="#a855f7" strokeWidth={2} />
                 </View>
                 <View className="flex-1">
-                  <Text className="text-base font-bold text-gray-900 dark:text-white">
-                    App Lock
+                  <Text className="text-lg font-bold dark:text-white">
+                    Seeding Pro
                   </Text>
-                  <Text className="mt-0.5 text-sm text-gray-500 dark:text-gray-400">
-                    {biometricAvailable
-                      ? `Protect with ${authMethodName}`
-                      : 'Not available'}
+                  <Text className="text-sm text-purple-900 dark:text-purple-100">
+                    Active subscription
                   </Text>
                 </View>
               </View>
-              <Switch
-                value={appLockEnabled}
-                onValueChange={handleAppLockToggle}
-                disabled={!biometricAvailable}
-                trackColor={{ false: '#d1d5db', true: '#10b981' }}
-                thumbColor={appLockEnabled ? '#ffffff' : '#f3f4f6'}
-              />
+
+              {expirationDate && (
+                <View className="p-3 mb-3 rounded-xl">
+                  <Text className="text-xs font-semibold dark:text-purple-100">
+                    {willRenew ? 'Renews on' : 'Expires on'}
+                  </Text>
+                  <Text className="mt-1 text-sm font-bold dark:text-white">
+                    {new Date(expirationDate).toLocaleDateString('en-US', {
+                      year: 'numeric',
+                      month: 'long',
+                      day: 'numeric'
+                    })}
+                  </Text>
+                </View>
+              )}
+
+              <Pressable
+                onPress={() => setShowCustomerCenter(true)}
+                className="p-3 bg-purple-100 rounded-xl dark:bg-purple-900/20 active:opacity-70"
+              >
+                <Text className="font-semibold text-center text-purple-600 dark:text-purple-400">
+                  Manage Subscription
+                </Text>
+              </Pressable>
             </View>
-          </View>
+          ) : (
+            <Pressable
+              onPress={() => setShowPaywallModal(true)}
+              className="p-5 overflow-hidden bg-white border border-white dark:bg-gray-900 dark:border-gray-900 rounded-2xl active:opacity-70"
+            >
+              <View className="flex-row items-center justify-between">
+                <View className="flex-row items-center flex-1">
+                  <View className="items-center justify-center w-10 h-10 mr-3 rounded-full bg-amber-50 dark:bg-amber-900/30">
+                    <Crown size={20} color="#f59e0b" strokeWidth={2.5} />
+                  </View>
+                  <View className="flex-1">
+                    <Text className="text-base font-bold text-gray-900 dark:text-white">
+                      Upgrade to Pro
+                    </Text>
+                    <Text className="mt-0.5 text-sm text-gray-500 dark:text-gray-400">
+                      Unlock all premium features
+                    </Text>
+                  </View>
+                </View>
+                <Text className="text-xl font-medium text-amber-600 dark:text-amber-400">→</Text>
+              </View>
+            </Pressable>
+          )}
         </View>
 
         {/* Notifications Section */}
@@ -449,7 +485,7 @@ export default function SettingsScreen() {
             </Text>
           </View>
 
-          <View className="p-5 bg-white border border-white dark:bg-gray-900 dark:border-gray-900 rounded-2xl">
+          <View className="p-5 bg-white border border-gray-200 dark:bg-gray-900 dark:border-gray-800 rounded-2xl">
             {/* Master Toggle */}
             <View className="flex-row items-center justify-between pb-4 mb-4 border-b border-gray-100 dark:border-gray-800">
               <View className="flex-row items-center flex-1">
@@ -548,110 +584,41 @@ export default function SettingsScreen() {
           </View>
         </View>
 
-        {/* Premium Section */}
+        {/* Security Section */}
         <View className="px-6 mt-6">
           <View className="flex-row items-center gap-2 mb-3">
-            <Crown size={18} color={colorScheme === 'dark' ? '#fbbf24' : '#f59e0b'} strokeWidth={2.5} />
+            <Shield size={18} color={colorScheme === 'dark' ? '#3b82f6' : '#2563eb'} strokeWidth={2.5} />
             <Text className="text-sm font-bold tracking-wider text-gray-600 uppercase dark:text-gray-400">
-              Premium
+              Security
             </Text>
           </View>
 
-          {isPremium ? (
-            <View className="p-5 bg-gradient-to-br from-purple-500 to-pink-500 dark:from-purple-600 dark:to-pink-600 rounded-2xl">
-              <View className="flex-row items-center mb-4">
-                <View className="items-center justify-center w-12 h-12 mr-3 bg-white rounded-full dark:bg-white/90">
-                  <Star size={24} color="#a855f7" fill="#a855f7" strokeWidth={2} />
-                </View>
-                <View className="flex-1">
-                  <Text className="text-lg font-bold text-white">
-                    Seeding Pro
-                  </Text>
-                  <Text className="mt-0.5 text-sm text-purple-100">
-                    Active subscription
-                  </Text>
-                </View>
-              </View>
-
-              {expirationDate && (
-                <View className="p-3 mb-3 bg-white/10 rounded-xl">
-                  <Text className="text-xs font-semibold text-purple-100">
-                    {willRenew ? 'Renews on' : 'Expires on'}
-                  </Text>
-                  <Text className="mt-1 text-sm font-bold text-white">
-                    {new Date(expirationDate).toLocaleDateString('en-US', {
-                      year: 'numeric',
-                      month: 'long',
-                      day: 'numeric'
-                    })}
-                  </Text>
-                </View>
-              )}
-
-              <Pressable
-                onPress={() => setShowCustomerCenter(true)}
-                className="p-3 bg-white rounded-xl dark:bg-white/90 active:opacity-70"
-              >
-                <Text className="font-semibold text-center text-purple-600">
-                  Manage Subscription
-                </Text>
-              </Pressable>
-            </View>
-          ) : (
-            <Pressable
-              onPress={() => setShowPaywallModal(true)}
-              className="p-5 overflow-hidden bg-white border border-white dark:bg-gray-900 dark:border-gray-900 rounded-2xl active:opacity-70"
-            >
-              <View className="flex-row items-center justify-between">
-                <View className="flex-row items-center flex-1">
-                  <View className="items-center justify-center w-10 h-10 mr-3 rounded-full bg-amber-50 dark:bg-amber-900/30">
-                    <Crown size={20} color="#f59e0b" strokeWidth={2.5} />
-                  </View>
-                  <View className="flex-1">
-                    <Text className="text-base font-bold text-gray-900 dark:text-white">
-                      Upgrade to Pro
-                    </Text>
-                    <Text className="mt-0.5 text-sm text-gray-500 dark:text-gray-400">
-                      Unlock all premium features
-                    </Text>
-                  </View>
-                </View>
-                <Text className="text-xl font-medium text-amber-600 dark:text-amber-400">→</Text>
-              </View>
-            </Pressable>
-          )}
-        </View>
-
-        {/* Education Section */}
-        <View className="px-6 mt-6">
-          <View className="flex-row items-center gap-2 mb-3">
-            <Brain size={18} color={colorScheme === 'dark' ? '#a855f7' : '#9333ea'} strokeWidth={2.5} />
-            <Text className="text-sm font-bold tracking-wider text-gray-600 uppercase dark:text-gray-400">
-              Education
-            </Text>
-          </View>
-
-          <Pressable
-            onPress={() => setShowEducationModal(true)}
-            className="p-5 bg-white border border-white dark:bg-gray-900 dark:border-gray-900 rounded-2xl active:opacity-70"
-          >
+          <View className="p-5 bg-white border border-gray-200 dark:bg-gray-900 dark:border-gray-800 rounded-2xl">
             <View className="flex-row items-center justify-between">
               <View className="flex-row items-center flex-1">
-                <View className="items-center justify-center w-10 h-10 mr-3 rounded-full bg-purple-50 dark:bg-purple-900/30">
-                  <Brain size={20} color="#a855f7" strokeWidth={2.5} />
+                <View className="items-center justify-center w-10 h-10 mr-3 rounded-full bg-blue-50 dark:bg-blue-900/30">
+                  <Lock size={20} color="#3b82f6" strokeWidth={2.5} />
                 </View>
                 <View className="flex-1">
                   <Text className="text-base font-bold text-gray-900 dark:text-white">
-                    Understanding Recovery
+                    App Lock
                   </Text>
                   <Text className="mt-0.5 text-sm text-gray-500 dark:text-gray-400">
-                    Learn about dopamine science
+                    {biometricAvailable
+                      ? `Protect with ${authMethodName}`
+                      : 'Not available'}
                   </Text>
                 </View>
               </View>
-              <Text className="text-xl font-medium text-purple-600 dark:text-purple-400">→</Text>
+              <Switch
+                value={appLockEnabled}
+                onValueChange={handleAppLockToggle}
+                disabled={!biometricAvailable}
+                trackColor={{ false: '#d1d5db', true: '#10b981' }}
+                thumbColor={appLockEnabled ? '#ffffff' : '#f3f4f6'}
+              />
             </View>
-          </Pressable>
+          </View>
         </View>
 
         {/* How to Use Section */}
@@ -665,7 +632,7 @@ export default function SettingsScreen() {
 
           <Pressable
             onPress={() => setShowHowToUseModal(true)}
-            className="p-5 bg-white border border-white dark:bg-gray-900 dark:border-gray-900 rounded-2xl active:opacity-70"
+            className="p-5 bg-white border border-gray-200 dark:bg-gray-900 dark:border-gray-800 rounded-2xl active:opacity-70"
           >
             <View className="flex-row items-center justify-between">
               <View className="flex-row items-center flex-1">
@@ -686,37 +653,39 @@ export default function SettingsScreen() {
           </Pressable>
         </View>
 
-        {/* Support Section */}
+        {/* Education Section */}
         <View className="px-6 mt-6">
           <View className="flex-row items-center gap-2 mb-3">
-            <Coffee size={18} color={colorScheme === 'dark' ? '#f59e0b' : '#d97706'} strokeWidth={2.5} />
+            <Brain size={18} color={colorScheme === 'dark' ? '#a855f7' : '#9333ea'} strokeWidth={2.5} />
             <Text className="text-sm font-bold tracking-wider text-gray-600 uppercase dark:text-gray-400">
-              Support
+              Education
             </Text>
           </View>
 
           <Pressable
-            onPress={handleBuyMeCoffee}
-            className="p-5 bg-white border border-white dark:bg-gray-900 dark:border-gray-900 rounded-2xl active:opacity-70"
+            onPress={() => setShowEducationModal(true)}
+            className="p-5 bg-white border border-gray-200 dark:bg-gray-900 dark:border-gray-800 rounded-2xl active:opacity-70"
           >
             <View className="flex-row items-center justify-between">
               <View className="flex-row items-center flex-1">
-                <View className="items-center justify-center w-10 h-10 mr-3 rounded-full bg-amber-50 dark:bg-amber-900/30">
-                  <Coffee size={20} color="#f59e0b" strokeWidth={2.5} />
+                <View className="items-center justify-center w-10 h-10 mr-3 rounded-full bg-purple-50 dark:bg-purple-900/30">
+                  <Brain size={20} color="#a855f7" strokeWidth={2.5} />
                 </View>
                 <View className="flex-1">
                   <Text className="text-base font-bold text-gray-900 dark:text-white">
-                    Buy Me a Coffee
+                    Understanding Recovery
                   </Text>
                   <Text className="mt-0.5 text-sm text-gray-500 dark:text-gray-400">
-                    Support the development
+                    Learn about dopamine science
                   </Text>
                 </View>
               </View>
-              <Text className="text-xl font-medium text-amber-600 dark:text-amber-400">→</Text>
+              <Text className="text-xl font-medium text-purple-600 dark:text-purple-400">→</Text>
             </View>
           </Pressable>
         </View>
+
+
 
         {/* Export Section (Pro) */}
         <View className="px-6 mt-6">
@@ -732,7 +701,7 @@ export default function SettingsScreen() {
             )}
           </View>
 
-          <View className="p-5 bg-white border border-white dark:bg-gray-900 dark:border-gray-900 rounded-2xl">
+          <View className="p-5 bg-white border border-gray-200 dark:bg-gray-900 dark:border-gray-800 rounded-2xl">
             {/* CSV Export */}
             <Pressable
               onPress={handleExportCSV}
@@ -777,6 +746,38 @@ export default function SettingsScreen() {
           </View>
         </View>
 
+        {/* Support Section */}
+        <View className="px-6 mt-6">
+          <View className="flex-row items-center gap-2 mb-3">
+            <Coffee size={18} color={colorScheme === 'dark' ? '#f59e0b' : '#d97706'} strokeWidth={2.5} />
+            <Text className="text-sm font-bold tracking-wider text-gray-600 uppercase dark:text-gray-400">
+              Support
+            </Text>
+          </View>
+
+          <Pressable
+            onPress={handleBuyMeCoffee}
+            className="p-5 bg-white border border-gray-200 dark:bg-gray-900 dark:border-gray-800 rounded-2xl active:opacity-70"
+          >
+            <View className="flex-row items-center justify-between">
+              <View className="flex-row items-center flex-1">
+                <View className="items-center justify-center w-10 h-10 mr-3 rounded-full bg-amber-50 dark:bg-amber-900/30">
+                  <Coffee size={20} color="#f59e0b" strokeWidth={2.5} />
+                </View>
+                <View className="flex-1">
+                  <Text className="text-base font-bold text-gray-900 dark:text-white">
+                    Buy Me a Coffee
+                  </Text>
+                  <Text className="mt-0.5 text-sm text-gray-500 dark:text-gray-400">
+                    Support the development
+                  </Text>
+                </View>
+              </View>
+              <Text className="text-xl font-medium text-amber-600 dark:text-amber-400">→</Text>
+            </View>
+          </Pressable>
+        </View>
+
         {/* Data Section */}
         <View className="px-6 mt-6">
           <View className="flex-row items-center gap-2 mb-3">
@@ -788,7 +789,7 @@ export default function SettingsScreen() {
 
           <Pressable
             onPress={handleResetData}
-            className="p-5 bg-white border border-white dark:bg-gray-900 dark:border-gray-900 rounded-2xl active:opacity-70"
+            className="p-5 bg-white border border-gray-200 dark:bg-gray-900 dark:border-gray-800 rounded-2xl active:opacity-70"
           >
             <View className="flex-row items-center justify-between">
               <View className="flex-row items-center flex-1">
@@ -811,7 +812,10 @@ export default function SettingsScreen() {
 
         {/* App Info */}
         <View className="px-6 mt-8">
-          <View className="items-center p-6 bg-white border border-white dark:bg-gray-900 dark:border-gray-900 rounded-2xl">
+          <Pressable
+            onPress={() => setShowAboutModal(true)}
+            className="items-center p-6 bg-white border border-gray-200 dark:bg-gray-900 dark:border-gray-800 rounded-2xl active:opacity-70"
+          >
             <View className="items-center justify-center w-16 h-16 bg-gradient-to-br from-emerald-100 to-teal-100 dark:from-emerald-900/30 dark:to-teal-900/30 rounded-2xl">
               <Info size={28} color="#10b981" strokeWidth={2.5} />
             </View>
@@ -824,10 +828,10 @@ export default function SettingsScreen() {
             <Text className="mt-3 text-xs text-center text-gray-400 dark:text-gray-500">
               Privacy-focused relapse tracking
             </Text>
-            <Text className="mt-1 mb-4 text-xs text-center text-emerald-600 dark:text-emerald-400">
-              Your data stays on your device
+            <Text className="mt-1 text-xs text-center text-emerald-600 dark:text-emerald-400">
+              Tap to learn more & FAQ
             </Text>
-          </View>
+          </Pressable>
         </View>
       </ScrollView>
 
@@ -849,6 +853,16 @@ export default function SettingsScreen() {
         onRequestClose={() => setShowHowToUseModal(false)}
       >
         <HowToUseModal onClose={() => setShowHowToUseModal(false)} />
+      </Modal>
+
+      {/* About Modal */}
+      <Modal
+        visible={showAboutModal}
+        animationType="slide"
+        presentationStyle="pageSheet"
+        onRequestClose={() => setShowAboutModal(false)}
+      >
+        <AboutModal onClose={() => setShowAboutModal(false)} />
       </Modal>
 
       {/* Custom Alert */}

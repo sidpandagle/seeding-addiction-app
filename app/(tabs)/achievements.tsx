@@ -6,14 +6,27 @@ import AchievementRoadmap from '../../src/components/achievements/AchievementRoa
 import AchievementDetailModal from '../../src/components/achievements/AchievementDetailModal';
 import { getAchievements, Achievement } from '../../src/utils/growthStages';
 import { useJourneyStats } from '../../src/hooks/useJourneyStats';
+import { useLatestRelapseTimestamp } from '../../src/stores/relapseStore';
+import { getJourneyStart } from '../../src/db/helpers';
 import { Trophy } from 'lucide-react-native';
 
 export default function AchievementsScreen() {
   const colorScheme = useColorScheme();
   const [selectedAchievement, setSelectedAchievement] = useState<Achievement | null>(null);
+  const [journeyStart, setJourneyStart] = useState<string | null>(null);
 
   // Use centralized hook for journey stats
   const stats = useJourneyStats();
+  const latestRelapseTimestamp = useLatestRelapseTimestamp();
+
+  // Load journey start for milestone predictions
+  useEffect(() => {
+    const loadJourneyStart = async () => {
+      const start = await getJourneyStart();
+      setJourneyStart(start);
+    };
+    loadJourneyStart();
+  }, []);
 
   // Live achievements state that updates every second
   const [achievements, setAchievements] = useState<Achievement[]>(() => getAchievements(0));
@@ -122,6 +135,7 @@ export default function AchievementsScreen() {
           <AchievementRoadmap
             achievements={achievements}
             onAchievementPress={(achievement) => setSelectedAchievement(achievement)}
+            referenceTime={latestRelapseTimestamp ? new Date(latestRelapseTimestamp).getTime() : (journeyStart ? new Date(journeyStart).getTime() : null)}
           />
         </View>
       </ScrollView>

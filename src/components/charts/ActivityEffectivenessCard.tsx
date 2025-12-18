@@ -1,9 +1,12 @@
-import React, { useMemo } from 'react';
-import { View, Text } from 'react-native';
-import { Zap, TrendingUp, Award } from 'lucide-react-native';
+import React, { useMemo, useState } from 'react';
+import { View, Text, Pressable } from 'react-native';
+import { PieChart } from 'react-native-gifted-charts';
+import { Zap, Award, Clock, Shuffle, TrendingUp, Info, X } from 'lucide-react-native';
+import { useColorScheme } from '../../stores/themeStore';
 import type { Relapse } from '../../db/schema';
 import type { Activity } from '../../db/schema';
-import { ACTIVITY_CATEGORIES } from '../../constants/tags';
+import { ACTIVITY_CATEGORIES, filterValidCategories } from '../../constants/tags';
+import { useCustomActivityTagsStore } from '../../stores/customActivityTagsStore';
 
 interface ActivityEffectivenessCardProps {
   relapses: Relapse[];
@@ -14,204 +17,316 @@ interface ActivityEffectivenessCardProps {
 interface CategoryStats {
   category: string;
   count: number;
-  avgDaysBeforeRelapse: number | null; // null means no relapse followed
-  effectivenessScore: number; // 0-100
+  percentage: number;
+  color: string;
 }
+
+interface TimePattern {
+  period: string;
+  count: number;
+  percentage: number;
+  icon: string;
+}
+
+// Colors for the donut chart
+const CHART_COLORS = [
+  '#a855f7', // purple
+  '#3b82f6', // blue
+  '#10b981', // emerald
+  '#f59e0b', // amber
+  '#ec4899', // pink
+  '#06b6d4', // cyan
+  '#8b5cf6', // violet
+  '#f97316', // orange
+];
 
 const ActivityEffectivenessCard: React.FC<ActivityEffectivenessCardProps> = ({
   relapses,
   activities,
   journeyStartTime,
 }) => {
-  const categoryStats = useMemo(() => {
-    if (activities.length === 0) return [];
+  const colorScheme = useColorScheme();
+  const isDark = colorScheme === 'dark';
+  const [showInfo, setShowInfo] = useState(false);
+  const customTags = useCustomActivityTagsStore(state => state.customTags);
 
-    // Group activities by category
-    const categoryMap = new Map<string, {
-      count: number;
-      daysBeforeRelapse: number[];
-      noRelapseFollowed: number;
-    }>();
+  // Calculate activity insights
+  const insights = useMemo(() => {
+    if (activities.length === 0) return null;
 
-    // Initialize categories
-    ACTIVITY_CATEGORIES.forEach(cat => {
-      categoryMap.set(cat, { count: 0, daysBeforeRelapse: [], noRelapseFollowed: 0 });
-    });
+    // Count activities by category (only valid/active categories)
+    const categoryMap = new Map<string, number>();
 
-    // Sort relapses by time
-    const sortedRelapses = [...relapses].sort(
-      (a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
-    );
-
-    // For each activity, find if a relapse happened within 7 days after
     activities.forEach(activity => {
-      const activityTime = new Date(activity.timestamp).getTime();
       const categories = activity.categories || [];
+      // Filter out deleted custom tags
+      const validCategories = filterValidCategories(categories, customTags);
+      validCategories.forEach(cat => {
+        categoryMap.set(cat, (categoryMap.get(cat) || 0) + 1);
+      });
+    });
 
-      categories.forEach(category => {
-        const stats = categoryMap.get(category);
-        if (!stats) return;
-
-        stats.count++;
-
-        // Find next relapse after this activity
-        const nextRelapse = sortedRelapses.find(r => {
-          const relapseTime = new Date(r.timestamp).getTime();
-          return relapseTime > activityTime;
+    // Get top categories sorted by count
+    const topCategories: CategoryStats[] = [];
+    let colorIndex = 0;
+    categoryMap.forEach((count, category) => {
+      if (count > 0) {
+        topCategories.push({
+          category,
+          count,
+          percentage: Math.round((count / activities.length) * 100),
+          color: CHART_COLORS[colorIndex % CHART_COLORS.length],
         });
+        colorIndex++;
+      }
+    });
+    topCategories.sort((a, b) => b.count - a.count);
 
-        if (nextRelapse) {
-          const relapseTime = new Date(nextRelapse.timestamp).getTime();
-          const daysDiff = (relapseTime - activityTime) / (24 * 60 * 60 * 1000);
+    // Calculate activity diversity (unique categories used / total categories)
+    const uniqueCategoriesUsed = topCategories.length;
+    const diversityScore = Math.round((uniqueCategoriesUsed / ACTIVITY_CATEGORIES.length) * 100);
 
-          if (daysDiff <= 7) {
-            // Relapse happened within 7 days
-            stats.daysBeforeRelapse.push(daysDiff);
-          } else {
-            // Activity was "effective" - no relapse within 7 days
-            stats.noRelapseFollowed++;
-          }
-        } else {
-          // No relapse followed this activity at all
-          stats.noRelapseFollowed++;
-        }
+    // Analyze time patterns
+    const timePatterns: { morning: number; afternoon: number; evening: number; night: number } = {
+      morning: 0,
+      afternoon: 0,
+      evening: 0,
+      night: 0,
+    };
 
-        categoryMap.set(category, stats);
-      });
+    activities.forEach(activity => {
+      const hour = new Date(activity.timestamp).getHours();
+      if (hour >= 5 && hour < 12) timePatterns.morning++;
+      else if (hour >= 12 && hour < 17) timePatterns.afternoon++;
+      else if (hour >= 17 && hour < 21) timePatterns.evening++;
+      else timePatterns.night++;
     });
 
-    // Calculate effectiveness scores
-    const results: CategoryStats[] = [];
+    const timePatternData: TimePattern[] = [
+      { period: 'Morning', count: timePatterns.morning, percentage: Math.round((timePatterns.morning / activities.length) * 100), icon: '🌅' },
+      { period: 'Afternoon', count: timePatterns.afternoon, percentage: Math.round((timePatterns.afternoon / activities.length) * 100), icon: '☀️' },
+      { period: 'Evening', count: timePatterns.evening, percentage: Math.round((timePatterns.evening / activities.length) * 100), icon: '🌆' },
+      { period: 'Night', count: timePatterns.night, percentage: Math.round((timePatterns.night / activities.length) * 100), icon: '🌙' },
+    ].sort((a, b) => b.count - a.count);
 
-    categoryMap.forEach((stats, category) => {
-      if (stats.count === 0) return;
+    // Calculate weekly average
+    const now = new Date();
+    const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+    const recentActivities = activities.filter(a => new Date(a.timestamp) > thirtyDaysAgo);
+    const weeklyAverage = Math.round((recentActivities.length / 4) * 10) / 10;
 
-      const avgDays = stats.daysBeforeRelapse.length > 0
-        ? stats.daysBeforeRelapse.reduce((a, b) => a + b, 0) / stats.daysBeforeRelapse.length
-        : null;
-
-      // Effectiveness = % of times no relapse followed within 7 days
-      const effectivenessScore = (stats.noRelapseFollowed / stats.count) * 100;
-
-      results.push({
-        category,
-        count: stats.count,
-        avgDaysBeforeRelapse: avgDays,
-        effectivenessScore,
-      });
-    });
-
-    // Sort by effectiveness score (highest first)
-    return results
-      .filter(r => r.count >= 1) // Only show categories with at least 1 activity
-      .sort((a, b) => b.effectivenessScore - a.effectivenessScore)
-      .slice(0, 8); // Show top 8
-
-  }, [relapses, activities]);
-
-  const getEffectivenessColor = (score: number) => {
-    if (score >= 80) return { bg: 'bg-emerald-100 dark:bg-emerald-900/40', text: 'text-emerald-700 dark:text-emerald-300' };
-    if (score >= 60) return { bg: 'bg-blue-100 dark:bg-blue-900/40', text: 'text-blue-700 dark:text-blue-300' };
-    if (score >= 40) return { bg: 'bg-amber-100 dark:bg-amber-900/40', text: 'text-amber-700 dark:text-amber-300' };
-    return { bg: 'bg-red-100 dark:bg-red-900/40', text: 'text-red-700 dark:text-red-300' };
-  };
+    return {
+      topCategories: topCategories.slice(0, 6),
+      totalCategories: uniqueCategoriesUsed,
+      diversityScore,
+      timePatterns: timePatternData,
+      peakTime: timePatternData[0],
+      weeklyAverage,
+      totalActivities: activities.length,
+    };
+  }, [activities, relapses, journeyStartTime, customTags]);
 
   if (activities.length === 0) {
     return (
-      <View className="p-5 mb-4 bg-white dark:bg-gray-900 rounded-2xl">
+      <View className="p-5 mb-4 bg-white border border-gray-200 dark:bg-gray-900 dark:border-gray-800 rounded-2xl">
         <View className="flex-row items-center mb-3">
           <View className="items-center justify-center w-10 h-10 mr-3 rounded-full bg-purple-100 dark:bg-purple-900/40">
             <Zap size={20} color="#a855f7" />
           </View>
           <Text className="text-lg font-bold text-gray-900 dark:text-white">
-            Activity Effectiveness
+            Activity Insights
           </Text>
         </View>
         <Text className="text-sm text-gray-500 dark:text-gray-400 text-center py-4">
-          Log activities to see which ones help you most
+          Log activities to see patterns and insights
         </Text>
       </View>
     );
   }
 
-  const topActivity = categoryStats.length > 0 ? categoryStats[0] : null;
+  if (!insights) return null;
+
+  // Prepare donut chart data
+  const pieData = insights.topCategories.map((stat, index) => ({
+    value: stat.count,
+    color: stat.color,
+    text: `${stat.percentage}%`,
+  }));
+
+  // If there are activities without categories, add an "Other" slice
+  const categorizedCount = insights.topCategories.reduce((sum, c) => sum + c.count, 0);
+  if (categorizedCount < insights.totalActivities) {
+    const uncategorized = insights.totalActivities - categorizedCount;
+    pieData.push({
+      value: uncategorized,
+      color: isDark ? '#4B5563' : '#9CA3AF',
+      text: `${Math.round((uncategorized / insights.totalActivities) * 100)}%`,
+    });
+  }
+
+  // Get emoji from category string (first character if it's an emoji)
+  const getEmoji = (category: string): string => {
+    const firstChar = category.charAt(0);
+    // Check if it's an emoji (basic check)
+    if (firstChar.charCodeAt(0) > 127) {
+      return firstChar;
+    }
+    return '✨';
+  };
 
   return (
-    <View className="p-5 mb-4 bg-white dark:bg-gray-900 rounded-2xl">
-      <View className="flex-row items-center mb-4">
-        <View className="items-center justify-center w-10 h-10 mr-3 rounded-full bg-purple-100 dark:bg-purple-900/40">
-          <Zap size={20} color="#a855f7" />
+    <View className="p-5 mb-4 bg-white border border-gray-200 dark:bg-gray-900 dark:border-gray-800 rounded-2xl">
+      {/* Header */}
+      <View className="flex-row items-center justify-between mb-4">
+        <View className="flex-row items-center flex-1">
+          <View className="items-center justify-center w-10 h-10 mr-3 rounded-full bg-purple-100 dark:bg-purple-900/40">
+            <Zap size={20} color="#a855f7" />
+          </View>
+          <View>
+            <Text className="text-lg font-bold text-gray-900 dark:text-white">
+              Activity Insights
+            </Text>
+            <Text className="text-xs text-gray-500 dark:text-gray-400">
+              Your watering patterns
+            </Text>
+          </View>
         </View>
-        <View>
-          <Text className="text-lg font-bold text-gray-900 dark:text-white">
-            Activity Effectiveness
+        <Pressable
+          onPress={() => setShowInfo(!showInfo)}
+          className="items-center justify-center w-8 h-8 rounded-full bg-gray-100 dark:bg-gray-800"
+        >
+          {showInfo ? (
+            <X size={16} color={isDark ? '#9CA3AF' : '#6B7280'} />
+          ) : (
+            <Info size={16} color={isDark ? '#9CA3AF' : '#6B7280'} />
+          )}
+        </Pressable>
+      </View>
+
+      {/* Info Card */}
+      {showInfo && (
+        <View className="p-3 mb-4 rounded-xl bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800">
+          <Text className="text-xs font-medium text-blue-800 dark:text-blue-200 leading-4">
+            Track your healthy activities to understand your patterns. Diverse activities and consistent timing help build stronger habits!
           </Text>
-          <Text className="text-xs text-gray-500 dark:text-gray-400">
-            Which activities help you most
+        </View>
+      )}
+
+      {/* Quick Stats */}
+      <View className="flex-row mb-4 gap-2">
+        <View className="flex-1 p-3 rounded-xl bg-purple-50 dark:bg-purple-900/20">
+          <View className="flex-row items-center gap-1 mb-1">
+            <Shuffle size={12} color="#a855f7" />
+            <Text className="text-xs font-semibold text-purple-700 dark:text-purple-300">
+              Diversity
+            </Text>
+          </View>
+          <Text className="text-lg font-bold text-purple-600 dark:text-purple-400">
+            {insights.diversityScore}%
+          </Text>
+          <Text className="text-xs text-purple-500 dark:text-purple-400">
+            {insights.totalCategories} types
+          </Text>
+        </View>
+        <View className="flex-1 p-3 rounded-xl bg-blue-50 dark:bg-blue-900/20">
+          <View className="flex-row items-center gap-1 mb-1">
+            <TrendingUp size={12} color="#3b82f6" />
+            <Text className="text-xs font-semibold text-blue-700 dark:text-blue-300">
+              Weekly Avg
+            </Text>
+          </View>
+          <Text className="text-lg font-bold text-blue-600 dark:text-blue-400">
+            {insights.weeklyAverage}
+          </Text>
+          <Text className="text-xs text-blue-500 dark:text-blue-400">
+            activities
           </Text>
         </View>
       </View>
 
-      {/* Top Performer Highlight */}
-      {topActivity && topActivity.effectivenessScore >= 50 && (
-        <View className="flex-row items-center p-3 mb-4 bg-emerald-50 dark:bg-emerald-900/20 rounded-xl border border-emerald-200 dark:border-emerald-800">
-          <Award size={24} color="#10b981" strokeWidth={2} />
-          <View className="ml-3 flex-1">
-            <Text className="text-sm font-bold text-emerald-800 dark:text-emerald-200">
-              Top Performer
+      {/* Donut Chart */}
+      <View className="items-center mb-4">
+        <PieChart
+          data={pieData}
+          donut
+          radius={70}
+          innerRadius={45}
+          innerCircleColor={isDark ? '#111827' : '#ffffff'}
+          centerLabelComponent={() => (
+            <View className="items-center">
+              <Text className="text-2xl font-bold text-gray-900 dark:text-white">
+                {insights.totalActivities}
+              </Text>
+              <Text className="text-xs text-gray-500 dark:text-gray-400">
+                total
+              </Text>
+            </View>
+          )}
+          showText={false}
+        />
+      </View>
+
+      {/* Legend - All Categories Grid */}
+      <View className="flex-row flex-wrap gap-2 mb-4">
+        {insights.topCategories.map((stat) => (
+          <View
+            key={stat.category}
+            className="flex-row items-center px-2 py-1 rounded-lg bg-gray-50 dark:bg-gray-800"
+          >
+            <View
+              className="w-2.5 h-2.5 rounded-full mr-1.5"
+              style={{ backgroundColor: stat.color }}
+            />
+            <Text className="text-xs text-gray-700 dark:text-gray-300" numberOfLines={1}>
+              {stat.category}
             </Text>
-            <Text className="text-xs text-emerald-700 dark:text-emerald-300">
-              {topActivity.category} has {topActivity.effectivenessScore.toFixed(0)}% effectiveness
+            <Text className="text-xs font-bold text-gray-500 dark:text-gray-400 ml-1">
+              {stat.count}
+            </Text>
+          </View>
+        ))}
+      </View>
+
+      {/* Peak Time */}
+      {insights.peakTime.count > 0 && (
+        <View className="flex-row items-center p-3 mb-4 bg-amber-50 dark:bg-amber-900/20 rounded-xl border border-amber-200 dark:border-amber-800">
+          <Clock size={20} color="#f59e0b" strokeWidth={2} />
+          <View className="ml-3 flex-1">
+            <Text className="text-sm font-bold text-amber-800 dark:text-amber-200">
+              Peak Activity Time
+            </Text>
+            <Text className="text-xs text-amber-700 dark:text-amber-300">
+              {insights.peakTime.icon} {insights.peakTime.period} ({insights.peakTime.percentage}% of activities)
             </Text>
           </View>
         </View>
       )}
 
-      {/* Category List */}
-      {categoryStats.map((stat, index) => {
-        const colors = getEffectivenessColor(stat.effectivenessScore);
-
-        return (
-          <View
-            key={stat.category}
-            className={`py-3 ${index < categoryStats.length - 1 ? 'border-b border-gray-100 dark:border-gray-800' : ''}`}
-          >
-            <View className="flex-row items-center justify-between mb-2">
-              <Text className="text-sm font-medium text-gray-900 dark:text-white flex-1" numberOfLines={1}>
-                {stat.category}
-              </Text>
-              <View className={`px-2 py-1 rounded-full ${colors.bg}`}>
-                <Text className={`text-xs font-bold ${colors.text}`}>
-                  {stat.effectivenessScore.toFixed(0)}%
-                </Text>
-              </View>
-            </View>
-
-            {/* Progress Bar */}
-            <View className="h-2 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
-              <View
-                className={`h-full rounded-full ${
-                  stat.effectivenessScore >= 80 ? 'bg-emerald-500' :
-                  stat.effectivenessScore >= 60 ? 'bg-blue-500' :
-                  stat.effectivenessScore >= 40 ? 'bg-amber-500' : 'bg-red-500'
-                }`}
-                style={{ width: `${stat.effectivenessScore}%` }}
-              />
-            </View>
-
-            <Text className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-              {stat.count} activities logged
-            </Text>
-          </View>
-        );
-      })}
-
-      {/* Explanation Footer */}
-      <View className="mt-4 p-3 bg-gray-50 dark:bg-gray-800 rounded-xl">
-        <Text className="text-xs text-gray-600 dark:text-gray-400">
-          💡 Effectiveness = % of times no relapse occurred within 7 days after doing this activity
+      {/* Time Distribution */}
+      <View className="p-3 rounded-xl bg-gray-50 dark:bg-gray-800">
+        <Text className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2">
+          Time Distribution
         </Text>
+        <View className="flex-row justify-between">
+          {insights.timePatterns.map((pattern) => (
+            <View key={pattern.period} className="items-center">
+              <Text className="text-lg">{pattern.icon}</Text>
+              <Text className="text-xs font-medium text-gray-600 dark:text-gray-300">
+                {pattern.percentage}%
+              </Text>
+            </View>
+          ))}
+        </View>
       </View>
+
+      {/* Insight Tip */}
+      {insights.diversityScore < 30 && (
+        <View className="mt-4 p-3 rounded-xl bg-purple-50 dark:bg-purple-900/20">
+          <Text className="text-xs text-purple-700 dark:text-purple-300">
+            💡 Try exploring more activity types! Variety helps build stronger habits.
+          </Text>
+        </View>
+      )}
     </View>
   );
 };

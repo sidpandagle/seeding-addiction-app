@@ -2,8 +2,9 @@ import { FlatList, View, Text, Pressable, ScrollView } from 'react-native';
 import { useState, useMemo } from 'react';
 import { Lock, Crown } from 'lucide-react-native';
 import type { HistoryEntry } from '../../types/history';
-import { RELAPSE_TAGS, ACTIVITY_CATEGORIES } from '../../constants/tags';
+import { RELAPSE_TAGS, ACTIVITY_CATEGORIES, filterValidCategories } from '../../constants/tags';
 import { usePremium } from '../../hooks/usePremium';
+import { useCustomActivityTagsStore } from '../../stores/customActivityTagsStore';
 
 interface HistoryListProps {
   entries: HistoryEntry[];
@@ -15,8 +16,10 @@ const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
 export default function HistoryList({ entries, onUpgradePress }: HistoryListProps) {
   const [selectedTag, setSelectedTag] = useState<string | null>(null);
   const { isPremium } = usePremium();
+  const customTags = useCustomActivityTagsStore(state => state.customTags);
 
   // Get all unique tags/categories from both relapses and activities
+  // Filters out deleted custom activity tags
   const allTags = useMemo(() => {
     const tags = new Set<string>();
 
@@ -27,15 +30,17 @@ export default function HistoryList({ entries, onUpgradePress }: HistoryListProp
       }
     });
 
-    // Add activity categories (now supports arrays)
+    // Add activity categories (only valid/active ones)
     entries.forEach(entry => {
       if (entry.type === 'activity' && entry.data.categories) {
-        entry.data.categories.forEach(category => tags.add(category));
+        // Filter out deleted custom tags
+        const validCategories = filterValidCategories(entry.data.categories, customTags);
+        validCategories.forEach(category => tags.add(category));
       }
     });
 
     return Array.from(tags).sort();
-  }, [entries]);
+  }, [entries, customTags]);
 
   // Filter entries for free users (30 days only)
   const timeFilteredEntries = useMemo(() => {
@@ -61,14 +66,22 @@ export default function HistoryList({ entries, onUpgradePress }: HistoryListProp
         if (e.type === 'relapse') {
           return e.data.tags?.includes(selectedTag);
         } else if (e.type === 'activity' && e.data.categories) {
-          return e.data.categories.includes(selectedTag);
+          // Only match valid categories
+          const validCategories = filterValidCategories(e.data.categories, customTags);
+          return validCategories.includes(selectedTag);
         }
         return false;
       });
     }
 
     return filtered;
-  }, [timeFilteredEntries, selectedTag]);
+  }, [timeFilteredEntries, selectedTag, customTags]);
+
+  // Helper to get valid categories for an activity entry
+  const getValidCategories = (categories: string[] | undefined): string[] => {
+    if (!categories) return [];
+    return filterValidCategories(categories, customTags);
+  };
 
   return (
     <FlatList
@@ -110,7 +123,7 @@ export default function HistoryList({ entries, onUpgradePress }: HistoryListProp
               </Pressable>
               {allTags.map((tag) => {
                 const relapseCount = entries.filter((e) => e.type === 'relapse' && e.data.tags?.includes(tag)).length;
-                const activityCount = entries.filter((e) => e.type === 'activity' && e.data.categories?.includes(tag)).length;
+                const activityCount = entries.filter((e) => e.type === 'activity' && getValidCategories(e.data.categories).includes(tag)).length;
                 const totalCount = relapseCount + activityCount;
 
                 return (
@@ -241,17 +254,20 @@ export default function HistoryList({ entries, onUpgradePress }: HistoryListProp
               </View>
             )}
 
-            {!isRelapse && item.data.categories && item.data.categories.length > 0 && (
-              <View className="flex-row flex-wrap gap-2 mt-2">
-                {item.data.categories.map((category: string) => (
-                  <View key={category} className="px-4 py-2 bg-green-50 dark:bg-green-900/30 rounded-xl">
-                    <Text className="text-xs font-bold text-green-700 dark:text-green-300">
-                      {category}
-                    </Text>
-                  </View>
-                ))}
-              </View>
-            )}
+            {!isRelapse && (() => {
+              const validCats = getValidCategories(item.data.categories);
+              return validCats.length > 0 ? (
+                <View className="flex-row flex-wrap gap-2 mt-2">
+                  {validCats.map((category: string) => (
+                    <View key={category} className="px-4 py-2 bg-green-50 dark:bg-green-900/30 rounded-xl">
+                      <Text className="text-xs font-bold text-green-700 dark:text-green-300">
+                        {category}
+                      </Text>
+                    </View>
+                  ))}
+                </View>
+              ) : null;
+            })()}
           </View>
         );
       }}

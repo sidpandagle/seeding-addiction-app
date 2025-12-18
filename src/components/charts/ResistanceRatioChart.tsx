@@ -3,8 +3,7 @@ import { useState } from 'react';
 import { PieChart } from 'react-native-gifted-charts';
 import { useColorScheme } from '../../stores/themeStore';
 import type { Relapse, Activity } from '../../db/schema';
-import { Sparkles, RotateCcw, Info } from 'lucide-react-native';
-import ChartExplanationModal from './ChartExplanationModal';
+import { Sparkles, RotateCcw, Info, X } from 'lucide-react-native';
 
 interface ResistanceRatioChartProps {
   relapses: Relapse[];
@@ -13,7 +12,8 @@ interface ResistanceRatioChartProps {
 
 export default function ResistanceRatioChart({ relapses, activities }: ResistanceRatioChartProps) {
   const colorScheme = useColorScheme();
-  const [showExplanation, setShowExplanation] = useState(false);
+  const isDark = colorScheme === 'dark';
+  const [showInfo, setShowInfo] = useState(false);
 
   const activityCount = activities.length;
   const relapseCount = relapses.length;
@@ -64,12 +64,25 @@ export default function ResistanceRatioChart({ relapses, activities }: Resistanc
           </Text>
         </View>
         <Pressable
-          onPress={() => setShowExplanation(true)}
+          onPress={() => setShowInfo(!showInfo)}
           className="items-center justify-center w-8 h-8 ml-2 bg-gray-100 rounded-full dark:bg-gray-800 active:bg-gray-200 dark:active:bg-gray-700"
         >
-          <Info size={16} color={colorScheme === 'dark' ? '#9ca3af' : '#6b7280'} strokeWidth={2.5} />
+          {showInfo ? (
+            <X size={16} color={isDark ? '#9CA3AF' : '#6B7280'} />
+          ) : (
+            <Info size={16} color={isDark ? '#9ca3af' : '#6b7280'} strokeWidth={2.5} />
+          )}
         </Pressable>
       </View>
+
+      {/* Info Card */}
+      {showInfo && (
+        <View className="p-3 mt-2 mb-2 rounded-xl bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800">
+          <Text className="text-xs font-medium text-blue-800 dark:text-blue-200 leading-4">
+            This shows your balance between positive activities and relapses. A 70%+ activity rate shows strong engagement. Focus on logging more growth activities to shift the balance!
+          </Text>
+        </View>
+      )}
       <View className="h-2" />
 
       {/* Chart Container */}
@@ -174,12 +187,6 @@ export default function ResistanceRatioChart({ relapses, activities }: Resistanc
         </View>
       )}
 
-      {/* Explanation Modal */}
-      <ChartExplanationModal
-        visible={showExplanation}
-        onClose={() => setShowExplanation(false)}
-        chartType="resistance"
-      />
     </View>
   );
 }

@@ -51,9 +51,6 @@ const QuickActionsComponent: React.FC<QuickActionsProps> = ({ onActionPress }) =
                 <Text className="text-2xl">{action.icon}</Text>
                 <Text className="flex-1 text-lg font-bold tracking-widest text-gray-900 dark:text-white">{action.title}</Text>
               </View>
-              <Text className="mb-4 text-sm italic leading-5 text-gray-600 dark:text-gray-400">
-                {action.role}
-              </Text>
               <View className="space-y-2">
                 {action.bulletPoints.map((point, index) => (
                   <View key={index} className="flex-row">
@@ -64,11 +61,6 @@ const QuickActionsComponent: React.FC<QuickActionsProps> = ({ onActionPress }) =
                   </View>
                 ))}
               </View>
-            </View>
-            <View className={`border-t px-5 pt-3 pb-4 ${getActionDividerBorderColor(action.colorScheme)}`}>
-              <Text className="text-sm italic leading-5 text-gray-600 dark:text-gray-400">
-                {action.supportiveMessage}
-              </Text>
             </View>
           </Pressable>
         ))}

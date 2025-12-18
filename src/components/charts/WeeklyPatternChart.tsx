@@ -1,11 +1,10 @@
 import { View, Text, useWindowDimensions, Pressable } from 'react-native';
 import { useState } from 'react';
 import { BarChart } from 'react-native-gifted-charts';
-import { Info } from 'lucide-react-native';
+import { Info, X } from 'lucide-react-native';
 import { useColorScheme } from '../../stores/themeStore';
 import { calculateWeeklyPattern } from '../../utils/chartHelpers';
 import type { Relapse } from '../../db/schema';
-import ChartExplanationModal from './ChartExplanationModal';
 
 interface WeeklyPatternChartProps {
   relapses: Relapse[];
@@ -13,8 +12,9 @@ interface WeeklyPatternChartProps {
 
 export default function WeeklyPatternChart({ relapses }: WeeklyPatternChartProps) {
   const colorScheme = useColorScheme();
+  const isDark = colorScheme === 'dark';
   const { width: screenWidth } = useWindowDimensions();
-  const [showExplanation, setShowExplanation] = useState(false);
+  const [showInfo, setShowInfo] = useState(false);
   const weeklyData = calculateWeeklyPattern(relapses);
 
   // Calculate dynamic bar width and spacing (7 days of the week)
@@ -82,12 +82,26 @@ export default function WeeklyPatternChart({ relapses }: WeeklyPatternChartProps
           </Text>
         </View>
         <Pressable
-          onPress={() => setShowExplanation(true)}
+          onPress={() => setShowInfo(!showInfo)}
           className="items-center justify-center w-8 h-8 ml-2 bg-gray-100 rounded-full dark:bg-gray-800 active:bg-gray-200 dark:active:bg-gray-700"
         >
-          <Info size={16} color={colorScheme === 'dark' ? '#9ca3af' : '#6b7280'} strokeWidth={2.5} />
+          {showInfo ? (
+            <X size={16} color={isDark ? '#9CA3AF' : '#6B7280'} />
+          ) : (
+            <Info size={16} color={isDark ? '#9ca3af' : '#6b7280'} strokeWidth={2.5} />
+          )}
         </Pressable>
       </View>
+
+      {/* Info Card */}
+      {showInfo && (
+        <View className="p-3 mt-2 mb-2 rounded-xl bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800">
+          <Text className="text-xs font-medium text-blue-800 dark:text-blue-200 leading-4">
+            This chart shows which days you're most vulnerable. Weekend spikes often mean less structure; weekday peaks may indicate stress. Plan extra support for your challenging days!
+          </Text>
+        </View>
+      )}
+
       <View className="h-2" />
       <Text className="mb-4 text-sm text-gray-600 dark:text-gray-400">
         {relapses.length === 0
@@ -99,6 +113,7 @@ export default function WeeklyPatternChart({ relapses }: WeeklyPatternChartProps
       <View className="items-center py-2">
         <BarChart
           data={chartData}
+          width={chartWidth}
           barWidth={barWidth}
           spacing={spacing}
           roundedTop
@@ -116,6 +131,7 @@ export default function WeeklyPatternChart({ relapses }: WeeklyPatternChartProps
           showGradient
           gradientColor={colorScheme === 'dark' ? '#60a5fa' : '#93c5fd'}
           frontColor={colorScheme === 'dark' ? '#3b82f6' : '#60a5fa'}
+          disableScroll
         />
       </View>
 
@@ -134,12 +150,6 @@ export default function WeeklyPatternChart({ relapses }: WeeklyPatternChartProps
         </View>
       )}
 
-      {/* Explanation Modal */}
-      <ChartExplanationModal
-        visible={showExplanation}
-        onClose={() => setShowExplanation(false)}
-        chartType="weekly"
-      />
     </View>
   );
 }

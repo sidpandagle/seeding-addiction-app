@@ -4,16 +4,14 @@ import { ChevronLeft, TrendingUp, TrendingDown, Calendar, Target, X } from 'luci
 import { useRelapses } from '../../stores/relapseStore';
 import { useActivityStore } from '../../stores/activityStore';
 import { useColorScheme } from '../../stores/themeStore';
-import { getJourneyStart, getLastRelapseTime } from '../../db/helpers';
+import { getJourneyStart } from '../../db/helpers';
 import { calculateUserStats } from '../../utils/statsHelpers';
 import { MS_PER_DAY } from '../../constants/timeUnits';
 import WeeklyPatternChart from '../charts/WeeklyPatternChart';
 import MonthlyTrendChart from '../charts/MonthlyTrendChart';
 import ResistanceRatioChart from '../charts/ResistanceRatioChart';
 import ComparativeStatsCard from '../charts/ComparativeStatsCard';
-import MilestonePredictionsCard from '../charts/MilestonePredictionsCard';
 import ActivityEffectivenessCard from '../charts/ActivityEffectivenessCard';
-import StreakHeatmapCard from '../charts/StreakHeatmapCard';
 
 interface InsightsModalProps {
   onClose: () => void;
@@ -26,15 +24,11 @@ const InsightsModal = React.memo(function InsightsModal({ onClose }: InsightsMod
   const relapses = useRelapses();
   const activities = useActivityStore((state) => state.activities);
   const [journeyStart, setJourneyStart] = useState<string | null>(null);
-  const [lastRelapseTime, setLastRelapseTime] = useState<number | null>(null);
 
   useEffect(() => {
     const loadJourneyData = async () => {
       const start = await getJourneyStart();
       setJourneyStart(start);
-
-      const lastRelapse = await getLastRelapseTime();
-      setLastRelapseTime(lastRelapse);
     };
     loadJourneyData();
   }, [relapses]);
@@ -42,12 +36,12 @@ const InsightsModal = React.memo(function InsightsModal({ onClose }: InsightsMod
   const insights = useMemo(() => {
     // Calculate basic stats using shared utility
     const userStats = calculateUserStats(relapses, journeyStart);
-    
+
     if (relapses.length === 0) {
       const totalDays = journeyStart
         ? Math.floor((Date.now() - new Date(journeyStart).getTime()) / MS_PER_DAY)
         : 0;
-      
+
       return {
         totalDays,
         averageStreak: 0,
@@ -64,7 +58,7 @@ const InsightsModal = React.memo(function InsightsModal({ onClose }: InsightsMod
 
     // Calculate all streaks to get average
     const streaks: number[] = [];
-    
+
     // First streak: from journey start to first relapse
     streaks.push(Math.floor((new Date(sorted[0].timestamp).getTime() - startTime) / MS_PER_DAY));
 
@@ -129,45 +123,7 @@ const InsightsModal = React.memo(function InsightsModal({ onClose }: InsightsMod
       </View>
 
       {/* Content */}
-      <ScrollView className="flex-1 px-4 py-6">
-        {/* Journey Overview */}
-        <View className="p-5 mb-4 border bg-emerald-50 dark:bg-emerald-900/20 border-emerald-300 dark:border-emerald-700 rounded-2xl">
-          <View className="flex-row items-center mb-3">
-            <View className="items-center justify-center w-10 h-10 mr-3 rounded-full bg-emerald-100 dark:bg-emerald-900/40">
-              <Calendar size={20} color="#10b981" />
-            </View>
-            <Text className="text-lg font-bold text-emerald-900 dark:text-emerald-100">
-              Journey Overview
-            </Text>
-          </View>
-          <Text className="text-4xl font-bold text-emerald-600 dark:text-emerald-400">
-            {insights.totalDays} days
-          </Text>
-          <Text className="mt-1 text-sm font-medium text-emerald-700 dark:text-emerald-300">Total journey duration</Text>
-        </View>
-
-        {/* Streak Stats */}
-        <View className="flex-row gap-3 mb-4">
-          <View className="flex-1 p-5 border border-blue-300 bg-blue-50 dark:bg-blue-900/20 dark:border-blue-700 rounded-2xl">
-            <View className="items-center justify-center w-10 h-10 mb-3 bg-blue-100 rounded-full dark:bg-blue-900/40">
-              <Target size={20} color="#3b82f6" />
-            </View>
-            <Text className="text-3xl font-bold text-blue-600 dark:text-blue-400">
-              {insights.longestStreak}
-            </Text>
-            <Text className="mt-1 text-sm font-medium text-blue-700 dark:text-blue-300">Longest Streak</Text>
-          </View>
-
-          <View className="flex-1 p-5 border border-purple-300 bg-purple-50 dark:bg-purple-900/20 dark:border-purple-700 rounded-2xl">
-            <View className="items-center justify-center w-10 h-10 mb-3 bg-purple-100 rounded-full dark:bg-purple-900/40">
-              <TrendingUp size={20} color="#a855f7" />
-            </View>
-            <Text className="text-3xl font-bold text-purple-600 dark:text-purple-400">
-              {insights.averageStreak}
-            </Text>
-            <Text className="mt-1 text-sm font-medium text-purple-700 dark:text-purple-300">Average Streak</Text>
-          </View>
-        </View>
+      <ScrollView className="flex-1 px-4 pb-6">
 
         {/* Resistance Ratio Chart */}
         <ResistanceRatioChart relapses={relapses} activities={activities} />
@@ -179,7 +135,7 @@ const InsightsModal = React.memo(function InsightsModal({ onClose }: InsightsMod
         <MonthlyTrendChart relapses={relapses} />
 
         {/* Pro Features Section Header */}
-        <View className="flex-row items-center mt-6 mb-4">
+        <View className="flex-row items-center mt-3 mb-6">
           <View className="flex-1 h-px bg-gray-200 dark:bg-gray-700" />
           <Text className="px-4 text-sm font-bold text-emerald-600 dark:text-emerald-400">
             PRO INSIGHTS
@@ -187,21 +143,8 @@ const InsightsModal = React.memo(function InsightsModal({ onClose }: InsightsMod
           <View className="flex-1 h-px bg-gray-200 dark:bg-gray-700" />
         </View>
 
-        {/* Streak Heatmap */}
-        <StreakHeatmapCard
-          relapses={relapses}
-          activities={activities}
-          journeyStartTime={journeyStart ? new Date(journeyStart).getTime() : null}
-        />
-
         {/* Comparative Stats */}
         <ComparativeStatsCard relapses={relapses} activities={activities} />
-
-        {/* Milestone Predictions */}
-        <MilestonePredictionsCard
-          journeyStartTime={journeyStart ? new Date(journeyStart).getTime() : null}
-          lastRelapseTime={lastRelapseTime}
-        />
 
         {/* Activity Effectiveness */}
         <ActivityEffectivenessCard
@@ -211,7 +154,7 @@ const InsightsModal = React.memo(function InsightsModal({ onClose }: InsightsMod
         />
 
         {/* Motivational Message */}
-        <View className="p-5 mb-12 bg-white dark:bg-gray-900 rounded-2xl">
+        <View className="p-5 mb-12 bg-white border border-gray-200 dark:bg-gray-900 dark:border-gray-800 rounded-2xl">
           <Text className="mb-2 text-base font-bold text-gray-900 dark:text-white">
             💪 Remember: Progress isn't linear
           </Text>
