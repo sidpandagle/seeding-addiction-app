@@ -10,6 +10,11 @@ const DAILY_REMINDER_TIME_KEY = 'daily_reminder_time';
 const RANDOM_NOTIFICATIONS_KEY = 'random_notifications_enabled';
 const MILESTONE_NOTIFICATIONS_KEY = 'milestone_notifications_enabled';
 
+// Milestone notification thresholds
+const ONE_HOUR_MS = 60 * 60 * 1000;
+const ALMOST_THERE_PROGRESS_THRESHOLD = 0.75; // 75% progress triggers "Almost There"
+const SHORT_MILESTONE_THRESHOLD_MS = ONE_HOUR_MS; // Milestones under this skip "Almost There"
+
 // Configure notification handler
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
@@ -280,23 +285,29 @@ class NotificationService {
   }
 
   /**
-   * Cancel all scheduled milestone notifications
+   * Cancel all scheduled milestone notifications (both "Almost There" and "Achieved")
    */
   async cancelMilestoneNotifications(): Promise<void> {
     const scheduled = await Notifications.getAllScheduledNotificationsAsync();
+    let cancelledCount = 0;
+
     for (const notif of scheduled) {
+      // Cancel both milestone-almost-* and milestone-achieved-* notifications
       if (notif.identifier.startsWith('milestone-')) {
         await Notifications.cancelScheduledNotificationAsync(notif.identifier);
+        cancelledCount++;
       }
     }
-    console.log('[Notifications] Milestone notifications cancelled');
+
+    console.log(`[Notifications] Milestone notifications cancelled (${cancelledCount} total)`);
   }
 
   /**
-   * Schedule milestone prediction notification
-   * Called when we know the user is approaching a milestone
+   * Schedule notification for when a milestone is achieved (exact time)
+   * @param stageIndex - Index of the milestone stage
+   * @param targetDate - Exact time when milestone is reached
    */
-  async scheduleMilestoneNotification(
+  async scheduleMilestoneAchievedNotification(
     stageIndex: number,
     targetDate: Date
   ): Promise<void> {
@@ -305,18 +316,70 @@ class NotificationService {
     const stage = GROWTH_STAGES[stageIndex];
     const now = new Date();
 
-    // Don't schedule if the target date is in the past
+    // Don't schedule if already past
     if (targetDate <= now) return;
 
-    // Schedule for slightly before the milestone (1 hour before)
-    const notificationTime = new Date(targetDate.getTime() - 60 * 60 * 1000);
+    // Don't schedule if more than 7 days away
+    const sevenDaysFromNow = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+    if (targetDate > sevenDaysFromNow) return;
 
-    if (notificationTime <= now) {
-      // If less than an hour away, schedule immediately
+    const identifier = `milestone-achieved-${stageIndex}`;
+
+    // Cancel existing notification for this milestone
+    await Notifications.cancelScheduledNotificationAsync(identifier);
+
+    await Notifications.scheduleNotificationAsync({
+      identifier,
+      content: {
+        title: `${stage.emoji} ${stage.achievementTitle}!`,
+        body: `Congratulations! You've reached "${stage.label}"! Keep growing stronger!`,
+        sound: true,
+        ...(Platform.OS === 'android' && { channelId: 'milestones' }),
+      },
+      trigger: {
+        type: Notifications.SchedulableTriggerInputTypes.DATE,
+        date: targetDate,
+      },
+    });
+
+    console.log(`[Notifications] Milestone ACHIEVED notification scheduled for stage ${stageIndex} (${stage.label}) at ${targetDate.toISOString()}`);
+  }
+
+  /**
+   * Schedule "Almost There" notification at 75% progress toward a milestone
+   * Skips short milestones (under 1 hour) - they only get "Achieved" notifications
+   * @param stageIndex - Index of the milestone stage
+   * @param milestoneDurationMs - Total duration of this milestone segment
+   * @param milestoneStartTime - When the user started working toward this milestone
+   */
+  async scheduleAlmostThereNotification(
+    stageIndex: number,
+    milestoneDurationMs: number,
+    milestoneStartTime: number
+  ): Promise<void> {
+    if (stageIndex >= GROWTH_STAGES.length) return;
+
+    const stage = GROWTH_STAGES[stageIndex];
+    const now = Date.now();
+
+    // Skip "Almost There" for short milestones (under 1 hour)
+    if (milestoneDurationMs < SHORT_MILESTONE_THRESHOLD_MS) {
+      console.log(`[Notifications] Skipping "Almost There" for short milestone: ${stage.label}`);
       return;
     }
 
-    const identifier = `milestone-${stageIndex}`;
+    // Calculate 75% progress point
+    const almostThereTime = milestoneStartTime + (milestoneDurationMs * ALMOST_THERE_PROGRESS_THRESHOLD);
+    const almostThereDate = new Date(almostThereTime);
+
+    // Don't schedule if already past 75%
+    if (almostThereTime <= now) return;
+
+    // Don't schedule if more than 7 days away
+    const sevenDaysFromNow = now + 7 * 24 * 60 * 60 * 1000;
+    if (almostThereTime > sevenDaysFromNow) return;
+
+    const identifier = `milestone-almost-${stageIndex}`;
 
     // Cancel existing notification for this milestone
     await Notifications.cancelScheduledNotificationAsync(identifier);
@@ -325,21 +388,22 @@ class NotificationService {
       identifier,
       content: {
         title: `${stage.emoji} Almost There!`,
-        body: `You're about to reach "${stage.label}"! Keep going, you're so close!`,
+        body: `You're 75% of the way to "${stage.label}"! Keep going, you're so close!`,
         sound: true,
         ...(Platform.OS === 'android' && { channelId: 'milestones' }),
       },
       trigger: {
         type: Notifications.SchedulableTriggerInputTypes.DATE,
-        date: notificationTime,
+        date: almostThereDate,
       },
     });
 
-    console.log(`[Notifications] Milestone notification scheduled for stage ${stageIndex}`);
+    console.log(`[Notifications] Almost There notification scheduled for stage ${stageIndex} (${stage.label}) at ${almostThereDate.toISOString()}`);
   }
 
   /**
    * Schedule upcoming milestone notifications based on current progress
+   * Schedules both "Almost There" (at 75%) and "Achieved" notifications
    */
   async scheduleUpcomingMilestones(
     journeyStartTime: number,
@@ -352,7 +416,10 @@ class NotificationService {
     const now = Date.now();
     const elapsedMs = now - referenceTime;
 
-    // Find the next few milestones and schedule notifications
+    // Track previous milestone to calculate segment duration
+    let previousMilestoneMs = 0;
+
+    // Find the next milestones and schedule notifications
     for (let i = 0; i < GROWTH_STAGES.length; i++) {
       const stage = GROWTH_STAGES[i];
       const stageMs = stage.minDays * 24 * 60 * 60 * 1000;
@@ -362,13 +429,26 @@ class NotificationService {
         const targetTime = referenceTime + stageMs;
         const targetDate = new Date(targetTime);
 
+        // Calculate milestone segment duration (from previous milestone to this one)
+        const milestoneDurationMs = stageMs - previousMilestoneMs;
+
         // Only schedule if within the next 7 days
         const sevenDaysFromNow = now + 7 * 24 * 60 * 60 * 1000;
         if (targetTime <= sevenDaysFromNow) {
-          await this.scheduleMilestoneNotification(i, targetDate);
+          // Schedule "Achieved" notification (always)
+          await this.scheduleMilestoneAchievedNotification(i, targetDate);
+
+          // Schedule "Almost There" notification (skipped for short milestones)
+          const segmentStartTime = referenceTime + previousMilestoneMs;
+          await this.scheduleAlmostThereNotification(i, milestoneDurationMs, segmentStartTime);
         }
       }
+
+      // Update previous milestone for next iteration
+      previousMilestoneMs = stageMs;
     }
+
+    console.log('[Notifications] Milestone notifications scheduled');
   }
 
   /**
@@ -395,6 +475,25 @@ class NotificationService {
    */
   async cancelAllNotifications(): Promise<void> {
     await Notifications.cancelAllScheduledNotificationsAsync();
+  }
+
+  /**
+   * Full reset of notification service - call during app data reset
+   * Cancels all notifications and resets initialization state
+   */
+  async resetNotificationService(): Promise<void> {
+    try {
+      // Cancel all scheduled notifications from OS
+      await Notifications.cancelAllScheduledNotificationsAsync();
+
+      // Reset initialized flag to allow fresh initialization
+      this.initialized = false;
+
+      console.log('[Notifications] Service fully reset');
+    } catch (error) {
+      console.error('[Notifications] Reset error:', error);
+      throw error;
+    }
   }
 
   /**

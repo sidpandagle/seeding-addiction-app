@@ -7,6 +7,7 @@ import {
   ScrollView,
   ActivityIndicator,
 } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { X, Check, Crown, Sparkles, Star } from 'lucide-react-native';
 import { useColorScheme } from '../../stores/themeStore';
 import { useSubscriptionStore } from '../../stores/subscriptionStore';
@@ -86,12 +87,9 @@ export const PaywallModal: React.FC<PaywallModalProps> = ({
         {/* Header */}
         <View className="flex-row items-center justify-between px-6 pt-4 pb-2">
           <View className="w-10" />
-          <Text className={`text-lg font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>
-            Upgrade to Pro
-          </Text>
           <Pressable
             onPress={onClose}
-            className="items-center justify-center w-10 h-10 rounded-full bg-gray-100 dark:bg-gray-800"
+            className="items-center justify-center w-10 h-10 bg-gray-100 rounded-full dark:bg-gray-800"
           >
             <X size={20} color={isDark ? '#9CA3AF' : '#6B7280'} />
           </Pressable>
@@ -104,8 +102,15 @@ export const PaywallModal: React.FC<PaywallModalProps> = ({
         >
           {/* Hero Section */}
           <View className="items-center px-6 pt-4 pb-6">
-            <View className="items-center justify-center w-20 h-20 mb-4 rounded-full bg-gradient-to-br from-purple-500 to-pink-500">
-              <Crown size={40} color="#fff" fill="#fff" />
+            <View className="w-20 h-20 mb-4 overflow-hidden rounded-full">
+              <LinearGradient
+                colors={['#a855f7', '#ec4899']}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                className="items-center justify-center flex-1"
+              >
+                <Crown size={40} color="#fff" fill="#fff" />
+              </LinearGradient>
             </View>
             <Text className={`text-2xl font-bold text-center mb-2 ${isDark ? 'text-white' : 'text-gray-900'}`}>
               Seeding Pro
@@ -121,13 +126,12 @@ export const PaywallModal: React.FC<PaywallModalProps> = ({
               {PREMIUM_FEATURES.map((feature, index) => (
                 <View
                   key={index}
-                  className={`flex-row items-center py-3 ${
-                    index < PREMIUM_FEATURES.length - 1
+                  className={`flex-row items-center py-3 ${index < PREMIUM_FEATURES.length - 1
                       ? `border-b ${isDark ? 'border-gray-800' : 'border-gray-100'}`
                       : ''
-                  }`}
+                    }`}
                 >
-                  <View className="items-center justify-center w-8 h-8 mr-3 rounded-full bg-purple-100 dark:bg-purple-900/30">
+                  <View className="items-center justify-center w-8 h-8 mr-3 bg-purple-100 rounded-full dark:bg-purple-900/30">
                     <Check size={18} color="#a855f7" strokeWidth={3} />
                   </View>
                   <View className="flex-1">
@@ -153,15 +157,31 @@ export const PaywallModal: React.FC<PaywallModalProps> = ({
                 <Pressable
                   key={plan.id}
                   onPress={() => setSelectedPlan(plan)}
-                  className={`p-4 rounded-2xl border-2 ${
-                    selectedPlan?.id === plan.id
+                  className={`p-4 rounded-2xl border-2 ${selectedPlan?.id === plan.id
                       ? 'border-purple-500 bg-purple-50 dark:bg-purple-900/20'
                       : isDark
-                      ? 'border-gray-800 bg-gray-900'
-                      : 'border-gray-200 bg-white'
-                  }`}
+                        ? 'border-gray-800 bg-gray-900'
+                        : 'border-gray-200 bg-white'
+                    }`}
                 >
-                  <View className="flex-row items-center justify-between">
+                  <View className="flex-row items-center">
+                    {/* Selection indicator on left */}
+                    <View className="mr-3">
+                      <View
+                        className={`w-6 h-6 rounded-full border-2 items-center justify-center ${selectedPlan?.id === plan.id
+                            ? 'border-purple-500 bg-purple-500'
+                            : isDark
+                              ? 'border-gray-600'
+                              : 'border-gray-300'
+                          }`}
+                      >
+                        {selectedPlan?.id === plan.id && (
+                          <Check size={14} color="#fff" strokeWidth={3} />
+                        )}
+                      </View>
+                    </View>
+
+                    {/* Plan details in middle */}
                     <View className="flex-1">
                       <View className="flex-row items-center gap-2">
                         <Text className={`text-lg font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>
@@ -185,30 +205,15 @@ export const PaywallModal: React.FC<PaywallModalProps> = ({
                         {plan.description}
                       </Text>
                     </View>
-                    <View className="items-end">
+
+                    {/* Price on right */}
+                    <View className="items-end ml-3">
                       <Text className={`text-xl font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>
                         {plan.price}
                       </Text>
                       <Text className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
                         {plan.periodLabel}
                       </Text>
-                    </View>
-                  </View>
-
-                  {/* Selection indicator */}
-                  <View className="absolute top-4 right-4">
-                    <View
-                      className={`w-6 h-6 rounded-full border-2 items-center justify-center ${
-                        selectedPlan?.id === plan.id
-                          ? 'border-purple-500 bg-purple-500'
-                          : isDark
-                          ? 'border-gray-600'
-                          : 'border-gray-300'
-                      }`}
-                    >
-                      {selectedPlan?.id === plan.id && (
-                        <Check size={14} color="#fff" strokeWidth={3} />
-                      )}
                     </View>
                   </View>
                 </Pressable>
@@ -237,13 +242,12 @@ export const PaywallModal: React.FC<PaywallModalProps> = ({
           <Pressable
             onPress={handlePurchase}
             disabled={isLoading || !selectedPlan}
-            className={`py-4 rounded-2xl items-center justify-center ${
-              isLoading
+            className={`py-4 rounded-2xl items-center justify-center ${isLoading
                 ? isDark
                   ? 'bg-gray-800'
                   : 'bg-gray-300'
                 : 'bg-purple-600'
-            }`}
+              }`}
           >
             {isLoading ? (
               <ActivityIndicator color="#fff" />

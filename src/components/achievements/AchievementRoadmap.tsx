@@ -27,10 +27,19 @@ export default function AchievementRoadmap({ achievements, onAchievementPress, r
 
     const targetTime = referenceTime + threshold;
     const now = Date.now();
-    const daysUntil = Math.ceil((targetTime - now) / (24 * 60 * 60 * 1000));
+
+    // Compare calendar days instead of raw time difference
+    // This fixes the bug where "Today" was showing as "Tomorrow"
+    const targetDate = new Date(targetTime);
+    const todayDate = new Date(now);
+
+    const targetDay = new Date(targetDate.getFullYear(), targetDate.getMonth(), targetDate.getDate());
+    const today = new Date(todayDate.getFullYear(), todayDate.getMonth(), todayDate.getDate());
+
+    const daysUntil = Math.round((targetDay.getTime() - today.getTime()) / (24 * 60 * 60 * 1000));
 
     return {
-      date: new Date(targetTime),
+      date: targetDate,
       daysUntil,
     };
   };

@@ -29,14 +29,12 @@ export const ACTIVITY_CATEGORIES = [
   '🎯 Productive',
   '🌳 Nature',
   '💤 Rest/Sleep',
-  '🍎 Healthy Eating',
   '🧹 Organizing',
-  '🎮 Hobbies',
+  '🎮 Gaming',
   '💼 Work/Career',
   '🙏 Spiritual',
   '📖 Reading',
   '🎵 Music',
-  '✨ Other',
 ] as const;
 
 // Type exports for type safety

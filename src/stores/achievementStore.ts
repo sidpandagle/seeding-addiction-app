@@ -7,6 +7,7 @@ interface AchievementStore {
   setLastCheckedElapsedTime: (time: number) => void;
   _hasHydrated: boolean;
   setHasHydrated: (state: boolean) => void;
+  resetAchievements: () => Promise<void>;
 }
 
 export const useAchievementStore = create<AchievementStore>()(
@@ -16,6 +17,12 @@ export const useAchievementStore = create<AchievementStore>()(
       setLastCheckedElapsedTime: (time: number) => set({ lastCheckedElapsedTime: time }),
       _hasHydrated: false,
       setHasHydrated: (state: boolean) => set({ _hasHydrated: state }),
+      resetAchievements: async () => {
+        // Clear from AsyncStorage directly
+        await AsyncStorage.removeItem('achievement-storage');
+        // Reset store state
+        set({ lastCheckedElapsedTime: 0, _hasHydrated: false });
+      },
     }),
     {
       name: 'achievement-storage',

@@ -1,5 +1,6 @@
 import React from 'react';
 import { Modal, View, Text, Pressable, ScrollView } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { X, Crown, Star, Calendar, RefreshCw, CreditCard, AlertTriangle } from 'lucide-react-native';
 import { useColorScheme } from '../../stores/themeStore';
 import { useSubscriptionStore } from '../../stores/subscriptionStore';
@@ -93,34 +94,41 @@ export const CustomerCenter: React.FC<CustomerCenterProps> = ({
           contentContainerStyle={{ paddingBottom: 32 }}
         >
           {/* Status Card */}
-          <View className="mt-4 p-5 rounded-2xl bg-gradient-to-br from-purple-500 to-pink-500">
-            <View className="flex-row items-center mb-4">
-              <View className="items-center justify-center w-14 h-14 mr-4 rounded-full bg-white/20">
-                <Crown size={28} color="#fff" fill="#fff" />
-              </View>
-              <View className="flex-1">
-                <Text className="text-xl font-bold text-white">
-                  Seeding Pro
-                </Text>
-                <View className="flex-row items-center mt-1">
-                  <Star size={14} color="#fbbf24" fill="#fbbf24" />
-                  <Text className="ml-1 text-sm text-purple-100">
-                    {isPremium ? 'Active Subscription' : 'Inactive'}
+          <View className="mt-4 overflow-hidden rounded-2xl">
+            <LinearGradient
+              colors={['#a855f7', '#ec4899']}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              className="p-5"
+            >
+              <View className="flex-row items-center mb-4">
+                <View className="items-center justify-center w-14 h-14 mr-4 rounded-full bg-white/20">
+                  <Crown size={28} color="#fff" fill="#fff" />
+                </View>
+                <View className="flex-1">
+                  <Text className="text-xl font-bold text-white">
+                    Seeding Pro
                   </Text>
+                  <View className="flex-row items-center mt-1">
+                    <Star size={14} color="#fbbf24" fill="#fbbf24" />
+                    <Text className="ml-1 text-sm text-purple-100">
+                      {isPremium ? 'Active Subscription' : 'Inactive'}
+                    </Text>
+                  </View>
                 </View>
               </View>
-            </View>
 
-            {selectedPlan && (
-              <View className="p-3 rounded-xl bg-white/10">
-                <Text className="text-xs font-semibold text-purple-100">
-                  Current Plan
-                </Text>
-                <Text className="mt-1 text-lg font-bold text-white">
-                  {selectedPlan.name} - {selectedPlan.price}/{selectedPlan.period}
-                </Text>
-              </View>
-            )}
+              {selectedPlan && (
+                <View className="p-3 rounded-xl bg-white/10">
+                  <Text className="text-xs font-semibold text-purple-100">
+                    Current Plan
+                  </Text>
+                  <Text className="mt-1 text-lg font-bold text-white">
+                    {selectedPlan.name} - {selectedPlan.price}/{selectedPlan.period}
+                  </Text>
+                </View>
+              )}
+            </LinearGradient>
           </View>
 
           {/* Subscription Details */}

@@ -18,6 +18,7 @@ interface NotificationState {
   setRandomNotifications: (enabled: boolean) => Promise<void>;
   setMilestoneNotifications: (enabled: boolean) => Promise<void>;
   scheduleUpcomingMilestones: (journeyStartTime: number, lastRelapseTime: number | null) => Promise<void>;
+  resetNotifications: () => Promise<void>;
 }
 
 export const useNotificationStore = create<NotificationState>((set, get) => ({
@@ -155,6 +156,22 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
       await notificationService.scheduleUpcomingMilestones(journeyStartTime, lastRelapseTime);
     } catch (error) {
       console.error('[NotificationStore] Schedule milestones error:', error);
+    }
+  },
+
+  resetNotifications: async () => {
+    try {
+      await notificationService.resetNotificationService();
+      set({
+        isInitialized: false,
+        isEnabled: false,
+        dailyReminderTime: null,
+        randomNotificationsEnabled: false,
+        milestoneNotificationsEnabled: true, // Reset to default
+        isLoading: false,
+      });
+    } catch (error) {
+      console.error('[NotificationStore] Reset error:', error);
     }
   },
 }));

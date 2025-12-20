@@ -1,9 +1,9 @@
 import { View, Text, useWindowDimensions, Pressable } from 'react-native';
 import { useState } from 'react';
 import { BarChart } from 'react-native-gifted-charts';
-import { Info, X } from 'lucide-react-native';
+import { Info, X, Clock } from 'lucide-react-native';
 import { useColorScheme } from '../../stores/themeStore';
-import { calculateWeeklyPattern } from '../../utils/chartHelpers';
+import { calculateWeeklyPattern, calculateTimeOfDayPattern } from '../../utils/chartHelpers';
 import type { Relapse } from '../../db/schema';
 
 interface WeeklyPatternChartProps {
@@ -16,6 +16,7 @@ export default function WeeklyPatternChart({ relapses }: WeeklyPatternChartProps
   const { width: screenWidth } = useWindowDimensions();
   const [showInfo, setShowInfo] = useState(false);
   const weeklyData = calculateWeeklyPattern(relapses);
+  const timeOfDayData = calculateTimeOfDayPattern(relapses);
 
   // Calculate dynamic bar width and spacing (7 days of the week)
   const chartWidth = screenWidth - 56; // 56px = container padding (20px) + screen padding (16px) on both sides
@@ -75,10 +76,12 @@ export default function WeeklyPatternChart({ relapses }: WeeklyPatternChartProps
   return (
     <View className="p-5 mb-4 bg-white border border-gray-200 dark:bg-gray-900 dark:border-gray-700 rounded-2xl">
       <View className="flex-row items-start justify-between mb-1">
-        <View className="flex-1">
+        <View className='flex flex-col'>
           <Text className="text-lg font-bold text-gray-900 dark:text-white">Weekly Pattern</Text>
-          <Text className="mt-1 text-sm text-gray-600 dark:text-gray-400">
-            Identify your vulnerable days of the week.
+          <Text className="mb-4 text-sm text-gray-600 dark:text-gray-400">
+            {relapses.length === 0
+              ? 'No data yet. Keep tracking to see your patterns.'
+              : 'Which days are most challenging for you?'}
           </Text>
         </View>
         <Pressable
@@ -95,19 +98,12 @@ export default function WeeklyPatternChart({ relapses }: WeeklyPatternChartProps
 
       {/* Info Card */}
       {showInfo && (
-        <View className="p-3 mt-2 mb-2 rounded-xl bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800">
-          <Text className="text-xs font-medium text-blue-800 dark:text-blue-200 leading-4">
+        <View className="p-3 mt-0 mb-2 border border-blue-200 rounded-xl bg-blue-50 dark:bg-blue-900/20 dark:border-blue-800">
+          <Text className="text-xs font-medium leading-4 text-blue-800 dark:text-blue-200">
             This chart shows which days you're most vulnerable. Weekend spikes often mean less structure; weekday peaks may indicate stress. Plan extra support for your challenging days!
           </Text>
         </View>
       )}
-
-      <View className="h-2" />
-      <Text className="mb-4 text-sm text-gray-600 dark:text-gray-400">
-        {relapses.length === 0
-          ? 'No data yet. Keep tracking to see your patterns.'
-          : 'Which days are most challenging for you?'}
-      </Text>
 
       {/* Chart */}
       <View className="items-center py-2">
@@ -117,7 +113,7 @@ export default function WeeklyPatternChart({ relapses }: WeeklyPatternChartProps
           barWidth={barWidth}
           spacing={spacing}
           roundedTop
-          roundedBottom
+          // roundedBottom
           hideRules
           xAxisThickness={0}
           yAxisThickness={0}
@@ -135,18 +131,69 @@ export default function WeeklyPatternChart({ relapses }: WeeklyPatternChartProps
         />
       </View>
 
-      {/* Additional Info */}
+      {/* Time of Day Analysis */}
       {relapses.length > 0 && (
-        <View className="flex-row justify-between pt-4 mt-4 border-t border-gray-200 dark:border-gray-700">
-          <Text className="text-xs text-gray-500 dark:text-gray-400">
-            Most challenging:{' '}
-            <Text className="font-bold text-blue-600 dark:text-blue-400">
-              {weeklyData.reduce((max, day) => (day.count > max.count ? day : max)).dayShort}
+        <View className="pt-5 mt-5 border-t border-gray-200 dark:border-gray-700">
+          <View className="flex-row items-center gap-2 mb-4">
+            <Clock size={16} color={isDark ? '#9ca3af' : '#6b7280'} strokeWidth={2} />
+            <Text className="text-sm font-bold text-gray-900 dark:text-white">
+              Time of Day Vulnerability
             </Text>
-          </Text>
-          <Text className="text-xs text-gray-500 dark:text-gray-400">
-            Total events: <Text className="font-bold">{relapses.length}</Text>
-          </Text>
+          </View>
+
+          {/* Time period bars */}
+          <View className="gap-3">
+            {timeOfDayData.data.map((period) => {
+              const isHighest = timeOfDayData.mostVulnerable?.period === period.period && period.count > 0;
+              const barWidthPercent = relapses.length > 0
+                ? Math.max((period.count / Math.max(...timeOfDayData.data.map(d => d.count), 1)) * 100, 0)
+                : 0;
+
+              return (
+                <View key={period.period} className="flex-row items-center gap-3">
+                  {/* Icon and label */}
+                  <View className="flex-row items-center w-24 gap-2">
+                    <Text className="text-lg">{period.icon}</Text>
+                    <View>
+                      <Text className={`text-xs font-semibold ${isHighest ? 'text-amber-600 dark:text-amber-400' : 'text-gray-700 dark:text-gray-300'}`}>
+                        {period.period}
+                      </Text>
+                      <Text className="text-xs text-gray-400 dark:text-gray-500">
+                        {period.timeRange}
+                      </Text>
+                    </View>
+                  </View>
+
+                  {/* Progress bar */}
+                  <View className="flex-1 h-6 overflow-hidden bg-gray-100 rounded-lg dark:bg-gray-800">
+                    <View
+                      className={`h-full rounded-lg ${isHighest ? 'bg-amber-500 dark:bg-amber-600' : 'bg-blue-400 dark:bg-blue-600'}`}
+                      style={{ width: `${barWidthPercent}%` }}
+                    />
+                  </View>
+
+                  {/* Count */}
+                  <View className="items-end w-10">
+                    <Text className={`text-sm font-bold ${isHighest ? 'text-amber-600 dark:text-amber-400' : 'text-gray-600 dark:text-gray-400'}`}>
+                      {period.count}
+                    </Text>
+                  </View>
+                </View>
+              );
+            })}
+          </View>
+
+          {/* Danger hours insight */}
+          {timeOfDayData.mostVulnerable && timeOfDayData.mostVulnerable.count > 0 && (
+            <View className="flex-row items-center gap-2 p-3 mt-4 border rounded-xl bg-amber-50 dark:bg-amber-900/20 border-amber-200 dark:border-amber-800">
+              <Text className="text-base">⚠️</Text>
+              <Text className="flex-1 text-xs font-medium text-amber-800 dark:text-amber-200">
+                Your danger hours are{' '}
+                <Text className="font-bold">{timeOfDayData.dangerHours}</Text>
+                {' '}({timeOfDayData.mostVulnerable.percentage}% of relapses) and <Text className="font-bold">{weeklyData.reduce((max, day) => (day.count > max.count ? day : max)).day}</Text> is your most challenging day. Plan extra support during this time.
+              </Text>
+            </View>
+          )}
         </View>
       )}
 

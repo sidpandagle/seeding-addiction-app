@@ -3,6 +3,9 @@ import { getAppSetting, setAppSetting } from '../db/helpers';
 
 const CUSTOM_ACTIVITY_TAGS_KEY = 'custom_activity_tags';
 
+// Maximum number of custom activity tags allowed (14 built-in + 6 custom = 20 total)
+export const MAX_CUSTOM_ACTIVITY_TAGS = 6;
+
 export interface CustomActivityTag {
   id: string;
   emoji: string;
@@ -60,8 +63,8 @@ export const useCustomActivityTagsStore = create<CustomActivityTagsState>((set, 
       return false;
     }
 
-    // Limit to 10 custom tags
-    if (customTags.length >= 10) {
+    // Limit custom tags
+    if (customTags.length >= MAX_CUSTOM_ACTIVITY_TAGS) {
       return false;
     }
 

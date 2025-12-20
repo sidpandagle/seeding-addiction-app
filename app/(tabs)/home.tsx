@@ -19,6 +19,7 @@ import { calculateUserStats } from '../../src/utils/statsHelpers';
 // Available alternatives: Heart, HeartHandshake, Zap, Award, Trophy, CheckCircle, Star, SmilePlus
 import { Sprout, AlertCircle, RotateCcw, TrendingUp, Award, Heart, Sparkles } from 'lucide-react-native';
 import { useJourneyStats } from '../../src/hooks/useJourneyStats';
+import { useJourneyStartLoader } from '../../src/hooks/useJourneyStartLoader';
 import InsightsModal from '../../src/components/history/InsightsModal';
 
 function DashboardScreen() {
@@ -29,7 +30,7 @@ function DashboardScreen() {
   const [showHelpModal, setShowHelpModal] = useState(false);
   const [showInsightsModal, setShowInsightsModal] = useState(false);
   const relapses = useRelapseStore((state) => state.relapses);
-  const journeyStartTime = useRelapseStore((state) => state.journeyStartTime);
+  const { journeyStart: journeyStartTime } = useJourneyStartLoader();
   const activities = useActivityStore((state) => state.activities);
   const loadActivities = useActivityStore((state) => state.loadActivities);
   const [celebrationAchievement, setCelebrationAchievement] = useState<Achievement | null>(null);
@@ -247,7 +248,7 @@ function DashboardScreen() {
                 <View className="items-center justify-center mb-3 rounded-lg w-14 h-14">
                   <Sprout size={40} color="#10b981" strokeWidth={2} />
                 </View>
-                <Text className="mb-1 text-base font-bold text-center dark:text-white">
+                <Text className="mb-0 text-base font-bold text-center dark:text-white">
                   Water Your Plant
                 </Text>
                 <Text className="text-xs text-center dark:text-white">

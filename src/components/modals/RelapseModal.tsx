@@ -18,6 +18,9 @@ interface RelapseModalProps {
   };
 }
 
+// Maximum number of tags that can be selected per relapse
+const MAX_TAGS = 5;
+
 export default function RelapseModal({ onClose, existingRelapse }: RelapseModalProps) {
   const { addRelapse, updateRelapse } = useRelapseStore();
   const colorScheme = useColorScheme();
@@ -46,10 +49,25 @@ export default function RelapseModal({ onClose, existingRelapse }: RelapseModalP
     : -1; // -1 means no relapse history, infinite streak
 
   const toggleTag = (tag: string) => {
-    setSelectedTags((prev) =>
-      prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag]
-    );
+    const isSelected = selectedTags.includes(tag);
+
+    if (isSelected) {
+      // Deselecting - always allowed
+      setSelectedTags((prev) => prev.filter((t) => t !== tag));
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    } else {
+      // Selecting - check limit
+      if (selectedTags.length >= MAX_TAGS) {
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+        return;
+      }
+      setSelectedTags((prev) => [...prev, tag]);
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    }
   };
+
+  // Check if tag selection is at limit
+  const isAtLimit = selectedTags.length >= MAX_TAGS;
 
   const handleAddCustomTag = async () => {
     const trimmed = newTagName.trim();
@@ -139,24 +157,9 @@ export default function RelapseModal({ onClose, existingRelapse }: RelapseModalP
 
         {/* Recovery & Compassion Section - Only for new relapses */}
         {!existingRelapse && (
-          <View className="px-5 mt-6">
-            {/* Current Streak Display */}
-            {currentStreakDays >= 0 && (
-              <View className="p-4 mb-4 bg-blue-50 dark:bg-blue-950/30 rounded-xl border border-blue-200 dark:border-blue-900/50">
-                <Text className="text-xs font-semibold uppercase text-blue-600 dark:text-blue-300 mb-1">
-                  Your Current Plant
-                </Text>
-                <Text className="text-2xl font-bold text-blue-900 dark:text-blue-100">
-                  {currentStreakDays} day{currentStreakDays !== 1 ? 's' : ''} clean
-                </Text>
-                <Text className="text-sm text-blue-800 dark:text-blue-200 mt-1">
-                  This is what you're cutting down by relapsing.
-                </Text>
-              </View>
-            )}
-
+          <View className="px-5 mt-3">
             {/* Recovery Tip Card - Consequence-Focused */}
-            <View className="p-4 bg-amber-50 dark:bg-amber-950/30 rounded-xl border border-amber-200 dark:border-amber-900/50">
+            <View className="p-4 border bg-amber-50 dark:bg-amber-950/30 rounded-xl border-amber-200 dark:border-amber-900/50">
               <Text className="mb-2 text-lg font-bold text-amber-900 dark:text-amber-100">
                 {recoveryTip.emoji} {recoveryTip.title}
               </Text>
@@ -169,7 +172,7 @@ export default function RelapseModal({ onClose, existingRelapse }: RelapseModalP
 
         {/* Content Card */}
         <View className={`px-4 ${existingRelapse ? 'mt-2' : 'mt-6'}`}>
-          <View className="p-6 bg-white dark:bg-gray-900 rounded-2xl">
+          <View className="p-6 bg-white border border-gray-200 dark:bg-gray-900 dark:border-gray-700 rounded-2xl">
             {/* Timestamp Display (only for editing existing relapse) */}
             {existingRelapse && (
               <View className="mb-6">
@@ -195,7 +198,7 @@ export default function RelapseModal({ onClose, existingRelapse }: RelapseModalP
                 placeholderTextColor={colorScheme === 'dark' ? '#9CA3AF' : '#6B7280'}
                 multiline
                 numberOfLines={4}
-                className="bg-gray-50 dark:bg-gray-800 rounded-xl p-4 text-base font-regular text-gray-900 dark:text-white min-h-[100px]"
+                className="bg-gray-50 dark:bg-gray-800 rounded-xl p-4 text-base font-regular text-gray-900 dark:text-white min-h-[100px] border border-gray-200 dark:border-gray-700"
                 textAlignVertical="top"
               />
             </View>
@@ -206,9 +209,9 @@ export default function RelapseModal({ onClose, existingRelapse }: RelapseModalP
                 <Text className="text-xs font-semibold tracking-wide text-gray-500 uppercase dark:text-gray-400">
                   What triggered the urge? (Optional)
                 </Text>
-                <View className="px-2 py-1 rounded-full bg-emerald-100 dark:bg-emerald-900/30">
-                  <Text className="text-xs font-semibold text-emerald-700 dark:text-emerald-300">
-                    {selectedTags.length} selected
+                <View className={`px-2 py-1 rounded-full ${isAtLimit ? 'bg-amber-100 dark:bg-amber-900/30' : 'bg-emerald-100 dark:bg-emerald-900/30'}`}>
+                  <Text className={`text-xs font-semibold ${isAtLimit ? 'text-amber-700 dark:text-amber-300' : 'text-emerald-700 dark:text-emerald-300'}`}>
+                    {selectedTags.length}/{MAX_TAGS}
                   </Text>
                 </View>
               </View>
@@ -216,18 +219,20 @@ export default function RelapseModal({ onClose, existingRelapse }: RelapseModalP
                 {allTags.map((tag) => {
                   const isSelected = selectedTags.includes(tag);
                   const isCustom = isCustomTag(tag);
+                  const isDisabled = isAtLimit && !isSelected;
                   return (
                     <Pressable
                       key={tag}
                       onPress={() => toggleTag(tag)}
                       onLongPress={isCustom ? () => handleRemoveCustomTag(tag) : undefined}
+                      disabled={isDisabled}
                       className={`px-4 py-2.5 rounded-full flex-row items-center gap-2 ${
                         isSelected
                           ? 'bg-emerald-600 dark:bg-emerald-700'
                           : isCustom
                             ? 'bg-purple-100 dark:bg-purple-900/30'
                             : 'bg-gray-100 dark:bg-gray-700'
-                      }`}
+                      } ${isDisabled ? 'opacity-50' : ''}`}
                     >
                       <Text
                         className={`text-sm font-semibold ${

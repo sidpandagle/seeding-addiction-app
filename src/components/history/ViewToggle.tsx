@@ -9,11 +9,11 @@ interface ViewToggleProps {
 
 export default function ViewToggle({ mode, onModeChange }: ViewToggleProps) {
   return (
-    <View className="flex-row p-1.5 bg-white dark:bg-gray-900 rounded-2xl">
+    <View className="flex-row p-1.5 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-900 rounded-2xl">
       <Pressable
         onPress={() => onModeChange('list')}
         className={`flex-1 py-3 px-4 rounded-xl ${
-          mode === 'list' ? 'bg-blue-600 dark:bg-blue-600/20' : ''
+          mode === 'list' ? 'bg-blue-500 dark:bg-blue-950' : ''
         }`}
       >
         <Text
@@ -27,7 +27,7 @@ export default function ViewToggle({ mode, onModeChange }: ViewToggleProps) {
       <Pressable
         onPress={() => onModeChange('calendar')}
         className={`flex-1 py-3 px-4 rounded-xl ${
-          mode === 'calendar' ? 'bg-blue-600 dark:bg-blue-600/20' : ''
+          mode === 'calendar' ? 'bg-blue-500 dark:bg-blue-950' : ''
         }`}
       >
         <Text

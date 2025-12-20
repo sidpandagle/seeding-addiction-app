@@ -2,6 +2,10 @@ import { create } from 'zustand';
 import type { Relapse, RelapseInput } from '../db/schema';
 import * as dbHelpers from '../db/helpers';
 import * as Crypto from 'expo-crypto';
+import { notificationService } from '../services/notificationService';
+import { useAchievementStore } from './achievementStore';
+import { useNotificationStore } from './notificationStore';
+import { useCustomActivityTagsStore } from './customActivityTagsStore';
 
 interface RelapseState {
   relapses: Relapse[];
@@ -180,8 +184,25 @@ export const useRelapseStore = create<RelapseStore>((set, get) => ({
   resetAllData: async () => {
     set({ loading: true, error: null });
     try {
+      // 1. Cancel all scheduled notifications first
+      await notificationService.resetNotificationService();
+
+      // 2. Reset database (clears all app_settings including notification settings)
       await dbHelpers.resetDatabase();
+
+      // 3. Reset AsyncStorage stores
+      await useAchievementStore.getState().resetAchievements();
+
+      // 4. Reset notification store state
+      await useNotificationStore.getState().resetNotifications();
+
+      // 5. Reset custom activity tags store (data already cleared in app_settings)
+      useCustomActivityTagsStore.setState({ customTags: [] });
+
+      // 6. Reset this store's state
       set({ relapses: [], latestTimestamp: null, loading: false });
+
+      console.log('[RelapseStore] Full reset completed');
     } catch (error) {
       set({
         error: error instanceof Error ? error.message : 'Failed to reset data',

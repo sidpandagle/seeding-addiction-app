@@ -1,5 +1,6 @@
 import React, { memo, useState, useEffect } from 'react';
-import { View, Text } from 'react-native';
+import { View, Text, Pressable } from 'react-native';
+import * as Haptics from 'expo-haptics';
 import {
   Brain,
   Target,
@@ -18,7 +19,8 @@ import {
   Heart,
   Star,
   Crown,
-  Gem
+  Gem,
+  RefreshCw
 } from 'lucide-react-native';
 import { useColorScheme } from '../../stores/themeStore';
 import { getRandomTeaching, type StoicTeaching } from '../../data/stoicTeachings';
@@ -69,6 +71,12 @@ const StoicWisdomCardComponent: React.FC = () => {
   const IconComponent = ICON_MAP[iconName];
   const iconColor = getCategoryIconColor(currentTeaching.category);
 
+  // Refresh quote handler
+  const refreshQuote = () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    setCurrentTeaching(getRandomTeaching());
+  };
+
   return (
     <View className="px-6 pb-0">
       {/* Header */}
@@ -79,21 +87,23 @@ const StoicWisdomCardComponent: React.FC = () => {
         </Text>
       </View>
 
-      {/* Quote Card */}
-      <View className={`relative overflow-hidden p-6 rounded-2xl ${getCategoryBackgroundColor(currentTeaching.category)}`}>
-        {/* Background Icon */}
-        {IconComponent && (
-          <View className="absolute bottom-[-12px] right-[-12px] opacity-15 dark:opacity-15">
-            <IconComponent size={100} color={iconColor} strokeWidth={1.5} />
-          </View>
-        )}
-        <Text className={`text-lg font-bold leading-7 mb-4 ${getCategoryTextColor(currentTeaching.category)}`}>
-          "{currentTeaching.quote}"
-        </Text>
-        <Text className="text-base font-semibold dark:text-white">
-          — {currentTeaching.author}
-        </Text>
-      </View>
+      {/* Quote Card - Tap to refresh */}
+      <Pressable onPress={refreshQuote}>
+        <View className={`relative overflow-hidden p-6 rounded-2xl ${getCategoryBackgroundColor(currentTeaching.category)}`}>
+          {/* Background Icon */}
+          {IconComponent && (
+            <View className="absolute bottom-[-12px] right-[-12px] opacity-15 dark:opacity-15">
+              <IconComponent size={100} color={iconColor} strokeWidth={1.5} />
+            </View>
+          )}
+          <Text className={`text-lg font-bold leading-7 mb-4 ${getCategoryTextColor(currentTeaching.category)}`}>
+            "{currentTeaching.quote}"
+          </Text>
+          <Text className="text-base font-semibold dark:text-white">
+            — {currentTeaching.author}
+          </Text>
+        </View>
+      </Pressable>
     </View>
   );
 };

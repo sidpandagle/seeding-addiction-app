@@ -34,7 +34,9 @@
       "Bash(timeout 10)",
       "Bash(npx expo config:*)",
       "Bash(git log:*)",
-      "Bash(find:*)"
+      "Bash(find:*)",
+      "Bash(xargs ls:*)",
+      "mcp__ide__getDiagnostics"
     ],
     "deny": [],
     "ask": []

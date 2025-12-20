@@ -1,8 +1,9 @@
 import { FlatList, View, Text, Pressable, ScrollView } from 'react-native';
 import { useState, useMemo } from 'react';
+import { LinearGradient } from 'expo-linear-gradient';
 import { Lock, Crown } from 'lucide-react-native';
 import type { HistoryEntry } from '../../types/history';
-import { RELAPSE_TAGS, ACTIVITY_CATEGORIES, filterValidCategories } from '../../constants/tags';
+import { filterValidCategories } from '../../constants/tags';
 import { usePremium } from '../../hooks/usePremium';
 import { useCustomActivityTagsStore } from '../../stores/customActivityTagsStore';
 
@@ -110,12 +111,12 @@ export default function HistoryList({ entries, onUpgradePress }: HistoryListProp
               <Pressable
                 onPress={() => setSelectedTag(null)}
                 className={`px-5 py-3 rounded-xl ${selectedTag === null
-                    ? 'bg-blue-600 dark:bg-blue-600'
-                    : 'bg-black dark:bg-gray-900'
+                    ? 'bg-blue-100 dark:bg-blue-950/30 border border-blue-300 dark:border-blue-700'
+                    : 'bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700'
                   }`}
               >
                 <Text
-                  className={`text-sm font-bold ${selectedTag === null ? 'text-white' : 'text-gray-700 dark:text-gray-300'
+                  className={`text-sm font-bold ${selectedTag === null ? 'text-blue-900 dark:text-blue-100' : 'text-gray-700 dark:text-gray-300'
                     }`}
                 >
                   All
@@ -131,12 +132,12 @@ export default function HistoryList({ entries, onUpgradePress }: HistoryListProp
                     key={tag}
                     onPress={() => setSelectedTag(tag)}
                     className={`px-5 py-3 rounded-xl ${selectedTag === tag
-                        ? 'bg-blue-600 dark:bg-blue-600'
-                        : 'bg-white dark:bg-gray-900'
+                        ? 'bg-blue-100 dark:bg-blue-950/30 border border-blue-300 dark:border-blue-700'
+                        : 'bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700'
                       }`}
                   >
                     <Text
-                      className={`text-sm font-bold ${selectedTag === tag ? 'text-white' : 'text-gray-700 dark:text-gray-300'
+                      className={`text-sm font-bold ${selectedTag === tag ? 'text-blue-900 dark:text-blue-100' : 'text-gray-700 dark:text-gray-300'
                         }`}
                     >
                       {tag} {totalCount > 0 && `(${totalCount})`}
@@ -165,10 +166,10 @@ export default function HistoryList({ entries, onUpgradePress }: HistoryListProp
         olderEntriesCount > 0 && onUpgradePress ? (
           <Pressable
             onPress={onUpgradePress}
-            className="mx-6 mb-6 p-5 bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 rounded-2xl"
+            className="p-5 mx-6 mb-6 border border-purple-200 bg-purple-50 dark:bg-purple-900/20 dark:border-purple-800 rounded-2xl"
           >
             <View className="flex-row items-center gap-3">
-              <View className="items-center justify-center w-12 h-12 bg-purple-100 dark:bg-purple-900/40 rounded-full">
+              <View className="items-center justify-center w-12 h-12 bg-purple-100 rounded-full dark:bg-purple-900/40">
                 <Lock size={22} color="#a855f7" strokeWidth={2.5} />
               </View>
               <View className="flex-1">
@@ -191,14 +192,11 @@ export default function HistoryList({ entries, onUpgradePress }: HistoryListProp
         const data = item.data;
 
         return (
-          <View className="relative p-6 mx-6 mb-4 overflow-hidden bg-white border border-gray-200 shadow-sm dark:border-gray-800 dark:bg-gray-900 rounded-xl">
-            {/* Gradient accent - different colors for relapse vs urge */}
-            {isRelapse ? (
-              <View className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-red-400 to-orange-400" />
-            ) : (
-              <View className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-green-400 to-emerald-400" />
-            )}
-
+          <View className={`p-6 mx-6 mb-4 bg-white shadow-sm dark:bg-gray-900 rounded-xl border ${
+            isRelapse
+              ? 'border-red-200 dark:border-red-900/50'
+              : 'border-emerald-200 dark:border-emerald-900/50'
+          }`}>
             <View className="flex-row items-start justify-between mb-3">
               <View className="flex-1">
                 <View className="flex-row items-center gap-2 mb-1">

@@ -174,14 +174,16 @@ export const updateRelapse = async (
 };
 
 /**
- * Reset all database data (delete all relapses and clear journey start)
+ * Reset all database data (delete all relapses, activities, and app settings)
+ * NOTE: This only handles SQLite data. Notification cancellation and
+ * AsyncStorage cleanup should be handled by the calling code.
  */
 export const resetDatabase = async (): Promise<void> => {
   const db = await getDatabase();
 
   await db.runAsync('DELETE FROM relapse');
   await db.runAsync('DELETE FROM activity');
-  await db.runAsync('DELETE FROM app_settings WHERE key = ?', ['journey_start']);
+  await db.runAsync('DELETE FROM app_settings');
 };
 
 /**

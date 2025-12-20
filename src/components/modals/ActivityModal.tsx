@@ -1,10 +1,11 @@
 import { View, Text, TextInput, Pressable, ScrollView, KeyboardAvoidingView, Platform, Modal } from 'react-native';
 import { useState, useEffect } from 'react';
 import * as Haptics from 'expo-haptics';
+import EmojiPicker from 'rn-emoji-keyboard';
 import { useActivityStore } from '../../stores/activityStore';
 import { useColorScheme } from '../../stores/themeStore';
 import { useCustomActivityTagsStore, formatActivityTag, SUGGESTED_EMOJIS, CustomActivityTag } from '../../stores/customActivityTagsStore';
-import { Sprout, CheckCircle, Plus, X, Trash2 } from 'lucide-react-native';
+import { Sprout, CheckCircle, Plus, X, Trash2, Smile } from 'lucide-react-native';
 import { getRandomTip, type EducationalTip } from '../../data/educationalContent';
 import { ACTIVITY_CATEGORIES } from '../../constants/tags';
 import { getCelebrationMessage, calculateCelebrationStats } from '../../utils/celebrationMessages';
@@ -47,6 +48,7 @@ export default function ActivityModal({ onClose, preSelectedCategories = [] }: A
   const [showAddTag, setShowAddTag] = useState(false);
   const [newTagLabel, setNewTagLabel] = useState('');
   const [selectedEmoji, setSelectedEmoji] = useState('✨');
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
 
   // Alert state
   const { alertState, showAlert, hideAlert } = useAlert();
@@ -250,12 +252,12 @@ export default function ActivityModal({ onClose, preSelectedCategories = [] }: A
               <Text className="text-3xl font-semibold tracking-wide text-gray-900 dark:text-white">
                 Water Your Plant
               </Text>
-              <Text className="mt-1 text-sm font-medium text-blue-700 dark:text-blue-400">
+              <Text className="mt-0 text-sm font-medium text-emerald-700 dark:text-emerald-400">
                 Track healthy actions
               </Text>
             </View>
-            <View className="items-center justify-center w-16 h-16 bg-white border border-gray-200 dark:bg-gray-900 dark:border-gray-800 rounded-2xl">
-              <Sprout size={34} color="#10b981" strokeWidth={2.5} />
+            <View className="items-center justify-center w-16 h-16">
+              <Sprout size={42} color="#10b981" strokeWidth={2} />
             </View>
           </View>
         </View>
@@ -316,7 +318,7 @@ export default function ActivityModal({ onClose, preSelectedCategories = [] }: A
                 placeholderTextColor={colorScheme === 'dark' ? '#9CA3AF' : '#6B7280'}
                 multiline
                 numberOfLines={4}
-                className="bg-gray-50 dark:bg-gray-800 rounded-xl p-4 text-base font-regular text-gray-900 dark:text-white min-h-[100px]"
+                className="bg-gray-50 dark:bg-gray-800 rounded-xl p-4 text-base font-regular text-gray-900 dark:text-white min-h-[100px] border border-gray-200 dark:border-gray-700"
                 textAlignVertical="top"
               />
             </View>
@@ -457,8 +459,8 @@ export default function ActivityModal({ onClose, preSelectedCategories = [] }: A
           >
             {/* Header */}
             <View className="flex-row items-center justify-between px-5 pt-5 pb-3">
-              <Text className="text-lg font-bold text-gray-900 dark:text-white">
-                Add Custom Activity
+              <Text className="text-lg font-bold tracking-tight text-gray-900 dark:text-white">
+                Add Custom Activity :)
               </Text>
               <Pressable
                 onPress={() => setShowAddTag(false)}
@@ -468,12 +470,31 @@ export default function ActivityModal({ onClose, preSelectedCategories = [] }: A
               </Pressable>
             </View>
 
-            {/* Emoji Selection */}
+            {/* Activity Name with Emoji */}
             <View className="px-5 pb-4">
-              <Text className="mb-2 text-xs font-semibold text-gray-500 uppercase dark:text-gray-400">
-                Choose an Emoji
-              </Text>
-              <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+              <View className="flex-row items-center gap-2 bg-gray-100 dark:bg-gray-800 rounded-xl">
+                {/* Emoji Picker Button */}
+                <Pressable
+                  onPress={() => setShowEmojiPicker(true)}
+                  className="items-center justify-center w-14 h-14 ml-1 bg-white dark:bg-gray-700 rounded-xl"
+                >
+                  <Text className="text-2xl">{selectedEmoji}</Text>
+                </Pressable>
+                {/* Activity Name Input */}
+                <TextInput
+                  value={newTagLabel}
+                  onChangeText={setNewTagLabel}
+                  placeholder="Activity name..."
+                  placeholderTextColor={colorScheme === 'dark' ? '#9CA3AF' : '#6B7280'}
+                  className="flex-1 py-4 pr-4 text-base font-medium text-gray-900 dark:text-white"
+                  maxLength={20}
+                  autoFocus
+                  onSubmitEditing={handleAddCustomTag}
+                />
+              </View>
+
+              {/* Quick Emoji Suggestions */}
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} className="mt-3">
                 <View className="flex-row gap-2">
                   {SUGGESTED_EMOJIS.map((emoji) => (
                     <Pressable
@@ -482,39 +503,17 @@ export default function ActivityModal({ onClose, preSelectedCategories = [] }: A
                         setSelectedEmoji(emoji);
                         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                       }}
-                      className={`w-10 h-10 items-center justify-center rounded-xl ${
+                      className={`w-9 h-9 items-center justify-center rounded-lg ${
                         selectedEmoji === emoji
                           ? 'bg-blue-100 dark:bg-blue-900/40 border-2 border-blue-500'
-                          : 'bg-gray-100 dark:bg-gray-800'
+                          : 'bg-gray-200 dark:bg-gray-700'
                       }`}
                     >
-                      <Text className="text-xl">{emoji}</Text>
+                      <Text className="text-lg">{emoji}</Text>
                     </Pressable>
                   ))}
                 </View>
               </ScrollView>
-            </View>
-
-            {/* Tag Name Input */}
-            <View className="px-5 pb-4">
-              <Text className="mb-2 text-xs font-semibold text-gray-500 uppercase dark:text-gray-400">
-                Activity Name
-              </Text>
-              <View className="flex-row items-center bg-gray-100 dark:bg-gray-800 rounded-xl">
-                <View className="px-3">
-                  <Text className="text-xl">{selectedEmoji}</Text>
-                </View>
-                <TextInput
-                  value={newTagLabel}
-                  onChangeText={setNewTagLabel}
-                  placeholder="e.g., Journaling"
-                  placeholderTextColor={colorScheme === 'dark' ? '#9CA3AF' : '#6B7280'}
-                  className="flex-1 py-3 pr-4 text-base font-medium text-gray-900 dark:text-white"
-                  maxLength={20}
-                  autoFocus
-                  onSubmitEditing={handleAddCustomTag}
-                />
-              </View>
             </View>
 
             {/* Preview */}
@@ -550,6 +549,32 @@ export default function ActivityModal({ onClose, preSelectedCategories = [] }: A
           </Pressable>
         </Pressable>
       </Modal>
+
+      {/* Full Emoji Picker Modal */}
+      <EmojiPicker
+        onEmojiSelected={(emojiObject) => {
+          setSelectedEmoji(emojiObject.emoji);
+          setShowEmojiPicker(false);
+          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+        }}
+        open={showEmojiPicker}
+        onClose={() => setShowEmojiPicker(false)}
+        enableSearchBar
+        categoryPosition="top"
+        theme={{
+          backdrop: colorScheme === 'dark' ? '#00000099' : '#00000066',
+          knob: colorScheme === 'dark' ? '#4B5563' : '#D1D5DB',
+          container: colorScheme === 'dark' ? '#1F2937' : '#FFFFFF',
+          header: colorScheme === 'dark' ? '#F9FAFB' : '#111827',
+          skinTonesContainer: colorScheme === 'dark' ? '#374151' : '#F3F4F6',
+          category: {
+            icon: colorScheme === 'dark' ? '#9CA3AF' : '#6B7280',
+            iconActive: '#3B82F6',
+            container: colorScheme === 'dark' ? '#111827' : '#F9FAFB',
+            containerActive: colorScheme === 'dark' ? '#1E3A5F' : '#DBEAFE',
+          },
+        }}
+      />
 
       {/* Custom Alert */}
       {alertState && (

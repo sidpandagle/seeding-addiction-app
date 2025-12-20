@@ -110,11 +110,8 @@ export default function CalendarRelapseDetails({ selectedDate, entries }: Calend
             return (
               <View
                 key={relapse.id}
-                className={`relative overflow-hidden bg-white border border-gray-200 shadow-sm dark:border-gray-800 dark:bg-gray-900 rounded-xl ${index < dayRelapses.length - 1 ? 'mb-3' : ''}`}
+                className={`bg-white border border-red-200 dark:border-red-900/50 shadow-sm dark:bg-gray-900 rounded-xl ${index < dayRelapses.length - 1 ? 'mb-3' : ''}`}
               >
-                {/* Gradient accent bar - red for relapses */}
-                <View className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-red-400 to-orange-400" />
-
                 <View className="p-5">
                   <View className="flex-row items-start justify-between mb-3">
                     <View className="flex-1">
@@ -187,11 +184,8 @@ export default function CalendarRelapseDetails({ selectedDate, entries }: Calend
             return (
               <View
                 key={activity.id}
-                className={`relative overflow-hidden bg-white border border-gray-200 shadow-sm dark:border-gray-800 dark:bg-gray-900 rounded-xl ${index < dayActivities.length - 1 ? 'mb-3' : ''}`}
+                className={`bg-white border border-emerald-200 dark:border-emerald-900/50 shadow-sm dark:bg-gray-900 rounded-xl ${index < dayActivities.length - 1 ? 'mb-3' : ''}`}
               >
-                {/* Gradient accent bar - green for activities */}
-                <View className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-green-400 to-emerald-400" />
-
                 <View className="p-5">
                   <View className="flex-row items-start justify-between mb-3">
                     <View className="flex-1">

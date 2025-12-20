@@ -1,6 +1,7 @@
 import { View, Text, Pressable, ScrollView, Switch, Modal, Linking } from 'react-native';
 import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useState, useEffect } from 'react';
 import Animated, { FadeInDown, useSharedValue, useAnimatedStyle, withSpring } from 'react-native-reanimated';
 import * as Haptics from 'expo-haptics';
@@ -816,8 +817,15 @@ export default function SettingsScreen() {
             onPress={() => setShowAboutModal(true)}
             className="items-center p-6 bg-white border border-gray-200 dark:bg-gray-900 dark:border-gray-800 rounded-2xl active:opacity-70"
           >
-            <View className="items-center justify-center w-16 h-16 bg-gradient-to-br from-emerald-100 to-teal-100 dark:from-emerald-900/30 dark:to-teal-900/30 rounded-2xl">
-              <Info size={28} color="#10b981" strokeWidth={2.5} />
+            <View className="w-16 h-16 overflow-hidden rounded-2xl">
+              <LinearGradient
+                colors={colorScheme === 'dark' ? ['rgba(6, 78, 59, 0.3)', 'rgba(19, 78, 74, 0.3)'] : ['#d1fae5', '#ccfbf1']}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                className="items-center justify-center flex-1"
+              >
+                <Info size={28} color="#10b981" strokeWidth={2.5} />
+              </LinearGradient>
             </View>
             <Text className="text-lg font-bold text-gray-900 dark:text-white">
               Seeding

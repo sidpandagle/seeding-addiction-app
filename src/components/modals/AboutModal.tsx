@@ -1,5 +1,6 @@
 import { View, Text, ScrollView, Pressable, Linking } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
+import { LinearGradient } from 'expo-linear-gradient';
 import { X, Info, Shield, HelpCircle, Heart, Coffee, ChevronRight } from 'lucide-react-native';
 import { useColorScheme } from '../../stores/themeStore';
 
@@ -92,8 +93,15 @@ export default function AboutModal({ onClose }: AboutModalProps) {
         {/* App Info Card */}
         <View className="px-6 mt-4">
           <View className="items-center p-6 bg-white border border-gray-200 dark:bg-gray-900 dark:border-gray-800 rounded-2xl">
-            <View className="items-center justify-center w-20 h-20 mb-4 bg-gradient-to-br from-emerald-100 to-teal-100 dark:from-emerald-900/30 dark:to-teal-900/30 rounded-2xl">
-              <Text className="text-4xl">🌱</Text>
+            <View className="w-20 h-20 mb-4 overflow-hidden rounded-2xl">
+              <LinearGradient
+                colors={colorScheme === 'dark' ? ['rgba(6, 78, 59, 0.3)', 'rgba(19, 78, 74, 0.3)'] : ['#d1fae5', '#ccfbf1']}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                className="items-center justify-center flex-1"
+              >
+                <Text className="text-4xl">🌱</Text>
+              </LinearGradient>
             </View>
             <Text className="text-2xl font-bold text-gray-900 dark:text-white">
               Seeding
@@ -165,40 +173,8 @@ export default function AboutModal({ onClose }: AboutModalProps) {
           </View>
         </View>
 
-        {/* Support Section */}
-        <View className="px-6 mt-6">
-          <View className="flex-row items-center gap-2 mb-3">
-            <Heart size={18} color={colorScheme === 'dark' ? '#f59e0b' : '#d97706'} strokeWidth={2.5} />
-            <Text className="text-sm font-bold tracking-wider text-gray-600 uppercase dark:text-gray-400">
-              Support Development
-            </Text>
-          </View>
-
-          <Pressable
-            onPress={handleBuyMeCoffee}
-            className="p-5 bg-white border border-gray-200 dark:bg-gray-900 dark:border-gray-800 rounded-2xl active:opacity-70"
-          >
-            <View className="flex-row items-center justify-between">
-              <View className="flex-row items-center flex-1">
-                <View className="items-center justify-center w-10 h-10 mr-3 rounded-full bg-amber-50 dark:bg-amber-900/30">
-                  <Coffee size={20} color="#f59e0b" strokeWidth={2.5} />
-                </View>
-                <View className="flex-1">
-                  <Text className="text-base font-bold text-gray-900 dark:text-white">
-                    Buy Me a Coffee
-                  </Text>
-                  <Text className="mt-0.5 text-sm text-gray-500 dark:text-gray-400">
-                    Help keep Seeding free and ad-free
-                  </Text>
-                </View>
-              </View>
-              <ChevronRight size={20} color="#9ca3af" strokeWidth={2.5} />
-            </View>
-          </Pressable>
-        </View>
-
         {/* Made with Love */}
-        <View className="px-6 mt-8 mb-4">
+        <View className="px-6 mt-4 mb-4">
           <View className="p-4 border-2 border-emerald-200 bg-emerald-50 dark:bg-emerald-900/20 dark:border-emerald-800 rounded-xl">
             <Text className="text-sm font-medium leading-5 text-center text-emerald-800 dark:text-emerald-300">
               Made with care for those on their recovery journey. You're not alone, and every step forward matters.

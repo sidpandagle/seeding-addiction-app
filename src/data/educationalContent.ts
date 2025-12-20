@@ -219,96 +219,6 @@ export const PROGRESS_MILESTONES: EducationalTip[] = [
   },
 ];
 
-/**
- * Historical figures who conquered lust and addiction
- */
-export const GREAT_MEN_WISDOM = [
-  {
-    id: 'gm1',
-    name: 'Marcus Aurelius',
-    title: 'Roman Emperor & Stoic',
-    wisdom: `“You have power over your mind — not outside events. Realize this, and you will find strength.”` ,
-    lesson: `As emperor of Rome, Marcus Aurelius faced wars, plagues and palace intrigues, yet his writings in the Meditations show he saw true sovereignty as internal. He taught that conquering your own mind is more potent than conquering kingdoms.` ,
-  },
-  {
-    id: 'gm2',
-    name: 'Seneca',
-    title: 'Philosopher & Statesman',
-    wisdom: `“It is in no man’s power to have whatever he wants, but it is in his power not to want what he hasn’t got, and to make use of what he does have.”` ,
-    lesson: `Seneca lived amid Roman opulence and political danger yet insisted that real freedom lies in mastering desire. By choosing what not to want, he showed that wealth and peace don’t come from more—but from less greed and more mastery of wants.` ,
-  },
-  {
-    id: 'gm3',
-    name: 'Epictetus',
-    title: 'Former Slave, Stoic Master',
-    wisdom: `“Freedom is the only worthy goal in life. It is won by disregarding things that lie beyond our control.”` ,
-    lesson: `Born into slavery and then freed, Epictetus taught that though we cannot control externals, we can govern our responses. He lived what he taught: true freedom comes when you stop chasing what you can’t change and instead master your inner world.` ,
-  },
-  {
-    id: 'gm4',
-    name: 'Nikola Tesla',
-    title: 'Inventor & Visionary',
-    wisdom: `“I do not think you can name many great inventions that have been made by married men.”` ,  // Note: Attribution debated
-    lesson: `Tesla believed his mental energy and creativity required intense discipline and focus. Whether or not the quote is exact, his life shows he treated his ideas like currents to be directed, not dissipated. His celibacy and isolation were part of his strategy to turn inner reserves into outer breakthroughs.` ,
-  },
-  {
-    id: 'gm5',
-    name: 'Mike Tyson',
-    title: 'Boxer & Comeback Story',
-    wisdom: `“Discipline is doing what you hate to do, but doing it like you love it.”` ,
-    lesson: `Tyson’s quote captures the brutal truth of high-level training: it’s not about motivation, it’s about choosing to do the hard things. In his camps, abstaining from distractions, he turned willpower into preparation—and preparation into performance.` ,
-  },
-  {
-    id: 'gm6',
-    name: 'Leonardo da Vinci',
-    title: 'Renaissance Polymath',
-    wisdom: `“The noblest pleasure is the joy of understanding.”` ,
-    lesson: `Leonardo didn’t chase only beauty—he chased comprehension. His notebooks are full of observations, sketches and experiments. By converting curiosity into creation, he transformed withheld impulse into lasting innovation rather than fleeting indulgence.` ,
-  },
-  {
-    id: 'gm7',
-    name: 'Bruce Lee',
-    title: 'Martial Artist & Philosopher',
-    wisdom: `“Be master of yourself rather than mastered by your desires.”` ,  // paraphrase based on his teachings
-    lesson: `Lee trained not just his body but his mind. His preparation and philosophical writings show he saw most conflicts as internal. By recognising desire as an opponent, he made his calmness and precision his greatest weapons.` ,
-  },
-  {
-    id: 'gm8',
-    name: 'Swami Vivekananda',
-    title: 'Monk & Philosopher',
-    wisdom: `“Chastity is the corner-stone of all morality and of all great achievements.”` ,
-    lesson: `Vivekananda lived a life of austerity in service of spiritual and social goals. He preached redirecting personal energy into purpose. His example suggests that virtue isn’t about denial of life, but transformation of energy from the private to the profound.` ,
-  },
-  {
-    id: 'gm9',
-    name: 'Socrates',
-    title: 'Greek Philosopher',
-    wisdom: `“He who is not contented with what he has would not be contented with what he would like to have.”` ,
-    lesson: `Socrates argued—and lived—by questioning assumptions and simplifying life. He wielded his limited means to pursue truth, showing that the fewer things you depend on, the freer and more powerful you become.` ,
-  },
-  {
-    id: 'gm10',
-    name: 'David Goggins',
-    title: 'Navy SEAL & Endurance Athlete',
-    wisdom: `“Motivation is crap. Discipline is everything.”` ,
-    lesson: `Goggins turned himself from police-athlete to ultra-endurance icon by embracing pain and rejecting comfort. For him, urges are lies waiting to be obeyed—discipline is the truth that sets you free. Master the moment, master yourself.` ,
-  },
-  {
-    id: 'gm11',
-    name: 'Jordan Peterson',
-    title: 'Psychologist & Author',
-    wisdom: `“You must determine where you are going, so that you can bargain for yourself properly.”` ,
-    lesson: `Peterson warns that without structure, desires become chaos. He teaches that knowing your destination gives meaning to discipline. Unbridled lust or indulgence isn’t freedom—it’s surrender. Clarity of aim gives power to restraint.` ,
-  },
-  {
-    id: 'gm12',
-    name: 'Jocko Willink',
-    title: 'Navy SEAL Commander & Author',
-    wisdom: `“Discipline equals freedom.”` ,
-    lesson: `Willink lives by the paradox: the tighter the control you exert on your inner world, the more room you create in outer life. He wakes early, trains hard, and obeys his mission—and by mastering those small choices, he wins the bigger ones.` ,
-  },
-];
-
 
 /**
  * Get random tip by type
@@ -326,14 +236,6 @@ export function getRandomTip(type: EducationalTip['type']): EducationalTip {
   return pool[randomIndex];
 }
 
-/**
- * Get random great man wisdom
- */
-export function getRandomGreatMan() {
-  const randomIndex = Math.floor(Math.random() * GREAT_MEN_WISDOM.length);
-  return GREAT_MEN_WISDOM[randomIndex];
-}
-
 // Play the Tape Forward - Visualize consequences
 export const TAPE_FORWARD = {
   giveIn: [
@@ -341,12 +243,28 @@ export const TAPE_FORWARD = {
     "The pleasure lasts seconds",
     "You'll be back here, wishing you hadn't",
     "You'll feel drained, foggy, disappointed",
+    "The temporary relief never solves the underlying problem",
+    "You'll lose the mental clarity you've been building",
+    "Tomorrow you'll feel worse, not better",
+    "The dopamine crash will leave you emptier than before",
+    "You're training your brain to seek quick fixes",
+    "The guilt will steal your sleep tonight",
+    "You'll reset the healing your brain has been doing",
+    "Every relapse makes the next urge stronger",
   ],
   resist: [
     "Energy stays intact",
     "Pride builds with every minute",
     "Tonight, you sleep with a clear conscience",
     "You prove you're in control",
+    "Your brain chemistry continues healing",
+    "You break the automatic response pattern",
+    "Confidence compounds with each victory",
+    "You'll wake up tomorrow feeling powerful",
+    "The urge will pass — they always do",
+    "You're building neural pathways for self-control",
+    "Future you will be grateful for this moment",
+    "Every 'no' makes the next one easier",
   ],
 };
 
@@ -358,6 +276,14 @@ export const PHYSICAL_SHOCK_ACTIONS = [
   { icon: "🫁", action: "Hold breath 30 sec, exhale slowly" },
   { icon: "✊", action: "Squeeze ice cubes until they melt" },
   { icon: "🧍", action: "Doorway press: push arms out hard" },
+  { icon: "🎵", action: "Play loud music and dance for 60 sec" },
+  { icon: "🌶️", action: "Eat something intensely spicy" },
+  { icon: "🧘", action: "Do 10 deep squats slowly" },
+  { icon: "📞", action: "Call or text someone right now" },
+  { icon: "🚶", action: "Walk outside — change your environment" },
+  { icon: "🗣️", action: "Say 'I am in control' out loud 5x" },
+  { icon: "✍️", action: "Write 3 things you're grateful for" },
+  { icon: "🪥", action: "Brush your teeth with cold water" },
 ];
 
 // Environment Change Tips
