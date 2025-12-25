@@ -10,7 +10,7 @@ interface MonthlyTrendChartProps {
   relapses: Relapse[];
 }
 
-export default function MonthlyTrendChart({ relapses }: MonthlyTrendChartProps) {
+export default function MonthlyTrendChart({ relapses }: Readonly<MonthlyTrendChartProps>) {
   const colorScheme = useColorScheme();
   const isDark = colorScheme === 'dark';
   const { width: screenWidth } = useWindowDimensions();
@@ -91,8 +91,8 @@ export default function MonthlyTrendChart({ relapses }: MonthlyTrendChartProps) 
 
       {/* Info Card */}
       {showInfo && (
-        <View className="p-3 mt-2 mb-2 rounded-xl bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800">
-          <Text className="text-xs font-medium text-blue-800 dark:text-blue-200 leading-4">
+        <View className="p-3 mt-2 mb-2 bg-blue-100 border border-blue-100 rounded-xl dark:bg-blue-900/20 dark:border-blue-800">
+          <Text className="text-xs font-medium leading-4 text-blue-800 dark:text-blue-200">
             This chart shows your relapse frequency over 6 months. A downward trend means progress! Don't worry about short-term fluctuations — focus on the overall direction.
           </Text>
         </View>

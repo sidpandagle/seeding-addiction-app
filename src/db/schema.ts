@@ -37,6 +37,15 @@ const initDB = async (): Promise<void> => {
       key TEXT PRIMARY KEY NOT NULL,
       value TEXT NOT NULL
     );
+
+    CREATE TABLE IF NOT EXISTS earned_badges (
+      id TEXT PRIMARY KEY NOT NULL,
+      badge_id TEXT NOT NULL,
+      unlocked_at TEXT NOT NULL
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_earned_badges_unlocked_at ON earned_badges(unlocked_at DESC);
+    CREATE INDEX IF NOT EXISTS idx_earned_badges_badge_id ON earned_badges(badge_id);
   `);
 
   // Migration: Update existing single-category data to array format
@@ -117,4 +126,72 @@ export interface ActivityInput {
   timestamp?: string;
   note?: string;
   categories?: string[];
+}
+
+/**
+ * Badge category type
+ */
+export type BadgeCategory = 'frequency' | 'streak' | 'diversity' | 'milestone' | 'recovery' | 'special';
+
+/**
+ * Badge tier type (optional progression system)
+ */
+export type BadgeTier = 'bronze' | 'silver' | 'gold' | 'platinum';
+
+/**
+ * Badge unlock criteria type
+ */
+export type BadgeUnlockType =
+  | 'activity_count'
+  | 'streak_days'
+  | 'category_diversity'
+  | 'time_tracking'
+  | 'custom';
+
+/**
+ * Badge unlock timeframe
+ */
+export type BadgeTimeframe = 'day' | 'week' | 'month' | 'all_time';
+
+/**
+ * Badge unlock criteria interface
+ */
+export interface BadgeUnlockCriteria {
+  type: BadgeUnlockType;
+  threshold?: number;
+  timeframe?: BadgeTimeframe;
+  categoryId?: string;
+  customCheck?: string; // Function name for complex checks
+}
+
+/**
+ * Badge definition interface
+ */
+export interface Badge {
+  id: string;
+  category: BadgeCategory;
+  title: string;
+  description: string;
+  emoji: string;
+  tier?: BadgeTier;
+  unlockCriteria: BadgeUnlockCriteria;
+  isHidden?: boolean; // For surprise badges
+}
+
+/**
+ * Earned badge record (from database)
+ */
+export interface EarnedBadge {
+  id: string;
+  badge_id: string;
+  unlocked_at: string; // ISO8601 timestamp
+}
+
+/**
+ * Badge with unlock status (for UI)
+ */
+export interface BadgeWithStatus extends Badge {
+  isUnlocked: boolean;
+  unlockedAt?: string;
+  progress?: number; // 0-1 for badges close to unlock
 }

@@ -4,20 +4,43 @@ import { useState, useEffect } from 'react';
 import { useColorScheme } from '../../src/stores/themeStore';
 import AchievementRoadmap from '../../src/components/achievements/AchievementRoadmap';
 import AchievementDetailModal from '../../src/components/achievements/AchievementDetailModal';
+import TabSwitcher from '../../src/components/achievements/TabSwitcher';
+import BadgeGrid from '../../src/components/badges/BadgeGrid';
 import { getAchievements, Achievement } from '../../src/utils/growthStages';
 import { useJourneyStats } from '../../src/hooks/useJourneyStats';
 import { useLatestRelapseTimestamp } from '../../src/stores/relapseStore';
-import { getJourneyStart } from '../../src/db/helpers';
-import { Trophy } from 'lucide-react-native';
+import { getJourneyStart, getEarnedBadges } from '../../src/db/helpers';
+import { useBadgeStore } from '../../src/stores/badgeStore';
+import { BADGE_DEFINITIONS } from '../../src/data/badgeDefinitions';
+import { Badge } from '../../src/db/schema';
+import { Trophy, Award } from 'lucide-react-native';
+
+type TabId = 'milestones' | 'badges';
 
 export default function AchievementsScreen() {
   const colorScheme = useColorScheme();
+  const [activeTab, setActiveTab] = useState<TabId>('milestones');
   const [selectedAchievement, setSelectedAchievement] = useState<Achievement | null>(null);
+  const [selectedBadge, setSelectedBadge] = useState<Badge | null>(null);
   const [journeyStart, setJourneyStart] = useState<string | null>(null);
 
   // Use centralized hook for journey stats
   const stats = useJourneyStats();
   const latestRelapseTimestamp = useLatestRelapseTimestamp();
+
+  // Badge store
+  const earnedBadges = useBadgeStore((state) => state.earnedBadges);
+  const badgeProgress = useBadgeStore((state) => state.badgeProgress);
+  const setEarnedBadges = useBadgeStore((state) => state.setEarnedBadges);
+
+  // Load earned badges from database
+  useEffect(() => {
+    const loadBadges = async () => {
+      const badges = await getEarnedBadges();
+      setEarnedBadges(badges);
+    };
+    loadBadges();
+  }, [setEarnedBadges]);
 
   // Load journey start for milestone predictions
   useEffect(() => {
@@ -61,8 +84,17 @@ export default function AchievementsScreen() {
     return () => clearInterval(interval);
   }, [stats.startTime]);
 
-  const unlockedCount = achievements.filter((a:any) => a.isUnlocked).length;
-  const totalCount = achievements.length;
+  // Calculate progress based on active tab
+  const earnedBadgeIds = new Set(earnedBadges.map((b) => b.badge_id));
+
+  const milestonesUnlocked = achievements.filter((a: any) => a.isUnlocked).length;
+  const milestonesTotal = achievements.length;
+
+  const badgesUnlocked = earnedBadgeIds.size;
+  const badgesTotal = BADGE_DEFINITIONS.filter((b) => !b.isHidden).length;
+
+  const unlockedCount = activeTab === 'milestones' ? milestonesUnlocked : badgesUnlocked;
+  const totalCount = activeTab === 'milestones' ? milestonesTotal : badgesTotal;
   const progressPercentage = Math.round((unlockedCount / totalCount) * 100);
 
   return (
@@ -70,21 +102,37 @@ export default function AchievementsScreen() {
       <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'} />
 
       {/* Elegant Header */}
-      <View className="pt-16 pb-2">
+      <View className="pt-16 pb-4">
         <View className="px-6">
-          <View className="flex-row items-center justify-between">
+          <View className="flex-row items-center justify-between mb-4">
             <View className="flex-1">
               <Text className="text-3xl font-semibold tracking-wide text-gray-900 dark:text-white">
                 Achievements
               </Text>
               <Text className="mt-1 text-sm font-medium tracking-wide text-amber-700 dark:text-amber-400">
-                Celebrate your journey milestones
+                {activeTab === 'milestones'
+                  ? 'Celebrate your journey milestones'
+                  : 'Earn badges for your efforts'}
               </Text>
             </View>
             <View className="items-center justify-center w-14 h-14 bg-amber-100 dark:bg-amber-900/30 rounded-2xl">
-              <Trophy size={26} color="#f59e0b" strokeWidth={2.5} />
+              {activeTab === 'milestones' ? (
+                <Trophy size={26} color="#f59e0b" strokeWidth={2.5} />
+              ) : (
+                <Award size={26} color="#f59e0b" strokeWidth={2.5} />
+              )}
             </View>
           </View>
+
+          {/* Tab Switcher */}
+          <TabSwitcher
+            tabs={[
+              { id: 'milestones', label: 'Milestones' },
+              { id: 'badges', label: 'Badges' },
+            ]}
+            activeTab={activeTab}
+            onTabChange={(tabId) => setActiveTab(tabId as TabId)}
+          />
         </View>
       </View>
 
@@ -95,7 +143,7 @@ export default function AchievementsScreen() {
         contentContainerClassName="pb-4"
       >
         {/* Progress Section Above Achievements */}
-        <View className="px-6 mt-6">
+        <View className="px-6 mt-0">
           <View className="p-6 bg-white border border-gray-200 dark:bg-gray-900 dark:border-gray-700 rounded-2xl">
             <View className="flex-row items-center justify-between mb-4">
               <Text className="text-lg font-bold text-gray-900 dark:text-white">
@@ -107,6 +155,7 @@ export default function AchievementsScreen() {
                 </Text>
               </View>
             </View>
+            
             
             {/* Progress Bar */}
             <View className="mb-3">
@@ -130,14 +179,32 @@ export default function AchievementsScreen() {
           </View>
         </View>
 
-        {/* Achievements Roadmap */}
-        <View className="px-6 mt-6">
-          <AchievementRoadmap
-            achievements={achievements}
-            onAchievementPress={(achievement) => setSelectedAchievement(achievement)}
-            referenceTime={latestRelapseTimestamp ? new Date(latestRelapseTimestamp).getTime() : (journeyStart ? new Date(journeyStart).getTime() : null)}
-          />
-        </View>
+        {/* Conditional Content Based on Active Tab */}
+        {activeTab === 'milestones' ? (
+          <View className="px-6 mt-6">
+            <AchievementRoadmap
+              achievements={achievements}
+              onAchievementPress={(achievement) => setSelectedAchievement(achievement)}
+              referenceTime={
+                latestRelapseTimestamp
+                  ? new Date(latestRelapseTimestamp).getTime()
+                  : journeyStart
+                  ? new Date(journeyStart).getTime()
+                  : null
+              }
+            />
+          </View>
+        ) : (
+          <View className="mt-6">
+            <BadgeGrid
+              badges={BADGE_DEFINITIONS.filter((b) => !b.isHidden)}
+              earnedBadgeIds={earnedBadgeIds}
+              earnedBadges={earnedBadges}
+              badgeProgress={badgeProgress}
+              onBadgePress={(badge) => setSelectedBadge(badge)}
+            />
+          </View>
+        )}
       </ScrollView>
 
       {/* Achievement Detail Modal */}
@@ -146,6 +213,24 @@ export default function AchievementsScreen() {
         visible={!!selectedAchievement}
         onClose={() => setSelectedAchievement(null)}
       />
+
+      {/* Badge Detail Modal */}
+      {selectedBadge && (
+        <AchievementDetailModal
+          achievement={{
+            id: selectedBadge.id,
+            title: selectedBadge.title,
+            description: selectedBadge.description,
+            emoji: selectedBadge.emoji,
+            threshold: 0, // Badges don't have time thresholds
+            shortLabel: '',
+            isUnlocked: earnedBadgeIds.has(selectedBadge.id),
+            unlockedAt: earnedBadges.find((b) => b.badge_id === selectedBadge.id)?.unlocked_at,
+          }}
+          visible={!!selectedBadge}
+          onClose={() => setSelectedBadge(null)}
+        />
+      )}
     </View>
   );
 }

@@ -242,14 +242,14 @@ function DashboardScreen() {
             {/* Log Activity - Primary Action */}
             <Pressable
               onPress={() => handleActivityPress()}
-              className="flex-1 border shadow-sm bg-emerald-100 dark:bg-emerald-950/30 border-emerald-300 dark:border-emerald-700 rounded-xl"
+              className="flex-1 border shadow-sm bg-emerald-100 dark:bg-emerald-950/30 border-emerald-100 dark:border-emerald-700 rounded-xl"
             >
               <View className="items-center px-4 py-6">
                 <View className="items-center justify-center mb-3 rounded-lg w-14 h-14">
                   <Sprout size={40} color="#10b981" strokeWidth={2} />
                 </View>
                 <Text className="mb-0 text-base font-bold text-center dark:text-white">
-                  Water Your Plant
+                  Track Your Growth
                 </Text>
                 <Text className="text-xs text-center dark:text-white">
                   Track healthy actions

@@ -10,7 +10,7 @@ interface ResistanceRatioChartProps {
   activities: Activity[];
 }
 
-export default function ResistanceRatioChart({ relapses, activities }: ResistanceRatioChartProps) {
+export default function ResistanceRatioChart({ relapses, activities }: Readonly<ResistanceRatioChartProps>) {
   const colorScheme = useColorScheme();
   const isDark = colorScheme === 'dark';
   const [showInfo, setShowInfo] = useState(false);
@@ -77,8 +77,8 @@ export default function ResistanceRatioChart({ relapses, activities }: Resistanc
 
       {/* Info Card */}
       {showInfo && (
-        <View className="p-3 mt-2 mb-2 rounded-xl bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800">
-          <Text className="text-xs font-medium text-blue-800 dark:text-blue-200 leading-4">
+        <View className="p-3 mt-2 mb-2 bg-blue-100 border border-blue-100 rounded-xl dark:bg-blue-900/20 dark:border-blue-800">
+          <Text className="text-xs font-medium leading-4 text-blue-800 dark:text-blue-200">
             This shows your balance between positive activities and relapses. A 70%+ activity rate shows strong engagement. Focus on logging more growth activities to shift the balance!
           </Text>
         </View>
@@ -132,7 +132,7 @@ export default function ResistanceRatioChart({ relapses, activities }: Resistanc
 
         {/* Relapses */}
         <View className="flex-row items-center gap-2">
-          <View className="items-center justify-center w-10 h-10 bg-amber-100 rounded-full dark:bg-amber-900/30">
+          <View className="items-center justify-center w-10 h-10 rounded-full bg-amber-100 dark:bg-amber-900/30">
             <RotateCcw size={18} color="#f59e0b" strokeWidth={2.5} />
           </View>
           <View>
@@ -153,8 +153,8 @@ export default function ResistanceRatioChart({ relapses, activities }: Resistanc
 
       {/* Success Message with Research-Based Thresholds */}
       {activityPercentage >= 60 && (
-        <View className="p-3 mt-4 bg-green-50 border border-green-200 dark:bg-green-900/20 dark:border-green-800 rounded-xl">
-          <Text className="text-xs font-bold text-center text-green-700 dark:text-green-300 mb-1">
+        <View className="p-3 mt-4 bg-green-100 border border-green-100 dark:bg-green-900/20 dark:border-green-800 rounded-xl">
+          <Text className="mb-1 text-xs font-bold text-center text-green-700 dark:text-green-300">
             {activityPercentage >= 80
               ? '🎉 Outstanding! You\'re highly engaged in positive activities!'
               : '💪 Excellent! You\'re actively building healthy habits!'}
@@ -167,8 +167,8 @@ export default function ResistanceRatioChart({ relapses, activities }: Resistanc
         </View>
       )}
       {activityPercentage >= 40 && activityPercentage < 60 && (
-        <View className="p-3 mt-4 border border-emerald-200 bg-emerald-50 dark:bg-emerald-900/20 dark:border-emerald-800 rounded-xl">
-          <Text className="text-xs font-bold text-center text-emerald-700 dark:text-emerald-300 mb-1">
+        <View className="p-3 mt-4 border border-emerald-100 bg-emerald-100 dark:bg-emerald-900/20 dark:border-emerald-800 rounded-xl">
+          <Text className="mb-1 text-xs font-bold text-center text-emerald-700 dark:text-emerald-300">
             ✅ Healthy Balance! You\'re actively engaging in recovery.
           </Text>
           <Text className="text-[10px] text-center text-emerald-600 dark:text-emerald-400 leading-4">
@@ -177,8 +177,8 @@ export default function ResistanceRatioChart({ relapses, activities }: Resistanc
         </View>
       )}
       {activityPercentage < 40 && totalEvents > 5 && (
-        <View className="p-3 mt-4 border border-blue-200 bg-blue-50 dark:bg-blue-900/20 dark:border-blue-800 rounded-xl">
-          <Text className="text-xs font-bold text-center text-blue-700 dark:text-blue-300 mb-1">
+        <View className="p-3 mt-4 bg-blue-100 border border-blue-100 dark:bg-blue-900/20 dark:border-blue-800 rounded-xl">
+          <Text className="mb-1 text-xs font-bold text-center text-blue-700 dark:text-blue-300">
             💙 Build Momentum! Every positive action rewires your brain.
           </Text>
           <Text className="text-[10px] text-center text-blue-600 dark:text-blue-400 leading-4">
@@ -186,7 +186,6 @@ export default function ResistanceRatioChart({ relapses, activities }: Resistanc
           </Text>
         </View>
       )}
-
     </View>
   );
 }

@@ -15,7 +15,7 @@ export default function AchievementDetailModal({
   achievement,
   visible,
   onClose,
-}: AchievementDetailModalProps) {
+}: Readonly<AchievementDetailModalProps>) {
   const colorScheme = useColorScheme();
 
   if (!achievement) return null;
@@ -96,10 +96,10 @@ export default function AchievementDetailModal({
 
           {/* Content */}
           <ScrollView className="px-6 py-6 max-h-80">
-            {/* Description */}
+            {/* Requirement */}
             <View className="mb-6">
               <Text className="mb-2 text-sm font-medium tracking-wide text-gray-500 uppercase dark:text-gray-400">
-                Description
+                Requirement
               </Text>
               <Text className="text-base text-gray-900 dark:text-white">
                 {achievement.description}
@@ -107,14 +107,14 @@ export default function AchievementDetailModal({
             </View>
 
             {/* Requirement */}
-            <View className="mb-6">
+            {/* <View className="mb-6">
               <Text className="mb-2 text-sm font-medium tracking-wide text-gray-500 uppercase dark:text-gray-400">
                 Requirement
               </Text>
               <Text className="text-base text-gray-900 dark:text-white">
                 {achievement.threshold ? `Maintain a streak of ${achievement.shortLabel}` : 'Start your journey to unlock this achievement!'}
               </Text>
-            </View>
+            </View> */}
 
             {/* Unlocked Date (if unlocked) */}
             {achievement.isUnlocked && achievement.unlockedAt && (

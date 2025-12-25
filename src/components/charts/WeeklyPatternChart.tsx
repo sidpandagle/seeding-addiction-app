@@ -98,7 +98,7 @@ export default function WeeklyPatternChart({ relapses }: WeeklyPatternChartProps
 
       {/* Info Card */}
       {showInfo && (
-        <View className="p-3 mt-0 mb-2 border border-blue-200 rounded-xl bg-blue-50 dark:bg-blue-900/20 dark:border-blue-800">
+        <View className="p-3 mt-0 mb-2 bg-blue-100 border border-blue-100 rounded-xl dark:bg-blue-900/20 dark:border-blue-800">
           <Text className="text-xs font-medium leading-4 text-blue-800 dark:text-blue-200">
             This chart shows which days you're most vulnerable. Weekend spikes often mean less structure; weekday peaks may indicate stress. Plan extra support for your challenging days!
           </Text>
@@ -185,7 +185,7 @@ export default function WeeklyPatternChart({ relapses }: WeeklyPatternChartProps
 
           {/* Danger hours insight */}
           {timeOfDayData.mostVulnerable && timeOfDayData.mostVulnerable.count > 0 && (
-            <View className="flex-row items-center gap-2 p-3 mt-4 border rounded-xl bg-amber-50 dark:bg-amber-900/20 border-amber-200 dark:border-amber-800">
+            <View className="flex-row items-center gap-2 p-3 mt-4 border rounded-xl bg-amber-100 dark:bg-amber-900/20 border-amber-100 dark:border-amber-800">
               <Text className="text-base">⚠️</Text>
               <Text className="flex-1 text-xs font-medium text-amber-800 dark:text-amber-200">
                 Your danger hours are{' '}

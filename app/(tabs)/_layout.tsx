@@ -3,6 +3,7 @@ import { useColorScheme } from '../../src/stores/themeStore';
 import { Home, History, Trophy, Settings } from 'lucide-react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useMemo } from 'react';
+import { AnimatedTabBarIcon } from '../../src/components/navigation/AnimatedTabBarIcon';
 
 export default function TabsLayout() {
   const colorScheme = useColorScheme();
@@ -52,7 +53,7 @@ export default function TabsLayout() {
         options={{
           title: 'Home',
           tabBarIcon: ({ color, focused }) => (
-            <Home size={24} color={color} strokeWidth={focused ? 2.5 : 2} />
+            <AnimatedTabBarIcon Icon={Home} color={color} focused={focused} />
           ),
         }}
       />
@@ -61,7 +62,7 @@ export default function TabsLayout() {
         options={{
           title: 'History',
           tabBarIcon: ({ color, focused }) => (
-            <History size={24} color={color} strokeWidth={focused ? 2.5 : 2} />
+            <AnimatedTabBarIcon Icon={History} color={color} focused={focused} />
           ),
         }}
       />
@@ -70,7 +71,7 @@ export default function TabsLayout() {
         options={{
           title: 'Achievements',
           tabBarIcon: ({ color, focused }) => (
-            <Trophy size={24} color={color} strokeWidth={focused ? 2.5 : 2} />
+            <AnimatedTabBarIcon Icon={Trophy} color={color} focused={focused} />
           ),
         }}
       />
@@ -79,7 +80,7 @@ export default function TabsLayout() {
         options={{
           title: 'Settings',
           tabBarIcon: ({ color, focused }) => (
-            <Settings size={24} color={color} strokeWidth={focused ? 2.5 : 2} />
+            <AnimatedTabBarIcon Icon={Settings} color={color} focused={focused} />
           ),
         }}
       />

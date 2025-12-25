@@ -22,7 +22,7 @@ export const getCelebrationMessage = (
   // First activity ever
   if (isFirstActivity) {
     return {
-      message: "You've started watering your plant! 🌱 This is the beginning of growth.",
+      message: "You've started tracking your activities! 🌱 This is the beginning of growth.",
       milestone: 'first',
     };
   }
@@ -52,7 +52,7 @@ export const getCelebrationMessage = (
   // Weekly milestones
   if (totalActivitiesThisWeek === 5) {
     return {
-      message: '🎉 5 activities this week! You\'re watering daily!',
+      message: '🎉 5 activities this week! You\'re tracking daily!',
       milestone: 'weekly',
     };
   }

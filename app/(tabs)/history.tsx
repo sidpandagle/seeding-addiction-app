@@ -1,4 +1,4 @@
-import { View, Text, TouchableOpacity, ScrollView, Modal, Pressable } from 'react-native';
+import { View, Text, ScrollView, Modal, Pressable } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { useState, useEffect, memo, useMemo } from 'react';
 import { History, BarChart3, Lock } from 'lucide-react-native';
@@ -7,15 +7,13 @@ import { useActivityStore } from '../../src/stores/activityStore';
 import { useColorScheme } from '../../src/stores/themeStore';
 import { usePremium } from '../../src/hooks/usePremium';
 import { getJourneyStart } from '../../src/db/helpers';
-import { useJourneyStats } from '../../src/hooks/useJourneyStats';
-import { calculateUserStats } from '../../src/utils/statsHelpers';
 import ViewToggle from '../../src/components/history/ViewToggle';
 import HistoryList from '../../src/components/history/HistoryList';
 import HistoryCalendar from '../../src/components/history/HistoryCalendar';
 import CalendarRelapseDetails from '../../src/components/history/CalendarRelapseDetails';
 import InsightsModal from '../../src/components/history/InsightsModal';
 import { PaywallModal } from '../../src/components/premium/PaywallModal';
-import { createRelapseEntry, createActivityEntry, sortHistoryEntries, type HistoryEntry } from '../../src/types/history';
+import { createRelapseEntry, createActivityEntry, sortHistoryEntries } from '../../src/types/history';
 
 type ViewMode = 'list' | 'calendar';
 
@@ -23,7 +21,6 @@ function HistoryScreen() {
   const colorScheme = useColorScheme();
   const { relapses } = useRelapseStore();
   const { activities, loadActivities } = useActivityStore();
-  const stats = useJourneyStats();
   const { isPremium } = usePremium();
   const [journeyStart, setJourneyStart] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<ViewMode>('list');
@@ -53,10 +50,6 @@ function HistoryScreen() {
   }, [relapses, activities]);
 
   // Calculate user stats for current streak
-  const userStats = useMemo(
-    () => calculateUserStats(relapses, stats.startTime),
-    [relapses, stats.startTime]
-  );
 
   return (
     <View className="flex-1 bg-gray-50 dark:bg-gray-950">
@@ -125,7 +118,7 @@ function HistoryScreen() {
       </View>
 
       {/* View Toggle */}
-      <View className="px-6 mt-6 mb-2">
+      <View className="px-6 mt-6 mb-4">
         <ViewToggle mode={viewMode} onModeChange={setViewMode} />
       </View>
 

@@ -24,7 +24,7 @@ interface CategoryColors {
  */
 export const CATEGORY_COLORS: Record<StoicCategory, CategoryColors> = {
   control: {
-    background: 'border bg-blue-100 dark:bg-blue-950/30 border-blue-300 dark:border-blue-700',
+    background: 'border bg-blue-100 dark:bg-blue-950/30 border-blue-100 dark:border-blue-700',
     text: 'text-blue-700 dark:text-blue-300',
     icon: {
       primary: 'Target',
@@ -33,7 +33,7 @@ export const CATEGORY_COLORS: Record<StoicCategory, CategoryColors> = {
     iconColor: '#3b82f6', // blue-500
   },
   discipline: {
-    background: 'border bg-purple-100 dark:bg-purple-950/30 border-purple-300 dark:border-purple-700',
+    background: 'border bg-purple-100 dark:bg-purple-950/30 border-purple-100 dark:border-purple-700',
     text: 'text-purple-700 dark:text-purple-300',
     icon: {
       primary: 'Dumbbell',
@@ -42,7 +42,7 @@ export const CATEGORY_COLORS: Record<StoicCategory, CategoryColors> = {
     iconColor: '#a855f7', // purple-500
   },
   resilience: {
-    background: 'border bg-amber-100 dark:bg-amber-950/30 border-amber-300 dark:border-amber-700',
+    background: 'border bg-amber-100 dark:bg-amber-950/30 border-amber-100 dark:border-amber-700',
     text: 'text-amber-700 dark:text-amber-300',
     icon: {
       primary: 'Shield',
@@ -51,7 +51,7 @@ export const CATEGORY_COLORS: Record<StoicCategory, CategoryColors> = {
     iconColor: '#f59e0b', // amber-500
   },
   wisdom: {
-    background: 'border bg-emerald-100 dark:bg-emerald-950/30 border-emerald-300 dark:border-emerald-700',
+    background: 'border bg-emerald-100 dark:bg-emerald-950/30 border-emerald-100 dark:border-emerald-700',
     text: 'text-emerald-700 dark:text-emerald-300',
     icon: {
       primary: 'Lightbulb',
@@ -60,7 +60,7 @@ export const CATEGORY_COLORS: Record<StoicCategory, CategoryColors> = {
     iconColor: '#10b981', // emerald-500
   },
   virtue: {
-    background: 'border bg-rose-100 dark:bg-rose-950/30 border-rose-300 dark:border-rose-700',
+    background: 'border bg-rose-100 dark:bg-rose-950/30 border-rose-100 dark:border-rose-700',
     text: 'text-rose-700 dark:text-rose-300',
     icon: {
       primary: 'Heart',

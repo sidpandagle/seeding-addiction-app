@@ -6,6 +6,7 @@ import { notificationService } from '../services/notificationService';
 import { useAchievementStore } from './achievementStore';
 import { useNotificationStore } from './notificationStore';
 import { useCustomActivityTagsStore } from './customActivityTagsStore';
+import { useBadgeStore } from './badgeStore';
 
 interface RelapseState {
   relapses: Relapse[];
@@ -192,6 +193,7 @@ export const useRelapseStore = create<RelapseStore>((set, get) => ({
 
       // 3. Reset AsyncStorage stores
       await useAchievementStore.getState().resetAchievements();
+      await useBadgeStore.getState().resetBadges();
 
       // 4. Reset notification store state
       await useNotificationStore.getState().resetNotifications();

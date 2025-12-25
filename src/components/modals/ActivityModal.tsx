@@ -12,6 +12,8 @@ import { getCelebrationMessage, calculateCelebrationStats } from '../../utils/ce
 import CustomAlert from '../common/CustomAlert';
 import { useAlert } from '../../hooks/useAlert';
 import { getLocalDateString } from '../../utils/dateHelpers';
+import BadgeCelebration from '../badges/BadgeCelebration';
+import { Badge } from '../../db/schema';
 
 interface ActivityModalProps {
   onClose: () => void;
@@ -49,6 +51,9 @@ export default function ActivityModal({ onClose, preSelectedCategories = [] }: A
   const [newTagLabel, setNewTagLabel] = useState('');
   const [selectedEmoji, setSelectedEmoji] = useState('✨');
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+
+  // Badge celebration state
+  const [celebrationBadge, setCelebrationBadge] = useState<Badge | null>(null);
 
   // Alert state
   const { alertState, showAlert, hideAlert } = useAlert();
@@ -233,6 +238,17 @@ export default function ActivityModal({ onClose, preSelectedCategories = [] }: A
           onClose();
         }, 300);
       }
+
+      // Check for newly unlocked badges after activity is saved
+      setTimeout(() => {
+        const newlyUnlockedBadges = (globalThis as any).__newlyUnlockedBadges;
+        if (newlyUnlockedBadges && newlyUnlockedBadges.length > 0) {
+          // Show the first badge celebration
+          setCelebrationBadge(newlyUnlockedBadges[0]);
+          // Clear global state
+          delete (globalThis as any).__newlyUnlockedBadges;
+        }
+      }, 800);
     } catch (error) {
       console.error('Failed to save activity:', error);
       setIsSubmitting(false);
@@ -250,10 +266,10 @@ export default function ActivityModal({ onClose, preSelectedCategories = [] }: A
           <View className="flex-row items-center justify-between mb-2">
             <View className="flex">
               <Text className="text-3xl font-semibold tracking-wide text-gray-900 dark:text-white">
-                Water Your Plant
+                Log Activity
               </Text>
               <Text className="mt-0 text-sm font-medium text-emerald-700 dark:text-emerald-400">
-                Track healthy actions
+                Track positive actions that support your recovery
               </Text>
             </View>
             <View className="items-center justify-center w-16 h-16">
@@ -271,7 +287,7 @@ export default function ActivityModal({ onClose, preSelectedCategories = [] }: A
                 Your Growth This Week
               </Text>
               <Text className="text-2xl font-bold text-green-900 dark:text-green-100">
-                {weeklyCount} watering{weeklyCount !== 1 ? 's' : ''}
+                {weeklyCount} {weeklyCount !== 1 ? 'Activities' : 'Activity'}
               </Text>
               {daysInARow >= 3 && (
                 <Text className="mt-1 text-sm text-green-800 dark:text-green-200">
@@ -420,7 +436,7 @@ export default function ActivityModal({ onClose, preSelectedCategories = [] }: A
               }`}
           >
             <Text className="text-lg font-bold text-center text-white">
-              {isSubmitting ? 'Saving...' : 'Water Your Plant'}
+              {isSubmitting ? 'Saving...' : 'Log Activity'}
             </Text>
           </Pressable>
 
@@ -476,7 +492,7 @@ export default function ActivityModal({ onClose, preSelectedCategories = [] }: A
                 {/* Emoji Picker Button */}
                 <Pressable
                   onPress={() => setShowEmojiPicker(true)}
-                  className="items-center justify-center w-14 h-14 ml-1 bg-white dark:bg-gray-700 rounded-xl"
+                  className="items-center justify-center ml-1 bg-white w-14 h-14 dark:bg-gray-700 rounded-xl"
                 >
                   <Text className="text-2xl">{selectedEmoji}</Text>
                 </Pressable>
@@ -573,6 +589,17 @@ export default function ActivityModal({ onClose, preSelectedCategories = [] }: A
             container: colorScheme === 'dark' ? '#111827' : '#F9FAFB',
             containerActive: colorScheme === 'dark' ? '#1E3A5F' : '#DBEAFE',
           },
+        }}
+      />
+
+      {/* Badge Celebration Modal */}
+      <BadgeCelebration
+        visible={!!celebrationBadge}
+        badge={celebrationBadge}
+        onClose={() => setCelebrationBadge(null)}
+        onViewCollection={() => {
+          setCelebrationBadge(null);
+          // Note: Would navigate to achievements tab here if navigation ref available
         }}
       />
 

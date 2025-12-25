@@ -150,7 +150,7 @@ const HistoryCalendar = React.memo(function HistoryCalendar({
 
   return (
     <View className="px-6 py-4">
-      <View className="overflow-hidden bg-white dark:bg-gray-900 rounded-3xl">
+      <View className="overflow-hidden bg-white border border-gray-200 dark:border-gray-700 dark:bg-gray-900 rounded-3xl">
         <Calendar
           key={colorScheme} // Force re-render when theme changes
           markingType="custom"

@@ -18,7 +18,8 @@ const SHORT_MILESTONE_THRESHOLD_MS = ONE_HOUR_MS; // Milestones under this skip 
 // Configure notification handler
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
-    shouldShowAlert: true,
+    shouldShowBanner: true,
+    shouldShowList: true,
     shouldPlaySound: true,
     shouldSetBadge: false,
   }),

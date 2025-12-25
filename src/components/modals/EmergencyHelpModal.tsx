@@ -114,7 +114,7 @@ export default function EmergencyHelpModal({ onClose }: EmergencyHelpModalProps)
 
         {/* SECTION: Reality Check - Plant/Streak */}
         <View className="px-5 pb-5">
-          <View className="p-5 border bg-emerald-50 dark:bg-emerald-950/30 border-emerald-300 dark:border-emerald-700 rounded-xl">
+          <View className="p-5 border bg-emerald-100 dark:bg-emerald-950/30 border-emerald-100 dark:border-emerald-700 rounded-xl">
             <View className="items-center mb-4">
               <Text className="mb-3 text-8xl">{plantStage.emoji}</Text>
               {streakDays > 0 && (
@@ -143,7 +143,7 @@ export default function EmergencyHelpModal({ onClose }: EmergencyHelpModalProps)
           </Text>
           <View className="flex-row gap-3">
             {/* Give In Column */}
-            <View className="flex-1 p-4 border border-red-300 bg-red-50 dark:bg-red-950/30 dark:border-red-700 rounded-xl">
+            <View className="flex-1 p-4 bg-red-100 border border-red-100 dark:bg-red-950/30 dark:border-red-700 rounded-xl">
               <Text className="mb-3 text-sm font-bold text-center text-red-700 dark:text-red-400">
                 If you give in:
               </Text>
@@ -154,7 +154,7 @@ export default function EmergencyHelpModal({ onClose }: EmergencyHelpModalProps)
               ))}
             </View>
             {/* Resist Column */}
-            <View className="flex-1 p-4 border bg-emerald-50 dark:bg-emerald-950/30 border-emerald-300 dark:border-emerald-700 rounded-xl">
+            <View className="flex-1 p-4 border bg-emerald-100 dark:bg-emerald-950/30 border-emerald-100 dark:border-emerald-700 rounded-xl">
               <Text className="mb-3 text-sm font-bold text-center text-emerald-800 dark:text-emerald-200">
                 If you resist:
               </Text>
@@ -176,7 +176,7 @@ export default function EmergencyHelpModal({ onClose }: EmergencyHelpModalProps)
             {randomShockActions.map((action, index) => (
               <View
                 key={index}
-                className="flex-row items-center px-3 py-2.5 border bg-indigo-50 dark:bg-indigo-950/30 border-indigo-300 dark:border-indigo-700 rounded-lg"
+                className="flex-row items-center px-3 py-2.5 border bg-indigo-100 dark:bg-indigo-950/30 border-indigo-100 dark:border-indigo-700 rounded-lg"
                 style={{ width: '48%' }}
               >
                 <Text className="mr-2 text-lg">{action.icon}</Text>

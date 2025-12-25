@@ -1,4 +1,4 @@
-import * as FileSystem from 'expo-file-system';
+import { Paths, File } from 'expo-file-system';
 import * as Sharing from 'expo-sharing';
 import { getRelapses, getActivities, getJourneyStart } from '../db/helpers';
 import { calculateUserStats } from '../utils/statsHelpers';
@@ -124,12 +124,10 @@ class ExportService {
       // Generate filename with date
       const dateStr = new Date().toISOString().split('T')[0];
       const filename = `seeding-export-${dateStr}.csv`;
-      const filePath = `${FileSystem.documentDirectory}${filename}`;
+      const file = new File(Paths.document, filename);
 
       // Write file
-      await FileSystem.writeAsStringAsync(filePath, csvContent, {
-        encoding: FileSystem.EncodingType.UTF8,
-      });
+      await file.write(csvContent);
 
       // Check if sharing is available
       const isAvailable = await Sharing.isAvailableAsync();
@@ -139,14 +137,14 @@ class ExportService {
       }
 
       // Share file
-      await Sharing.shareAsync(filePath, {
+      await Sharing.shareAsync(file.uri, {
         mimeType: 'text/csv',
         dialogTitle: 'Export Your Journey Data',
         UTI: 'public.comma-separated-values-text',
       });
 
       // Clean up file after sharing
-      await FileSystem.deleteAsync(filePath, { idempotent: true });
+      await file.delete();
 
       return true;
     } catch (error) {
@@ -238,12 +236,10 @@ class ExportService {
       // Generate filename
       const dateStr = new Date().toISOString().split('T')[0];
       const filename = `seeding-report-${dateStr}.txt`;
-      const filePath = `${FileSystem.documentDirectory}${filename}`;
+      const file = new File(Paths.document, filename);
 
       // Write file
-      await FileSystem.writeAsStringAsync(filePath, content, {
-        encoding: FileSystem.EncodingType.UTF8,
-      });
+      await file.write(content);
 
       // Share
       const isAvailable = await Sharing.isAvailableAsync();
@@ -251,13 +247,13 @@ class ExportService {
         return false;
       }
 
-      await Sharing.shareAsync(filePath, {
+      await Sharing.shareAsync(file.uri, {
         mimeType: 'text/plain',
         dialogTitle: 'Share Your Journey Report',
       });
 
       // Clean up
-      await FileSystem.deleteAsync(filePath, { idempotent: true });
+      await file.delete();
 
       return true;
     } catch (error) {

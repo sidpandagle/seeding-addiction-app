@@ -234,7 +234,7 @@ const ActivityEffectivenessCard: React.FC<ActivityEffectivenessCardProps> = ({
               Activity Insights
             </Text>
             <Text className="text-xs text-gray-500 dark:text-gray-400">
-              Your watering patterns
+              Your healthy activity patterns
             </Text>
           </View>
         </View>
@@ -244,7 +244,7 @@ const ActivityEffectivenessCard: React.FC<ActivityEffectivenessCardProps> = ({
             onPress={() => setShowLimitPicker(true)}
             className="flex-row items-center px-3 py-1.5 bg-gray-100 dark:bg-gray-800 rounded-lg"
           >
-            <Text className="text-xs font-medium text-gray-700 dark:text-gray-300 mr-1">
+            <Text className="mr-1 text-xs font-medium text-gray-700 dark:text-gray-300">
               {displayLimit === 'all' ? 'All' : `Top ${displayLimit}`}
             </Text>
             <ChevronDown size={14} color={isDark ? '#9CA3AF' : '#6B7280'} />
@@ -338,7 +338,7 @@ const ActivityEffectivenessCard: React.FC<ActivityEffectivenessCardProps> = ({
               className="flex-row items-center px-2.5 py-1.5 rounded-lg bg-gray-50 dark:bg-gray-800"
             >
               <View
-                className="w-3 h-3 rounded-full mr-2"
+                className="w-3 h-3 mr-2 rounded-full"
                 style={{ backgroundColor: stat.color }}
               />
               <Text className="text-xs font-medium text-gray-700 dark:text-gray-300" numberOfLines={1}>
@@ -351,7 +351,7 @@ const ActivityEffectivenessCard: React.FC<ActivityEffectivenessCardProps> = ({
           ))}
           {insights.othersData && (
             <View className="flex-row items-center px-2.5 py-1.5 rounded-lg bg-gray-100 dark:bg-gray-700">
-              <View className="w-3 h-3 rounded-full mr-2" style={{ backgroundColor: OTHERS_COLOR }} />
+              <View className="w-3 h-3 mr-2 rounded-full" style={{ backgroundColor: OTHERS_COLOR }} />
               <Text className="text-xs font-medium text-gray-600 dark:text-gray-400">
                 {insights.othersData.category}
               </Text>
@@ -408,7 +408,7 @@ const ActivityEffectivenessCard: React.FC<ActivityEffectivenessCardProps> = ({
 
       {/* Peak Time */}
       {insights.peakTime.count > 0 && (
-        <View className="flex-row items-center p-3 mt-4 mb-0 border bg-amber-50 dark:bg-amber-900/20 rounded-xl border-amber-300 dark:border-amber-700">
+        <View className="flex-row items-center p-3 mt-4 mb-0 border bg-amber-100 dark:bg-amber-900/20 rounded-xl border-amber-100 dark:border-amber-700">
           <Clock size={20} color="#f59e0b" strokeWidth={2} />
           <View className="flex-1 ml-3">
             <Text className="text-sm font-bold text-amber-800 dark:text-amber-200">
@@ -430,13 +430,13 @@ const ActivityEffectivenessCard: React.FC<ActivityEffectivenessCardProps> = ({
       >
         <Pressable
           onPress={() => setShowLimitPicker(false)}
-          className="flex-1 items-center justify-center bg-black/50"
+          className="items-center justify-center flex-1 bg-black/50"
         >
           <Pressable
             onPress={(e) => e.stopPropagation()}
-            className="bg-white dark:bg-gray-900 rounded-2xl p-4 w-48"
+            className="w-48 p-4 bg-white dark:bg-gray-900 rounded-2xl"
           >
-            <Text className="text-sm font-bold text-gray-900 dark:text-white mb-3 text-center">
+            <Text className="mb-3 text-sm font-bold text-center text-gray-900 dark:text-white">
               Show Activities
             </Text>
             {LIMIT_OPTIONS.map((option) => (

@@ -1,5 +1,5 @@
 import { getDatabase } from './schema';
-import type { Relapse, RelapseInput, Activity, ActivityInput } from './schema';
+import type { Relapse, RelapseInput, Activity, ActivityInput, EarnedBadge } from './schema';
 import * as Crypto from 'expo-crypto';
 import {
   validateTimestamp,
@@ -183,6 +183,7 @@ export const resetDatabase = async (): Promise<void> => {
 
   await db.runAsync('DELETE FROM relapse');
   await db.runAsync('DELETE FROM activity');
+  await db.runAsync('DELETE FROM earned_badges');
   await db.runAsync('DELETE FROM app_settings');
 };
 
@@ -330,4 +331,69 @@ export const getLastRelapseTime = async (): Promise<number | null> => {
     'SELECT timestamp FROM relapse ORDER BY timestamp DESC LIMIT 1'
   );
   return result ? new Date(result.timestamp).getTime() : null;
+};
+
+// ===== BADGE HELPERS =====
+
+/**
+ * Get all earned badges
+ */
+export const getEarnedBadges = async (): Promise<EarnedBadge[]> => {
+  const db = await getDatabase();
+  const badges = await db.getAllAsync<EarnedBadge>(
+    'SELECT * FROM earned_badges ORDER BY unlocked_at DESC'
+  );
+  return badges;
+};
+
+/**
+ * Add a newly earned badge
+ */
+export const addEarnedBadge = async (badgeId: string): Promise<EarnedBadge> => {
+  const db = await getDatabase();
+  const id = generateUUID();
+  const unlockedAt = new Date().toISOString();
+
+  await db.runAsync(
+    'INSERT INTO earned_badges (id, badge_id, unlocked_at) VALUES (?, ?, ?)',
+    [id, badgeId, unlockedAt]
+  );
+
+  return {
+    id,
+    badge_id: badgeId,
+    unlocked_at: unlockedAt,
+  };
+};
+
+/**
+ * Check if a badge is already earned
+ */
+export const isBadgeEarned = async (badgeId: string): Promise<boolean> => {
+  const db = await getDatabase();
+  const result = await db.getFirstAsync<{ count: number }>(
+    'SELECT COUNT(*) as count FROM earned_badges WHERE badge_id = ?',
+    [badgeId]
+  );
+  return (result?.count || 0) > 0;
+};
+
+/**
+ * Get earned badge by badge_id
+ */
+export const getEarnedBadgeById = async (badgeId: string): Promise<EarnedBadge | null> => {
+  const db = await getDatabase();
+  const result = await db.getFirstAsync<EarnedBadge>(
+    'SELECT * FROM earned_badges WHERE badge_id = ? LIMIT 1',
+    [badgeId]
+  );
+  return result || null;
+};
+
+/**
+ * Delete all earned badges (for testing/reset)
+ */
+export const deleteAllBadges = async (): Promise<void> => {
+  const db = await getDatabase();
+  await db.runAsync('DELETE FROM earned_badges');
 };
