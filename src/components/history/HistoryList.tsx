@@ -111,7 +111,7 @@ export default function HistoryList({ entries, onUpgradePress }: HistoryListProp
               <Pressable
                 onPress={() => setSelectedTag(null)}
                 className={`px-5 py-3 rounded-xl ${selectedTag === null
-                    ? 'bg-blue-100 dark:bg-blue-950/30 border border-blue-300 dark:border-blue-700'
+                    ? 'bg-blue-200 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-700'
                     : 'bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700'
                   }`}
               >
@@ -132,7 +132,7 @@ export default function HistoryList({ entries, onUpgradePress }: HistoryListProp
                     key={tag}
                     onPress={() => setSelectedTag(tag)}
                     className={`px-5 py-3 rounded-xl ${selectedTag === tag
-                        ? 'bg-blue-100 dark:bg-blue-950/30 border border-blue-300 dark:border-blue-700'
+                        ? 'bg-blue-200 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-700'
                         : 'bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700'
                       }`}
                   >

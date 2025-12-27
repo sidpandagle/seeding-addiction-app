@@ -1,7 +1,7 @@
 import React from 'react';
-import { Modal, View, Text, Pressable, ScrollView } from 'react-native';
+import { Modal, View, Text, Pressable, ScrollView, Linking, Platform } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { X, Crown, Star, Calendar, RefreshCw, CreditCard, AlertTriangle } from 'lucide-react-native';
+import { X, Crown, Star, Calendar, RefreshCw, CreditCard, AlertTriangle, ExternalLink } from 'lucide-react-native';
 import { useColorScheme } from '../../stores/themeStore';
 import { useSubscriptionStore } from '../../stores/subscriptionStore';
 import CustomAlert from '../common/CustomAlert';
@@ -212,37 +212,61 @@ export const CustomerCenter: React.FC<CustomerCenterProps> = ({
                 </Pressable>
               )}
 
-              {/* Remove Access (Dev only) */}
+              {/* Manage in Play Store */}
               <Pressable
-                onPress={handleRemoveAccess}
-                className="flex-row items-center p-4 active:opacity-70"
+                onPress={() => {
+                  Linking.openURL('https://play.google.com/store/account/subscriptions');
+                }}
+                className="flex-row items-center p-4 border-t border-gray-800 dark:border-gray-800 active:opacity-70"
               >
-                <View className="items-center justify-center w-10 h-10 mr-3 rounded-full bg-red-50 dark:bg-red-900/30">
-                  <X size={20} color="#ef4444" />
+                <View className="items-center justify-center w-10 h-10 mr-3 rounded-full bg-blue-50 dark:bg-blue-900/30">
+                  <ExternalLink size={20} color="#3b82f6" />
                 </View>
                 <View className="flex-1">
-                  <Text className="font-semibold text-red-600 dark:text-red-400">
-                    Remove Premium Access
+                  <Text className="font-semibold text-blue-600 dark:text-blue-400">
+                    Manage in Play Store
                   </Text>
                   <Text className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
-                    For testing (dev mode only)
+                    Update payment or cancel subscription
                   </Text>
                 </View>
               </Pressable>
+
+              {/* Remove Access (Dev only) */}
+              {__DEV__ && (
+                <Pressable
+                  onPress={handleRemoveAccess}
+                  className="flex-row items-center p-4 active:opacity-70"
+                >
+                  <View className="items-center justify-center w-10 h-10 mr-3 rounded-full bg-red-50 dark:bg-red-900/30">
+                    <X size={20} color="#ef4444" />
+                  </View>
+                  <View className="flex-1">
+                    <Text className="font-semibold text-red-600 dark:text-red-400">
+                      Remove Premium Access
+                    </Text>
+                    <Text className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
+                      For testing (dev mode only)
+                    </Text>
+                  </View>
+                </Pressable>
+              )}
             </View>
           </View>
 
           {/* Development Notice */}
-          <View className="mt-6">
-            <View className={`p-4 rounded-xl ${isDark ? 'bg-amber-900/20' : 'bg-amber-50'}`}>
-              <Text className={`text-sm font-medium ${isDark ? 'text-amber-400' : 'text-amber-700'}`}>
-                Development Mode
-              </Text>
-              <Text className={`mt-1 text-xs ${isDark ? 'text-amber-400/70' : 'text-amber-600'}`}>
-                This is a mock subscription management screen. In production, this will connect to the App Store or Google Play for real subscription management.
-              </Text>
+          {__DEV__ && (
+            <View className="mt-6">
+              <View className={`p-4 rounded-xl ${isDark ? 'bg-amber-900/20' : 'bg-amber-50'}`}>
+                <Text className={`text-sm font-medium ${isDark ? 'text-amber-400' : 'text-amber-700'}`}>
+                  Development Mode (Sandbox)
+                </Text>
+                <Text className={`mt-1 text-xs ${isDark ? 'text-amber-400/70' : 'text-amber-600'}`}>
+                  Using RevenueCat sandbox environment. Real subscriptions managed via Play Store.
+                </Text>
+              </View>
             </View>
-          </View>
+          )}
         </ScrollView>
 
         {/* Custom Alert */}

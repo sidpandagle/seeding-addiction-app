@@ -264,7 +264,7 @@ const ActivityEffectivenessCard: React.FC<ActivityEffectivenessCardProps> = ({
 
       {/* Info Card */}
       {showInfo && (
-        <View className="p-3 mb-4 border border-blue-200 rounded-xl bg-blue-50 dark:bg-blue-900/20 dark:border-blue-800">
+        <View className="p-3 mb-4 border border-blue-100 rounded-xl bg-blue-100 dark:bg-blue-900/20 dark:border-blue-800">
           <Text className="text-xs font-medium leading-4 text-blue-800 dark:text-blue-200">
             Track your healthy activities to understand your patterns. Diverse activities and consistent timing help build stronger habits!
           </Text>

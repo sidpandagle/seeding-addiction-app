@@ -248,10 +248,10 @@ function DashboardScreen() {
                 <View className="items-center justify-center mb-3 rounded-lg w-14 h-14">
                   <Sprout size={40} color="#10b981" strokeWidth={2} />
                 </View>
-                <Text className="mb-0 text-base font-bold text-center dark:text-white">
+                <Text className="mb-0 text-base font-bold text-center text-emerald-800 dark:text-emerald-200">
                   Track Your Growth
                 </Text>
-                <Text className="text-xs text-center dark:text-white">
+                <Text className="text-xs text-center text-emerald-800 dark:text-emerald-200">
                   Track healthy actions
                 </Text>
               </View>

@@ -6,7 +6,7 @@ interface TabSwitcherProps {
   onTabChange: (tabId: string) => void;
 }
 
-export default function TabSwitcher({ tabs, activeTab, onTabChange }: TabSwitcherProps) {
+export default function TabSwitcher({ tabs, activeTab, onTabChange }: Readonly<TabSwitcherProps>) {
   return (
     <View className="flex-row p-1.5 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-900 rounded-2xl">
       {tabs.map((tab) => (
@@ -14,13 +14,13 @@ export default function TabSwitcher({ tabs, activeTab, onTabChange }: TabSwitche
           key={tab.id}
           onPress={() => onTabChange(tab.id)}
           className={`flex-1 py-3 px-4 rounded-xl ${
-            activeTab === tab.id ? 'bg-amber-400 dark:bg-amber-950' : ''
+            activeTab === tab.id ? 'bg-amber-200 dark:bg-amber-950 text-amber-800 dark:text-amber-400' : ''
           }`}
         >
           <Text
             className={`text-sm font-bold text-center ${
               activeTab === tab.id
-                ? 'text-white'
+                ? 'dark:text-white'
                 : 'text-gray-600 dark:text-gray-400'
             }`}
           >

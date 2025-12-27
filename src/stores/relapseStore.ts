@@ -7,6 +7,7 @@ import { useAchievementStore } from './achievementStore';
 import { useNotificationStore } from './notificationStore';
 import { useCustomActivityTagsStore } from './customActivityTagsStore';
 import { useBadgeStore } from './badgeStore';
+import { badgeOrchestrator } from '../services/badgeOrchestrator';
 
 interface RelapseState {
   relapses: Relapse[];
@@ -103,6 +104,9 @@ export const useRelapseStore = create<RelapseStore>((set, get) => ({
           error: null,
         };
       });
+
+      // Check for badge unlocks (e.g., "Comeback" badge after relapse)
+      badgeOrchestrator.checkBadgesNow();
     } catch (error) {
       // Rollback on error - remove optimistic entry
       set((state) => {
@@ -135,6 +139,9 @@ export const useRelapseStore = create<RelapseStore>((set, get) => ({
       // Perform actual database delete
       await dbHelpers.deleteRelapse(id);
       set({ error: null });
+
+      // Re-check badges as relapse data has changed
+      badgeOrchestrator.checkBadgesNow();
     } catch (error) {
       // Rollback on error - restore the deleted relapse
       if (relapseToDelete) {
@@ -168,6 +175,9 @@ export const useRelapseStore = create<RelapseStore>((set, get) => ({
             loading: false,
           };
         });
+
+        // Re-check badges as relapse data has changed
+        badgeOrchestrator.checkBadgesNow();
       } else {
         set({
           error: 'Relapse not found',

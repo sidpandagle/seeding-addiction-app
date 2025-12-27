@@ -37,7 +37,9 @@
       "Bash(find:*)",
       "Bash(xargs ls:*)",
       "mcp__ide__getDiagnostics",
-      "Bash(npx expo-doctor)"
+      "Bash(npx expo-doctor)",
+      "WebSearch",
+      "Bash(ls:*)"
     ],
     "deny": [],
     "ask": []

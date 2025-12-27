@@ -14,7 +14,7 @@ export default function AboutModal({ onClose }: AboutModalProps) {
   const faqItems = [
     {
       question: "What's the plant metaphor?",
-      answer: "Your recovery journey is like growing a plant. Activities you log are like watering your plant - they help it grow stronger. Growth stages progress from a seed to a full tree as you build healthy habits and maintain your streak.",
+      answer: "Your recovery journey is like growing a plant. When you 'Track Your Growth' by logging healthy activities, you nurture your progress. Growth stages progress from a seed 🫘 to a full tree 🌳 as you build resilience and maintain your streak.",
     },
     {
       question: "Should I track every relapse?",
@@ -22,7 +22,7 @@ export default function AboutModal({ onClose }: AboutModalProps) {
     },
     {
       question: "How do achievements unlock?",
-      answer: "Achievements unlock automatically based on elapsed time since your last relapse. There are 14 milestones ranging from 5 minutes to 1 year. Each milestone celebrates your growing strength and resilience.",
+      answer: "There are two types: Milestones unlock automatically based on time since your last relapse (14 milestones from 5 minutes to 1 year). Badges unlock when you hit activity goals like logging activities 3 days in a row. Check the Achievements tab to track both!",
     },
     {
       question: "Is my data really private?",
@@ -30,7 +30,7 @@ export default function AboutModal({ onClose }: AboutModalProps) {
     },
     {
       question: "What are the activity categories?",
-      answer: "Activities are grouped into categories like Exercise, Meditation, Social Connection, Creative Expression, and more. You can select up to 5 categories per entry and add optional notes about what you did.",
+      answer: "Activities are grouped into categories like Exercise, Meditation, Social Connection, Creative Expression, and more. You can select up to 5 categories per entry, create custom tags with emojis, and add optional reflections about what you did.",
     },
     {
       question: "How does the resistance ratio work?",
@@ -38,7 +38,7 @@ export default function AboutModal({ onClose }: AboutModalProps) {
     },
     {
       question: "Can I export my data?",
-      answer: "Yes! Premium users can export their journey data to CSV for spreadsheets or as a formatted report to share with therapists or support groups. Your data remains under your control.",
+      answer: "Yes! Premium users can export their journey data in three formats: Excel (with charts and insights), CSV (for spreadsheets), or detailed text reports to share with therapists or support groups. Your data remains under your control.",
     },
     {
       question: "What if I forget to log activities?",

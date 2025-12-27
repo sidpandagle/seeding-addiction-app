@@ -30,7 +30,7 @@ export default function BadgeGrid({
   earnedBadges,
   badgeProgress,
   onBadgePress,
-}: BadgeGridProps) {
+}: Readonly<BadgeGridProps>) {
   const colorScheme = useColorScheme();
   const [selectedCategory, setSelectedCategory] = useState<BadgeCategory | 'all'>('all');
   const [showFilterModal, setShowFilterModal] = useState(false);
@@ -63,7 +63,7 @@ export default function BadgeGrid({
     <View className="flex-1">
       {/* Unified Header: Badges Title + Count + Filter */}
       <View className="px-6 mb-4">
-        <View className="flex-row items-center justify-between mb-3">
+        <View className="flex-row items-center justify-between p-4 mb-3 bg-white border border-gray-200 rounded-xl dark:bg-gray-900 dark:border-gray-700">
           <View className="flex-1">
             <Text className="text-xl font-bold text-gray-900 dark:text-white">
               Your Badges
@@ -100,6 +100,8 @@ export default function BadgeGrid({
                 badge={badge}
                 isLocked={isLocked}
                 progress={progress?.progress}
+                current={progress?.current}
+                required={progress?.required}
                 onPress={() => onBadgePress?.(badge)}
                 staggerIndex={index}
               />

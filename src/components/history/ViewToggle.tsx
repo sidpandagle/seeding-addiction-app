@@ -13,12 +13,12 @@ export default function ViewToggle({ mode, onModeChange }: Readonly<ViewTogglePr
       <Pressable
         onPress={() => onModeChange('list')}
         className={`flex-1 py-3 px-4 rounded-xl ${
-          mode === 'list' ? 'bg-blue-400 dark:bg-blue-950' : ''
+          mode === 'list' ? 'bg-blue-200 dark:bg-blue-950' : ''
         }`}
       >
         <Text
           className={`text-sm font-bold text-center ${
-            mode === 'list' ? 'text-white' : 'text-gray-600 dark:text-gray-400'
+            mode === 'list' ? 'dark:text-white' : 'text-gray-600 dark:text-gray-400'
           }`}
         >
           List
@@ -27,12 +27,12 @@ export default function ViewToggle({ mode, onModeChange }: Readonly<ViewTogglePr
       <Pressable
         onPress={() => onModeChange('calendar')}
         className={`flex-1 py-3 px-4 rounded-xl ${
-          mode === 'calendar' ? 'bg-blue-400 dark:bg-blue-950' : ''
+          mode === 'calendar' ? 'bg-blue-200 dark:bg-blue-950' : ''
         }`}
       >
         <Text
           className={`text-sm font-bold text-center ${
-            mode === 'calendar' ? 'text-white' : 'text-gray-600 dark:text-gray-400'
+            mode === 'calendar' ? 'dark:text-white' : 'text-gray-600 dark:text-gray-400'
           }`}
         >
           Calendar

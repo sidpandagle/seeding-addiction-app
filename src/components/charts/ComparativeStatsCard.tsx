@@ -181,7 +181,7 @@ const ComparativeStatsCard: React.FC<ComparativeStatsCardProps> = ({
 
       {/* Info Card */}
       {showInfo && (
-        <View className="p-3 mb-4 rounded-xl bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800">
+        <View className="p-3 mb-4 rounded-xl bg-blue-100 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800">
           <Text className="text-xs font-medium text-blue-800 dark:text-blue-200 leading-4">
             Compare your progress across different time periods. Green arrows mean improvement (fewer relapses or more activities). Track weekly and monthly trends to see your growth!
           </Text>

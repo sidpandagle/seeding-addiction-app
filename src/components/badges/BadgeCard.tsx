@@ -3,18 +3,19 @@ import { Lock, Sparkles } from 'lucide-react-native';
 import { Badge } from '../../db/schema';
 import { useColorScheme } from '../../stores/themeStore';
 import * as Haptics from 'expo-haptics';
-import Animated, { FadeInUp } from 'react-native-reanimated';
 import { memo } from 'react';
 
 interface BadgeCardProps {
   badge: Badge;
   isLocked: boolean;
   progress?: number; // 0-1 for badges close to unlock
+  current?: number; // Current progress value
+  required?: number; // Required value to unlock
   onPress?: () => void;
   staggerIndex?: number;
 }
 
-function BadgeCard({ badge, isLocked, progress, onPress, staggerIndex = 0 }: Readonly<BadgeCardProps>) {
+function BadgeCard({ badge, isLocked, progress, current, required, onPress, staggerIndex = 0 }: Readonly<BadgeCardProps>) {
   const colorScheme = useColorScheme();
 
   const handlePress = () => {
@@ -25,9 +26,7 @@ function BadgeCard({ badge, isLocked, progress, onPress, staggerIndex = 0 }: Rea
   };
 
   return (
-    <Animated.View
-      entering={FadeInUp.delay(staggerIndex * 50).springify()}
-    >
+    <View>
       <Pressable
         onPress={handlePress}
         disabled={!onPress}
@@ -40,7 +39,7 @@ function BadgeCard({ badge, isLocked, progress, onPress, staggerIndex = 0 }: Rea
             className={`items-center justify-center rounded-full ${
               isLocked
                 ? 'bg-gray-100 dark:bg-gray-800/50 border-2 border-gray-100 dark:border-gray-700'
-                : 'bg-gradient-to-br from-amber-50 to-amber-100 dark:from-amber-900/30 dark:to-amber-800/30 border-2 border-amber-200 dark:border-amber-700/50'
+                : 'bg-amber-100 dark:bg-amber-900/30 border-2 border-amber-100 dark:border-amber-700'
             }`}
             style={{ width: 100, height: 100 }}
           >
@@ -56,18 +55,11 @@ function BadgeCard({ badge, isLocked, progress, onPress, staggerIndex = 0 }: Rea
               <Lock size={14} color="#fff" strokeWidth={2.5} />
             </View>
           )}
-
-          {/* Sparkle Indicator for Unlocked Badges */}
-          {!isLocked && (
-            <View className="absolute items-center justify-center rounded-full -top-1 -right-1 w-7 h-7 bg-amber-500 dark:bg-amber-600">
-              <Sparkles size={14} color="#fff" strokeWidth={2.5} />
-            </View>
-          )}
         </View>
 
         {/* Badge Title */}
         <Text
-          className={`text-sm font-bold text-center mb-1 ${
+          className={`text-sm font-bold text-center mb-1 line-clamp-1 ${
             isLocked
               ? 'text-gray-500 dark:text-gray-500'
               : 'text-gray-900 dark:text-white'
@@ -91,22 +83,16 @@ function BadgeCard({ badge, isLocked, progress, onPress, staggerIndex = 0 }: Rea
           {badge.description}
         </Text>
 
-        {/* Progress Bar for Locked Badges */}
+        {/* Percentage Display for Locked Badges with Progress */}
         {isLocked && progress !== undefined && progress > 0 && (
           <View className="w-full mt-2" style={{ width: 110 }}>
-            <View className="h-1.5 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
-              <View
-                className="h-full rounded-full bg-amber-400 dark:bg-amber-500"
-                style={{ width: `${Math.min(progress * 100, 100)}%` }}
-              />
-            </View>
-            <Text className="mt-1 text-[10px] font-semibold text-center text-amber-600 dark:text-amber-400">
-              {Math.round(progress * 100)}%
+            <Text className="text-[10px] font-semibold text-center text-amber-600 dark:text-amber-400">
+              {Math.round(progress * 100)}% complete
             </Text>
           </View>
         )}
       </Pressable>
-    </Animated.View>
+    </View>
   );
 }
 

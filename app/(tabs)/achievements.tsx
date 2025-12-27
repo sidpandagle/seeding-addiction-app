@@ -1,6 +1,6 @@
-import { View, Text, ScrollView } from 'react-native';
+import { View, Text, ScrollView, RefreshControl, ActivityIndicator } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { useColorScheme } from '../../src/stores/themeStore';
 import AchievementRoadmap from '../../src/components/achievements/AchievementRoadmap';
 import AchievementDetailModal from '../../src/components/achievements/AchievementDetailModal';
@@ -9,11 +9,12 @@ import BadgeGrid from '../../src/components/badges/BadgeGrid';
 import { getAchievements, Achievement } from '../../src/utils/growthStages';
 import { useJourneyStats } from '../../src/hooks/useJourneyStats';
 import { useLatestRelapseTimestamp } from '../../src/stores/relapseStore';
-import { getJourneyStart, getEarnedBadges } from '../../src/db/helpers';
+import { getJourneyStart } from '../../src/db/helpers';
 import { useBadgeStore } from '../../src/stores/badgeStore';
 import { BADGE_DEFINITIONS } from '../../src/data/badgeDefinitions';
 import { Badge } from '../../src/db/schema';
 import { Trophy, Award } from 'lucide-react-native';
+import { badgeOrchestrator } from '../../src/services/badgeOrchestrator';
 
 type TabId = 'milestones' | 'badges';
 
@@ -23,30 +24,61 @@ export default function AchievementsScreen() {
   const [selectedAchievement, setSelectedAchievement] = useState<Achievement | null>(null);
   const [selectedBadge, setSelectedBadge] = useState<Badge | null>(null);
   const [journeyStart, setJourneyStart] = useState<string | null>(null);
+  const isMountedRef = useRef(false);
 
   // Use centralized hook for journey stats
   const stats = useJourneyStats();
   const latestRelapseTimestamp = useLatestRelapseTimestamp();
 
-  // Badge store
+  // Badge store - subscribe to store instead of loading from DB
   const earnedBadges = useBadgeStore((state) => state.earnedBadges);
   const badgeProgress = useBadgeStore((state) => state.badgeProgress);
-  const setEarnedBadges = useBadgeStore((state) => state.setEarnedBadges);
+  const hasHydrated = useBadgeStore((state) => state._hasHydrated);
+  const isCheckingBadges = useBadgeStore((state) => state.isCheckingBadges);
 
-  // Load earned badges from database
+  // Pull-to-refresh state
+  const [refreshing, setRefreshing] = useState(false);
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
+
+  // Track mounted state
   useEffect(() => {
-    const loadBadges = async () => {
-      const badges = await getEarnedBadges();
-      setEarnedBadges(badges);
+    isMountedRef.current = true;
+    return () => {
+      isMountedRef.current = false;
     };
-    loadBadges();
-  }, [setEarnedBadges]);
+  }, []);
+
+  // Sync badges from database when screen comes into focus
+  useEffect(() => {
+    // Always sync on mount, regardless of hydration status
+    const syncBadges = async () => {
+      await badgeOrchestrator.syncBadgesFromDB();
+      if (isMountedRef.current) {
+        setIsInitialLoad(false);
+      }
+    };
+
+    syncBadges();
+  }, []);
+
+  // Pull-to-refresh handler
+  const onRefresh = useCallback(async () => {
+    if (isMountedRef.current) {
+      setRefreshing(true);
+    }
+    await badgeOrchestrator.syncBadgesFromDB();
+    if (isMountedRef.current) {
+      setRefreshing(false);
+    }
+  }, []);
 
   // Load journey start for milestone predictions
   useEffect(() => {
     const loadJourneyStart = async () => {
       const start = await getJourneyStart();
-      setJourneyStart(start);
+      if (isMountedRef.current) {
+        setJourneyStart(start);
+      }
     };
     loadJourneyStart();
   }, []);
@@ -59,11 +91,15 @@ export default function AchievementsScreen() {
   // This reduces re-renders from 60/min to 1/min when no achievement changes
   useEffect(() => {
     if (!stats.startTime) {
-      setAchievements(getAchievements(0));
+      if (isMountedRef.current) {
+        setAchievements(getAchievements(0));
+      }
       return;
     }
 
     const updateAchievements = () => {
+      if (!isMountedRef.current) return;
+
       const elapsedTime = Math.max(0, Date.now() - new Date(stats.startTime!).getTime());
       const newAchievements = getAchievements(elapsedTime);
 
@@ -85,7 +121,10 @@ export default function AchievementsScreen() {
   }, [stats.startTime]);
 
   // Calculate progress based on active tab
-  const earnedBadgeIds = new Set(earnedBadges.map((b) => b.badge_id));
+  const earnedBadgeIds = useMemo(
+    () => new Set(earnedBadges.map((b) => b.badge_id)),
+    [earnedBadges]
+  );
 
   const milestonesUnlocked = achievements.filter((a: any) => a.isUnlocked).length;
   const milestonesTotal = achievements.length;
@@ -96,6 +135,19 @@ export default function AchievementsScreen() {
   const unlockedCount = activeTab === 'milestones' ? milestonesUnlocked : badgesUnlocked;
   const totalCount = activeTab === 'milestones' ? milestonesTotal : badgesTotal;
   const progressPercentage = Math.round((unlockedCount / totalCount) * 100);
+
+  // Show loading screen only on initial load
+  if (isInitialLoad && earnedBadges.length === 0 && !hasHydrated) {
+    return (
+      <View className="items-center justify-center flex-1 bg-gray-50 dark:bg-gray-950">
+        <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'} />
+        <ActivityIndicator size="large" color="#f59e0b" />
+        <Text className="mt-4 text-base font-medium text-gray-500 dark:text-gray-400">
+          Loading achievements...
+        </Text>
+      </View>
+    );
+  }
 
   return (
     <View className="flex-1 bg-gray-50 dark:bg-gray-950">
@@ -109,7 +161,7 @@ export default function AchievementsScreen() {
               <Text className="text-3xl font-semibold tracking-wide text-gray-900 dark:text-white">
                 Achievements
               </Text>
-              <Text className="mt-1 text-sm font-medium tracking-wide text-amber-700 dark:text-amber-400">
+              <Text className="mt-0 text-sm font-medium tracking-wide text-amber-700 dark:text-amber-400">
                 {activeTab === 'milestones'
                   ? 'Celebrate your journey milestones'
                   : 'Earn badges for your efforts'}
@@ -141,6 +193,14 @@ export default function AchievementsScreen() {
         className="flex-1"
         showsVerticalScrollIndicator={false}
         contentContainerClassName="pb-4"
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            tintColor="#f59e0b"
+            colors={['#f59e0b']}
+          />
+        }
       >
         {/* Progress Section Above Achievements */}
         <View className="px-6 mt-0">
@@ -227,6 +287,9 @@ export default function AchievementsScreen() {
             isUnlocked: earnedBadgeIds.has(selectedBadge.id),
             unlockedAt: earnedBadges.find((b) => b.badge_id === selectedBadge.id)?.unlocked_at,
           }}
+          progress={badgeProgress[selectedBadge.id]?.progress}
+          current={badgeProgress[selectedBadge.id]?.current}
+          required={badgeProgress[selectedBadge.id]?.required}
           visible={!!selectedBadge}
           onClose={() => setSelectedBadge(null)}
         />

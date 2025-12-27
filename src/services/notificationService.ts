@@ -25,6 +25,20 @@ Notifications.setNotificationHandler({
   }),
 });
 
+// Daily check-in reminder messages
+export const DAILY_REMINDER_MESSAGES = [
+  { title: '🌱 Daily Check-In', body: 'How are you doing today? Take a moment to water your plant!' },
+  { title: '🌿 Good Morning!', body: 'A new day, a fresh start. How\'s your journey going today?' },
+  { title: '💚 Time To Check In', body: 'Remember to nurture your growth today. How are you feeling?' },
+  { title: '🌸 Daily Reflection', body: 'Take a moment for yourself. Track your progress and celebrate!' },
+  { title: '🌟 You\'re Doing Great!', body: 'Time for your daily check-in. Let\'s see how you\'re growing!' },
+  { title: '🌺 Mindful Moment', body: 'Pause and reflect on your journey. How are you today?' },
+  { title: '☀️ Rise & Shine!', body: 'A beautiful day to grow stronger. Time for your check-in!' },
+  { title: '🌼 Daily Care', body: 'Just like your plant needs water, you need self-care. Check in with yourself!' },
+  { title: '🦋 Progress Check', body: 'Every day is transformation. How are you feeling right now?' },
+  { title: '💫 Your Daily Moment', body: 'This is your time to reflect and grow. How\'s your day going?' },
+];
+
 // Motivational messages for random notifications
 export const MOTIVATIONAL_MESSAGES = [
   { title: '🌱 Growing Strong!', body: 'Every moment of resistance makes your roots grow deeper.' },
@@ -42,6 +56,26 @@ export const MOTIVATIONAL_MESSAGES = [
   { title: '🌻 Choose Growth', body: 'Every choice to resist is a choice to grow. Well done!' },
   { title: '💎 Diamond In The Making', body: 'Pressure creates diamonds. You\'re becoming stronger.' },
   { title: '🦋 Transformation', body: 'Change takes time. Trust the process, beautiful soul.' },
+  { title: '🌟 Believe In Yourself', body: 'You have the strength within you. Every day you prove it.' },
+  { title: '🌺 Beautiful Progress', body: 'Look how far you\'ve come! Each step forward is a victory.' },
+  { title: '💫 You\'re Amazing', body: 'The fact that you\'re here trying means everything. Keep going!' },
+  { title: '🌼 Small Wins Count', body: 'Every small victory is building the new you. Celebrate yourself today!' },
+  { title: '🍃 Fresh Start', body: 'Every moment is a chance to begin again. You\'ve got this!' },
+  { title: '🎈 Rise Above', body: 'You\'re stronger than your urges. You\'ve proven it before, you\'ll do it again.' },
+  { title: '🌹 Self-Love Journey', body: 'You deserve kindness, especially from yourself. Be gentle today.' },
+  { title: '☀️ New Day, New Strength', body: 'Each sunrise brings fresh courage. Embrace it!' },
+  { title: '🎨 Creating Your Future', body: 'Every healthy choice is a brushstroke painting your best life.' },
+  { title: '🌊 Ride The Wave', body: 'Urges come and go like waves. You\'re learning to surf them beautifully.' },
+  { title: '🦁 Inner Courage', body: 'There\'s a lion inside you. Feel that strength and roar!' },
+  { title: '🌙 Night Victory', body: 'You made it through another day. That\'s worth celebrating!' },
+  { title: '🏔️ Mountain Climber', body: 'Some days are harder than others. But you\'re still climbing!' },
+  { title: '💝 Worthy Of Love', body: 'You are worthy of love, peace, and all the good things life offers.' },
+  { title: '🌏 Your Journey Matters', body: 'Your progress, no matter how small, is changing your world.' },
+  { title: '🎁 Gift To Future You', body: 'Every moment of resistance is a gift to your future self. Thank you!' },
+  { title: '🕊️ Peace Within', body: 'You\'re creating inner peace one choice at a time. Keep nurturing it.' },
+  { title: '🌤️ Brighter Days', body: 'The clouds will pass. You\'re moving toward brighter days!' },
+  { title: '💖 Proud Of You', body: 'Wherever you are on your journey, know that we\'re proud of you.' },
+  { title: '🎯 Focus On Today', body: 'You don\'t have to be perfect forever, just for today. And you\'re doing it!' },
 ];
 
 class NotificationService {
@@ -166,17 +200,22 @@ class NotificationService {
   }
 
   /**
-   * Schedule daily check-in reminder
+   * Schedule daily check-in reminder with rotating messages
    */
   async scheduleDailyReminder(hour: number, minute: number): Promise<void> {
     // Cancel existing daily reminder
     await Notifications.cancelScheduledNotificationAsync('daily-reminder');
 
+    // Rotate through messages based on day of week
+    const dayOfWeek = new Date().getDay();
+    const messageIndex = dayOfWeek % DAILY_REMINDER_MESSAGES.length;
+    const message = DAILY_REMINDER_MESSAGES[messageIndex];
+
     await Notifications.scheduleNotificationAsync({
       identifier: 'daily-reminder',
       content: {
-        title: '🌱 Daily Check-In',
-        body: 'How are you doing today? Take a moment to water your plant!',
+        title: message.title,
+        body: message.body,
         sound: true,
         ...(Platform.OS === 'android' && { channelId: 'reminders' }),
       },

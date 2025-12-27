@@ -9,16 +9,40 @@ interface AchievementDetailModalProps {
   achievement: Achievement | null;
   visible: boolean;
   onClose: () => void;
+  progress?: number; // 0-1 for badges close to unlock
+  current?: number; // Current progress value
+  required?: number; // Required value to unlock
 }
 
 export default function AchievementDetailModal({
   achievement,
   visible,
   onClose,
+  progress,
+  current,
+  required,
 }: Readonly<AchievementDetailModalProps>) {
   const colorScheme = useColorScheme();
 
   if (!achievement) return null;
+
+  // Generate dynamic message for near-completion achievements/badges
+  const getMotivationalMessage = () => {
+    if (achievement.isUnlocked) {
+      return '🎉 Congratulations on this achievement! Keep up the amazing work!';
+    }
+
+    // Show dynamic message when progress > 70%
+    if (progress && current !== undefined && required !== undefined && progress > 0.7) {
+      const remaining = required - current;
+      return `Almost there! Just ${remaining} more to unlock this badge!`;
+    }
+
+    // Default static message
+    return '💪 Keep going! You\'re making progress toward unlocking this achievement.';
+  };
+
+  const motivationalMessage = getMotivationalMessage();
 
   const formatThreshold = (threshold: number) => {
     const minutes = threshold / (1000 * 60);
@@ -145,9 +169,7 @@ export default function AchievementDetailModal({
                   ? 'text-emerald-900 dark:text-emerald-200'
                   : 'text-gray-600 dark:text-gray-300'
               }`}>
-                {achievement.isUnlocked
-                  ? '🎉 Congratulations on this achievement! Keep up the amazing work!'
-                  : '💪 Keep going! You\'re making progress toward unlocking this achievement.'}
+                {motivationalMessage}
               </Text>
             </View>
           </ScrollView>

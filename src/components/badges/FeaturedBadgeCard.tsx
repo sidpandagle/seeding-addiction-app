@@ -46,7 +46,7 @@ export default function FeaturedBadgeCard({ badge, earnedBadge, onPress, index }
         disabled={!onPress}
         className="overflow-hidden rounded-3xl"
       >
-        <View className="bg-gradient-to-br from-amber-50 to-amber-100 dark:from-amber-900/20 dark:to-amber-800/20 border-2 border-amber-200/80 dark:border-amber-700/40 p-5">
+        <View className="bg-amber-100 dark:bg-amber-900/20 border-2 border-amber-200/80 dark:border-amber-700/40 p-5">
           <View className="flex-row items-center">
             {/* Left: Circular Badge */}
             <View className="relative mr-4">

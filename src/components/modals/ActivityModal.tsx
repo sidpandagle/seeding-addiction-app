@@ -8,12 +8,9 @@ import { useCustomActivityTagsStore, formatActivityTag, SUGGESTED_EMOJIS, Custom
 import { Sprout, CheckCircle, Plus, X, Trash2, Smile } from 'lucide-react-native';
 import { getRandomTip, type EducationalTip } from '../../data/educationalContent';
 import { ACTIVITY_CATEGORIES } from '../../constants/tags';
-import { getCelebrationMessage, calculateCelebrationStats } from '../../utils/celebrationMessages';
 import CustomAlert from '../common/CustomAlert';
 import { useAlert } from '../../hooks/useAlert';
 import { getLocalDateString } from '../../utils/dateHelpers';
-import BadgeCelebration from '../badges/BadgeCelebration';
-import { Badge } from '../../db/schema';
 
 interface ActivityModalProps {
   onClose: () => void;
@@ -51,9 +48,6 @@ export default function ActivityModal({ onClose, preSelectedCategories = [] }: A
   const [newTagLabel, setNewTagLabel] = useState('');
   const [selectedEmoji, setSelectedEmoji] = useState('✨');
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
-
-  // Badge celebration state
-  const [celebrationBadge, setCelebrationBadge] = useState<Badge | null>(null);
 
   // Alert state
   const { alertState, showAlert, hideAlert } = useAlert();
@@ -207,48 +201,12 @@ export default function ActivityModal({ onClose, preSelectedCategories = [] }: A
         categories: selectedCategories.length > 0 ? selectedCategories : undefined,
       });
 
-      // Calculate celebration stats
-      const stats = calculateCelebrationStats(activities, timestamp);
-      const celebration = getCelebrationMessage(
-        stats.totalActivitiesThisMonth,
-        stats.totalActivitiesThisWeek,
-        stats.daysInARow,
-        stats.isFirstActivity
-      );
-
-      // Show celebration if there's a milestone
-      if (celebration) {
-        showAlert({
-          type: 'success',
-          title: 'Great Progress!',
-          message: celebration.message,
-          buttons: [{
-            text: 'Amazing!',
-            onPress: () => {
-              hideAlert();
-              setTimeout(() => {
-                onClose();
-              }, 100);
-            },
-          }],
-        });
-      } else {
-        // Brief delay for feedback
-        setTimeout(() => {
-          onClose();
-        }, 300);
-      }
-
-      // Check for newly unlocked badges after activity is saved
+      // Brief delay for feedback before closing
       setTimeout(() => {
-        const newlyUnlockedBadges = (globalThis as any).__newlyUnlockedBadges;
-        if (newlyUnlockedBadges && newlyUnlockedBadges.length > 0) {
-          // Show the first badge celebration
-          setCelebrationBadge(newlyUnlockedBadges[0]);
-          // Clear global state
-          delete (globalThis as any).__newlyUnlockedBadges;
-        }
-      }, 800);
+        onClose();
+      }, 300);
+
+      // Badge celebration will be triggered automatically via useEffect watching celebrationQueue
     } catch (error) {
       console.error('Failed to save activity:', error);
       setIsSubmitting(false);
@@ -282,7 +240,7 @@ export default function ActivityModal({ onClose, preSelectedCategories = [] }: A
         <View className="px-5 mt-2">
           <View className="flex-row gap-3">
             {/* Weekly Activity Count */}
-            <View className="flex-1 p-4 border border-green-200 bg-green-50 dark:bg-green-950/30 rounded-xl dark:border-green-900/50">
+            <View className="flex-1 p-4 bg-green-100 border border-green-100 dark:bg-green-950/30 rounded-xl dark:border-green-900/50">
               <Text className="mb-1 text-xs font-semibold text-green-600 uppercase dark:text-green-300">
                 Your Growth This Week
               </Text>
@@ -297,7 +255,7 @@ export default function ActivityModal({ onClose, preSelectedCategories = [] }: A
             </View>
 
             {/* Most Common Activity */}
-            <View className="flex-1 p-4 border border-purple-200 bg-purple-50 dark:bg-purple-950/30 rounded-xl dark:border-purple-900/50">
+            <View className="flex-1 p-4 bg-purple-100 border border-purple-100 dark:bg-purple-950/30 rounded-xl dark:border-purple-900/50">
               <Text className="mb-1 text-xs font-semibold text-purple-600 uppercase dark:text-purple-300">
                 Most Common
               </Text>
@@ -375,7 +333,7 @@ export default function ActivityModal({ onClose, preSelectedCategories = [] }: A
                       disabled={isDisabled}
                       className={`px-4 py-2.5 rounded-full flex-row items-center gap-2 ${
                         isSelected
-                          ? 'bg-blue-600 dark:bg-blue-800/30'
+                          ? 'bg-blue-200 dark:bg-blue-800/30'
                           : isDisabled
                           ? 'bg-gray-100/50 dark:bg-gray-800/50 opacity-50'
                           : isCustom
@@ -386,7 +344,7 @@ export default function ActivityModal({ onClose, preSelectedCategories = [] }: A
                       <Text
                         className={`text-sm font-semibold ${
                           isSelected
-                            ? 'text-white'
+                            ? (colorScheme === 'dark' ? 'text-white' : 'text-blue-800')
                             : isDisabled
                             ? 'text-gray-400 dark:text-gray-600'
                             : isCustom
@@ -397,7 +355,11 @@ export default function ActivityModal({ onClose, preSelectedCategories = [] }: A
                         {category}
                       </Text>
                       {isSelected && (
-                        <CheckCircle size={16} color="#FFFFFF" strokeWidth={2.5} />
+                        <CheckCircle
+                          size={16}
+                          color={colorScheme === 'dark' ? '#FFFFFF' : '#1e40af'}
+                          strokeWidth={2.5}
+                        />
                       )}
                     </Pressable>
                   );
@@ -432,10 +394,10 @@ export default function ActivityModal({ onClose, preSelectedCategories = [] }: A
             disabled={isSubmitting}
             className={`rounded-2xl py-4 ${isSubmitting
               ? 'bg-blue-400 dark:bg-blue-600'
-              : 'bg-blue-600 dark:bg-blue-700 active:bg-blue-700 dark:active:bg-blue-800'
+              : 'bg-blue-300 dark:bg-blue-700 active:bg-blue-400 dark:active:bg-blue-800'
               }`}
           >
-            <Text className="text-lg font-bold text-center text-white">
+            <Text className={`text-lg font-bold text-center ${colorScheme === 'dark' ? 'text-white' : 'text-blue-800'}`}>
               {isSubmitting ? 'Saving...' : 'Log Activity'}
             </Text>
           </Pressable>
@@ -492,7 +454,7 @@ export default function ActivityModal({ onClose, preSelectedCategories = [] }: A
                 {/* Emoji Picker Button */}
                 <Pressable
                   onPress={() => setShowEmojiPicker(true)}
-                  className="items-center justify-center ml-1 bg-white w-14 h-14 dark:bg-gray-700 rounded-xl"
+                  className="items-center justify-center ml-0 bg-white w-14 h-14 dark:bg-gray-700 rounded-xl"
                 >
                   <Text className="text-2xl">{selectedEmoji}</Text>
                 </Pressable>
@@ -589,17 +551,6 @@ export default function ActivityModal({ onClose, preSelectedCategories = [] }: A
             container: colorScheme === 'dark' ? '#111827' : '#F9FAFB',
             containerActive: colorScheme === 'dark' ? '#1E3A5F' : '#DBEAFE',
           },
-        }}
-      />
-
-      {/* Badge Celebration Modal */}
-      <BadgeCelebration
-        visible={!!celebrationBadge}
-        badge={celebrationBadge}
-        onClose={() => setCelebrationBadge(null)}
-        onViewCollection={() => {
-          setCelebrationBadge(null);
-          // Note: Would navigate to achievements tab here if navigation ref available
         }}
       />
 

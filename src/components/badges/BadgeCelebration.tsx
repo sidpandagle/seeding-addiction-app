@@ -15,7 +15,7 @@ export default function BadgeCelebration({
   visible,
   badge,
   onClose,
-}: BadgeCelebrationProps) {
+}: Readonly<BadgeCelebrationProps>) {
   const colorScheme = useColorScheme();
 
   useEffect(() => {
@@ -39,7 +39,7 @@ export default function BadgeCelebration({
         <View className="w-full max-w-md overflow-hidden bg-white dark:bg-gray-900 rounded-3xl">
           {/* Celebration Header */}
           <View className="items-center px-6 pt-8 pb-6 bg-gradient-to-b from-blue-50 to-white dark:from-blue-900/30 dark:to-gray-900">
-            <View className="items-center justify-center w-20 h-20 mb-4 bg-blue-100 dark:bg-blue-900/50 rounded-full">
+            <View className="items-center justify-center w-20 h-20 mb-4 bg-blue-100 rounded-full dark:bg-blue-900/50">
               <Award size={40} color="#3b82f6" strokeWidth={2} />
             </View>
             <Text className="text-2xl font-bold text-center text-gray-900 dark:text-white">

@@ -1,9 +1,10 @@
 import { Stack } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { View, LogBox } from 'react-native';
+import { View, LogBox, Alert } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { enableScreens } from 'react-native-screens';
 import { useRelapseStore } from '../src/stores/relapseStore';
+import { useBadgeStore } from '../src/stores/badgeStore';
 import { useColorScheme as useColorSchemeStore } from '../src/stores/themeStore';
 import { useSubscriptionStore } from '../src/stores/subscriptionStore';
 import { AppLock } from '../src/components/common/AppLock';
@@ -35,6 +36,11 @@ export default function RootLayout() {
   const { setColorScheme } = useColorScheme();
   const [isReady, setIsReady] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Badge celebration - global watcher
+  const celebrationQueue = useBadgeStore((state) => state.celebrationQueue);
+  const dequeueCelebration = useBadgeStore((state) => state.dequeueCelebration);
+  const [isShowingBadgeAlert, setIsShowingBadgeAlert] = useState(false);
 
   const [fontsLoaded] = useFonts({
     Poppins_400Regular,
@@ -76,6 +82,38 @@ export default function RootLayout() {
     initialize();
   }, [loadRelapses, initializeSubscriptions]);
 
+  // Global badge celebration watcher
+  useEffect(() => {
+    if (!isReady) return; // Don't show celebrations during initialization
+    if (isShowingBadgeAlert) return; // CRITICAL: Don't show if alert already showing
+
+    if (celebrationQueue.length > 0) {
+      setIsShowingBadgeAlert(true);
+      const badge = celebrationQueue[0];
+
+      Alert.alert(
+        `🎉 Badge Unlocked!`,
+        `${badge.emoji}\n\n${badge.title}\n\n${badge.description}${badge.tier ? `\n\n✨ ${badge.tier.toUpperCase()} TIER` : ''}`,
+        [
+          {
+            text: '🎊 Awesome!',
+            style: 'default',
+            onPress: () => {
+              dequeueCelebration();
+              setIsShowingBadgeAlert(false); // Allow next alert to show
+            },
+          },
+        ],
+        {
+          cancelable: false,
+          onDismiss: () => {
+            // Fallback for Android back button (shouldn't happen with cancelable: false)
+            setIsShowingBadgeAlert(false);
+          },
+        }
+      );
+    }
+  }, [celebrationQueue.length, isReady]); // CRITICAL: Only depend on length, not content
 
   // Hide splash screen when everything is ready
   useEffect(() => {

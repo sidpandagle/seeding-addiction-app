@@ -1,10 +1,8 @@
 import { create } from 'zustand';
-import type { Activity, ActivityInput, Badge } from '../db/schema';
+import type { Activity, ActivityInput } from '../db/schema';
 import * as dbHelpers from '../db/helpers';
 import * as Crypto from 'expo-crypto';
-import { checkAllBadges } from '../utils/badgeChecker';
-import { useBadgeStore } from './badgeStore';
-import * as Haptics from 'expo-haptics';
+import { badgeOrchestrator } from '../services/badgeOrchestrator';
 
 interface ActivityState {
   activities: Activity[];
@@ -71,44 +69,8 @@ export const useActivityStore = create<ActivityStore>((set, get) => ({
         error: null,
       }));
 
-      // Check for badge unlocks after activity is logged
-      setTimeout(async () => {
-        try {
-          const allActivities = await dbHelpers.getActivities(1000);
-          const earnedBadges = await dbHelpers.getEarnedBadges();
-          const relapses = await dbHelpers.getRelapses(100);
-          const journeyStart = await dbHelpers.getJourneyStart();
-
-          const { newlyUnlocked, progress } = await checkAllBadges(
-            allActivities,
-            earnedBadges,
-            relapses,
-            journeyStart || undefined
-          );
-
-          // Save newly unlocked badges to database and update store
-          if (newlyUnlocked.length > 0) {
-            for (const badge of newlyUnlocked) {
-              const earnedBadge = await dbHelpers.addEarnedBadge(badge.id);
-              useBadgeStore.getState().addEarnedBadge(earnedBadge);
-            }
-
-            // Trigger haptic feedback for first badge
-            Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-
-            // Store newly unlocked badges for celebration modal
-            // This will be picked up by the home screen or activity modal
-            (globalThis as any).__newlyUnlockedBadges = newlyUnlocked;
-          }
-
-          // Update badge progress in store
-          for (const progressItem of progress) {
-            useBadgeStore.getState().setBadgeProgress(progressItem.badgeId, progressItem);
-          }
-        } catch (error) {
-          console.error('Error checking badges:', error);
-        }
-      }, 500); // Delay to ensure database transaction completes
+      // Check for badge unlocks using centralized orchestrator
+      badgeOrchestrator.checkBadgesNow();
     } catch (error) {
       // Rollback on error - remove optimistic entry
       set((state) => ({
@@ -133,6 +95,9 @@ export const useActivityStore = create<ActivityStore>((set, get) => ({
       // Perform actual database delete
       await dbHelpers.deleteActivity(id);
       set({ error: null });
+
+      // Re-check badges as activity data has changed
+      badgeOrchestrator.checkBadgesDebounced();
     } catch (error) {
       // Rollback on error - restore the deleted activity
       if (activityToDelete) {

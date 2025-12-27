@@ -120,33 +120,6 @@ export const PaywallModal: React.FC<PaywallModalProps> = ({
             </Text>
           </View>
 
-          {/* Features List */}
-          <View className="px-6 mb-6">
-            <View className={`p-4 rounded-2xl ${isDark ? 'bg-gray-900' : 'bg-white'}`}>
-              {PREMIUM_FEATURES.map((feature, index) => (
-                <View
-                  key={index}
-                  className={`flex-row items-center py-3 ${index < PREMIUM_FEATURES.length - 1
-                      ? `border-b ${isDark ? 'border-gray-800' : 'border-gray-100'}`
-                      : ''
-                    }`}
-                >
-                  <View className="items-center justify-center w-8 h-8 mr-3 bg-purple-100 rounded-full dark:bg-purple-900/30">
-                    <Check size={18} color="#a855f7" strokeWidth={3} />
-                  </View>
-                  <View className="flex-1">
-                    <Text className={`font-semibold ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                      {feature.title}
-                    </Text>
-                    <Text className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
-                      {feature.description}
-                    </Text>
-                  </View>
-                </View>
-              ))}
-            </View>
-          </View>
-
           {/* Plan Selection */}
           <View className="px-6 mb-6">
             <Text className={`text-sm font-bold tracking-wider uppercase mb-3 ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
@@ -221,20 +194,49 @@ export const PaywallModal: React.FC<PaywallModalProps> = ({
             </View>
           </View>
 
-          {/* Development Notice */}
-          <View className="px-6 mb-4">
-            <View className={`p-3 rounded-xl ${isDark ? 'bg-amber-900/20' : 'bg-amber-50'}`}>
-              <View className="flex-row items-center">
-                <Sparkles size={16} color="#f59e0b" />
-                <Text className={`ml-2 text-sm font-medium ${isDark ? 'text-amber-400' : 'text-amber-700'}`}>
-                  Development Mode
-                </Text>
-              </View>
-              <Text className={`mt-1 text-xs ${isDark ? 'text-amber-400/70' : 'text-amber-600'}`}>
-                Purchases are simulated for testing. No real charges will be made.
-              </Text>
+          {/* Features List */}
+          <View className="px-6 mb-6">
+            <View className={`p-4 rounded-2xl ${isDark ? 'bg-gray-900' : 'bg-white'}`}>
+              {PREMIUM_FEATURES.map((feature, index) => (
+                <View
+                  key={index}
+                  className={`flex-row items-center py-3 ${index < PREMIUM_FEATURES.length - 1
+                      ? `border-b ${isDark ? 'border-gray-800' : 'border-gray-100'}`
+                      : ''
+                    }`}
+                >
+                  <View className="items-center justify-center w-8 h-8 mr-3 bg-purple-100 rounded-full dark:bg-purple-900/30">
+                    <Check size={18} color="#a855f7" strokeWidth={3} />
+                  </View>
+                  <View className="flex-1">
+                    <Text className={`font-semibold ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                      {feature.title}
+                    </Text>
+                    <Text className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
+                      {feature.description}
+                    </Text>
+                  </View>
+                </View>
+              ))}
             </View>
           </View>
+
+          {/* Development Notice */}
+          {__DEV__ && (
+            <View className="px-6 mb-4">
+              <View className={`p-3 rounded-xl ${isDark ? 'bg-amber-900/20' : 'bg-amber-50'}`}>
+                <View className="flex-row items-center">
+                  <Sparkles size={16} color="#f59e0b" />
+                  <Text className={`ml-2 text-sm font-medium ${isDark ? 'text-amber-400' : 'text-amber-700'}`}>
+                    Development Mode (Sandbox)
+                  </Text>
+                </View>
+                <Text className={`mt-1 text-xs ${isDark ? 'text-amber-400/70' : 'text-amber-600'}`}>
+                  Using RevenueCat sandbox environment. Test purchases won't charge real money.
+                </Text>
+              </View>
+            </View>
+          )}
         </ScrollView>
 
         {/* Bottom Purchase Section */}

@@ -81,10 +81,31 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
       await notificationService.setNotificationsEnabled(enabled);
       set({ isEnabled: enabled });
 
-      // If enabling, re-schedule any existing settings
+      // If enabling, enable all notification types and set defaults
       if (enabled) {
-        const { dailyReminderTime, randomNotificationsEnabled } = get();
+        let { dailyReminderTime, randomNotificationsEnabled, milestoneNotificationsEnabled } = get();
 
+        // Enable all notification types
+        if (!randomNotificationsEnabled) {
+          await notificationService.setRandomNotificationsEnabled(true);
+          set({ randomNotificationsEnabled: true });
+        }
+
+        if (!milestoneNotificationsEnabled) {
+          await notificationService.setMilestoneNotificationsEnabled(true);
+          set({ milestoneNotificationsEnabled: true });
+        }
+
+        // Set default daily reminder time to 9:00 AM if not set
+        if (!dailyReminderTime) {
+          const defaultHour = 9;
+          const defaultMinute = 0;
+          await notificationService.setDailyReminderTime(defaultHour, defaultMinute);
+          set({ dailyReminderTime: { hour: defaultHour, minute: defaultMinute } });
+          dailyReminderTime = { hour: defaultHour, minute: defaultMinute };
+        }
+
+        // Schedule notifications based on current settings
         if (dailyReminderTime) {
           await notificationService.scheduleDailyReminder(
             dailyReminderTime.hour,
@@ -92,9 +113,7 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
           );
         }
 
-        if (randomNotificationsEnabled) {
-          await notificationService.scheduleRandomNotifications();
-        }
+        await notificationService.scheduleRandomNotifications();
       }
     } catch (error) {
       console.error('[NotificationStore] Set enabled error:', error);

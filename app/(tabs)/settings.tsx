@@ -16,7 +16,7 @@ import { useRelapseStore } from '../../src/stores/relapseStore';
 import { useColorScheme, useThemeStore } from '../../src/stores/themeStore';
 import { useNotificationStore } from '../../src/stores/notificationStore';
 import { usePremium } from '../../src/hooks/usePremium';
-import { Settings2, Palette, Lock, Database, Sun, Moon, Shield, Trash2, Info, Brain, Coffee, BookOpen, Crown, Star, Bell, Clock, Sparkles, Trophy, Download, FileText } from 'lucide-react-native';
+import { Settings2, Palette, Lock, Database, Sun, Moon, Shield, Trash2, Info, Brain, Coffee, BookOpen, Crown, Star, Bell, Clock, Sparkles, Trophy, Download, Sheet } from 'lucide-react-native';
 import { exportService } from '../../src/services/exportService';
 import RecoveryEducationModal from '../../src/components/modals/RecoveryEducationModal';
 import CustomAlert from '../../src/components/common/CustomAlert';
@@ -264,53 +264,27 @@ export default function SettingsScreen() {
     return `${displayHour}:${displayMinute} ${period}`;
   };
 
-  const handleExportCSV = async () => {
+  const handleExportXLSX = async () => {
     if (!isPremium) {
       setShowPaywallModal(true);
       return;
     }
 
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    const success = await exportService.exportToCSV();
+    const success = await exportService.exportToXLSX();
 
     if (success) {
       showAlert({
         type: 'success',
-        title: 'Export Ready',
-        message: 'Your journey data has been exported successfully.',
+        title: 'Excel Export Ready',
+        message: 'Your complete journey data has been exported to Excel with charts and insights.',
         buttons: [{ text: 'OK', onPress: hideAlert }],
       });
     } else {
       showAlert({
         type: 'error',
         title: 'Export Failed',
-        message: 'Could not export your data. Please try again.',
-        buttons: [{ text: 'OK', onPress: hideAlert }],
-      });
-    }
-  };
-
-  const handleExportReport = async () => {
-    if (!isPremium) {
-      setShowPaywallModal(true);
-      return;
-    }
-
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    const success = await exportService.exportToText();
-
-    if (success) {
-      showAlert({
-        type: 'success',
-        title: 'Report Ready',
-        message: 'Your journey report has been generated.',
-        buttons: [{ text: 'OK', onPress: hideAlert }],
-      });
-    } else {
-      showAlert({
-        type: 'error',
-        title: 'Export Failed',
-        message: 'Could not generate report. Please try again.',
+        message: 'Could not export to Excel. Please try again.',
         buttons: [{ text: 'OK', onPress: hideAlert }],
       });
     }
@@ -702,49 +676,27 @@ export default function SettingsScreen() {
             )}
           </View>
 
-          <View className="p-5 bg-white border border-gray-200 dark:bg-gray-900 dark:border-gray-800 rounded-2xl">
-            {/* CSV Export */}
-            <Pressable
-              onPress={handleExportCSV}
-              className="flex-row items-center justify-between pb-4 mb-4 border-b border-gray-100 dark:border-gray-800 active:opacity-70"
-            >
+          <Pressable
+            onPress={handleExportXLSX}
+            className="p-5 bg-white border border-gray-200 dark:bg-gray-900 dark:border-gray-800 rounded-2xl active:opacity-70"
+          >
+            <View className="flex-row items-center justify-between">
               <View className="flex-row items-center flex-1">
-                <View className="items-center justify-center w-10 h-10 mr-3 rounded-full bg-blue-50 dark:bg-blue-900/30">
-                  <Download size={20} color="#3b82f6" strokeWidth={2.5} />
+                <View className="items-center justify-center w-12 h-12 mr-4 rounded-full bg-emerald-50 dark:bg-emerald-900/30">
+                  <Sheet size={24} color="#10b981" strokeWidth={2.5} />
                 </View>
                 <View className="flex-1">
                   <Text className="text-base font-bold text-gray-900 dark:text-white">
-                    Export to CSV
+                    Export to Excel
                   </Text>
-                  <Text className="mt-0.5 text-sm text-gray-500 dark:text-gray-400">
-                    Full data for spreadsheets
-                  </Text>
-                </View>
-              </View>
-              {!isPremium && <Lock size={18} color="#9CA3AF" strokeWidth={2.5} />}
-            </Pressable>
-
-            {/* Report Export */}
-            <Pressable
-              onPress={handleExportReport}
-              className="flex-row items-center justify-between active:opacity-70"
-            >
-              <View className="flex-row items-center flex-1">
-                <View className="items-center justify-center w-10 h-10 mr-3 rounded-full bg-green-50 dark:bg-green-900/30">
-                  <FileText size={20} color="#10b981" strokeWidth={2.5} />
-                </View>
-                <View className="flex-1">
-                  <Text className="text-base font-bold text-gray-900 dark:text-white">
-                    Share Report
-                  </Text>
-                  <Text className="mt-0.5 text-sm text-gray-500 dark:text-gray-400">
-                    Formatted summary for therapy
+                  <Text className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                    Complete journey data with badges, analytics, charts & insights
                   </Text>
                 </View>
               </View>
-              {!isPremium && <Lock size={18} color="#9CA3AF" strokeWidth={2.5} />}
-            </Pressable>
-          </View>
+              {!isPremium && <Lock size={20} color="#9CA3AF" strokeWidth={2.5} />}
+            </View>
+          </Pressable>
         </View>
 
         {/* Support Section */}

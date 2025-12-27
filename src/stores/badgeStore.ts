@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { EarnedBadge, BadgeWithStatus } from '../db/schema';
+import { EarnedBadge, BadgeWithStatus, Badge } from '../db/schema';
 
 interface BadgeProgress {
   badgeId: string;
@@ -16,6 +16,11 @@ interface BadgeStore {
   loading: boolean;
   _hasHydrated: boolean;
 
+  // NEW: Celebration queue and checking state
+  celebrationQueue: Badge[];
+  isCheckingBadges: boolean;
+  lastCheckedTimestamp: string | null;
+
   // Actions
   setEarnedBadges: (badges: EarnedBadge[]) => void;
   addEarnedBadge: (badge: EarnedBadge) => void;
@@ -24,6 +29,15 @@ interface BadgeStore {
   setLoading: (loading: boolean) => void;
   setHasHydrated: (state: boolean) => void;
   resetBadges: () => Promise<void>;
+
+  // NEW: Celebration queue actions
+  enqueueCelebration: (badge: Badge) => void;
+  dequeueCelebration: () => void;
+  clearCelebrationQueue: () => void;
+
+  // NEW: Badge checking state actions
+  setIsCheckingBadges: (isChecking: boolean) => void;
+  setLastCheckedTimestamp: (timestamp: string) => void;
 
   // Selectors
   isBadgeEarned: (badgeId: string) => boolean;
@@ -38,6 +52,11 @@ export const useBadgeStore = create<BadgeStore>()(
       badgeProgress: {},
       loading: false,
       _hasHydrated: false,
+
+      // NEW: Celebration queue and checking state (initialized)
+      celebrationQueue: [],
+      isCheckingBadges: false,
+      lastCheckedTimestamp: null,
 
       setEarnedBadges: (badges: EarnedBadge[]) => set({ earnedBadges: badges }),
 
@@ -62,8 +81,32 @@ export const useBadgeStore = create<BadgeStore>()(
 
       resetBadges: async () => {
         await AsyncStorage.removeItem('badge-storage');
-        set({ earnedBadges: [], badgeProgress: {}, _hasHydrated: false });
+        set({
+          earnedBadges: [],
+          badgeProgress: {},
+          celebrationQueue: [],
+          lastCheckedTimestamp: null,
+          _hasHydrated: false
+        });
       },
+
+      // NEW: Celebration queue actions
+      enqueueCelebration: (badge: Badge) =>
+        set((state) => ({
+          celebrationQueue: [...state.celebrationQueue, badge],
+        })),
+
+      dequeueCelebration: () =>
+        set((state) => ({
+          celebrationQueue: state.celebrationQueue.slice(1),
+        })),
+
+      clearCelebrationQueue: () => set({ celebrationQueue: [] }),
+
+      // NEW: Badge checking state actions
+      setIsCheckingBadges: (isChecking: boolean) => set({ isCheckingBadges: isChecking }),
+
+      setLastCheckedTimestamp: (timestamp: string) => set({ lastCheckedTimestamp: timestamp }),
 
       // Selectors
       isBadgeEarned: (badgeId: string) => {
@@ -92,6 +135,8 @@ export const useBadgeStore = create<BadgeStore>()(
       partialize: (state) => ({
         earnedBadges: state.earnedBadges,
         badgeProgress: state.badgeProgress,
+        lastCheckedTimestamp: state.lastCheckedTimestamp,
+        // Exclude transient fields: celebrationQueue, isCheckingBadges
       }),
     }
   )

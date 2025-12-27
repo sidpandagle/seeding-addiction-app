@@ -159,7 +159,7 @@ export default function RelapseModal({ onClose, existingRelapse }: RelapseModalP
         {!existingRelapse && (
           <View className="px-5 mt-3">
             {/* Recovery Tip Card - Consequence-Focused */}
-            <View className="p-4 border bg-amber-50 dark:bg-amber-950/30 rounded-xl border-amber-200 dark:border-amber-900/50">
+            <View className="p-4 border bg-amber-100 dark:bg-amber-950/30 rounded-xl border-amber-100 dark:border-amber-900/50">
               <Text className="mb-2 text-lg font-bold text-amber-900 dark:text-amber-100">
                 {recoveryTip.emoji} {recoveryTip.title}
               </Text>
@@ -228,7 +228,7 @@ export default function RelapseModal({ onClose, existingRelapse }: RelapseModalP
                       disabled={isDisabled}
                       className={`px-4 py-2.5 rounded-full flex-row items-center gap-2 ${
                         isSelected
-                          ? 'bg-emerald-600 dark:bg-emerald-700'
+                          ? 'bg-amber-200 dark:bg-amber-950/30 border border-amber-100 dark:border-amber-700'
                           : isCustom
                             ? 'bg-purple-100 dark:bg-purple-900/30'
                             : 'bg-gray-100 dark:bg-gray-700'
@@ -237,7 +237,7 @@ export default function RelapseModal({ onClose, existingRelapse }: RelapseModalP
                       <Text
                         className={`text-sm font-semibold ${
                           isSelected
-                            ? 'text-white'
+                            ? (colorScheme === 'dark' ? 'text-white' : 'text-amber-800')
                             : isCustom
                               ? 'text-purple-700 dark:text-purple-300'
                               : 'text-gray-700 dark:text-gray-300'
@@ -246,7 +246,11 @@ export default function RelapseModal({ onClose, existingRelapse }: RelapseModalP
                         {tag}
                       </Text>
                       {isSelected && (
-                        <CheckCircle size={16} color="#FFFFFF" strokeWidth={2.5} />
+                        <CheckCircle
+                          size={16}
+                          color={colorScheme === 'dark' ? '#FFFFFF' : '#92400e'}
+                          strokeWidth={2.5}
+                        />
                       )}
                     </Pressable>
                   );
@@ -310,11 +314,11 @@ export default function RelapseModal({ onClose, existingRelapse }: RelapseModalP
             onPress={handleSave}
             disabled={isSubmitting}
             className={`rounded-2xl py-4 ${isSubmitting
-              ? 'bg-emerald-400 dark:bg-emerald-600'
-              : 'bg-emerald-600 dark:bg-emerald-700 active:bg-emerald-700 dark:active:bg-emerald-800'
+              ? 'bg-amber-400 dark:bg-amber-600'
+              : 'bg-amber-200 dark:bg-amber-700 active:bg-amber-300 dark:active:bg-amber-800'
               }`}
           >
-            <Text className="text-lg font-bold text-center text-white">
+            <Text className={`text-lg font-bold text-center ${colorScheme === 'dark' ? 'text-white' : 'text-amber-700'}`}>
               {isSubmitting ? 'Alright then...' : existingRelapse ? 'Update' : 'Are you sure?'}
             </Text>
           </Pressable>
