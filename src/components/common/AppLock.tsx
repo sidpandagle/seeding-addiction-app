@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { View, Text, Pressable, AppState, AppStateStatus } from 'react-native';
 import { authenticateUser, isAppLockEnabled } from '../../services/security';
 
@@ -6,10 +6,16 @@ interface AppLockProps {
   children: React.ReactNode;
 }
 
+// Grace period after unlock before allowing re-lock (prevents flicker)
+const UNLOCK_GRACE_PERIOD_MS = 1000;
+
 export function AppLock({ children }: AppLockProps) {
   const [isLocked, setIsLocked] = useState(true);
   const [lockEnabled, setLockEnabled] = useState(false);
   const [isAuthenticating, setIsAuthenticating] = useState(false);
+
+  // Track last unlock time to prevent immediate re-lock
+  const lastUnlockTimeRef = useRef<number>(0);
 
   // Check if app lock is enabled on mount
   useEffect(() => {
@@ -35,6 +41,13 @@ export function AppLock({ children }: AppLockProps) {
       'change',
       (nextAppState: AppStateStatus) => {
         if (nextAppState === 'active' && lockEnabled) {
+          // Check if we're within the grace period after a successful unlock
+          const timeSinceUnlock = Date.now() - lastUnlockTimeRef.current;
+          if (timeSinceUnlock < UNLOCK_GRACE_PERIOD_MS) {
+            // Within grace period, don't re-lock
+            return;
+          }
+
           // App came to foreground, lock it again
           setIsLocked(true);
         }
@@ -46,7 +59,7 @@ export function AppLock({ children }: AppLockProps) {
     };
   }, [lockEnabled]);
 
-  const handleAuthentication = async () => {
+  const handleAuthentication = useCallback(async () => {
     if (isAuthenticating) return;
 
     setIsAuthenticating(true);
@@ -54,9 +67,10 @@ export function AppLock({ children }: AppLockProps) {
     setIsAuthenticating(false);
 
     if (success) {
+      lastUnlockTimeRef.current = Date.now();
       setIsLocked(false);
     }
-  };
+  }, [isAuthenticating]);
 
   // If lock is not enabled, show children directly
   if (!lockEnabled || !isLocked) {

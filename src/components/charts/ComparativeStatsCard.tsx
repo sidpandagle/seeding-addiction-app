@@ -1,7 +1,9 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import { View, Text, Pressable } from 'react-native';
 import { TrendingUp, TrendingDown, Minus, Activity, AlertCircle, Info, X } from 'lucide-react-native';
+import * as Haptics from 'expo-haptics';
 import { useColorScheme } from '../../stores/themeStore';
+import { getAppSetting, setAppSetting } from '../../db/helpers';
 import type { Relapse } from '../../db/schema';
 import type { Activity as ActivityType } from '../../db/schema';
 
@@ -17,11 +19,14 @@ interface PeriodStats {
 }
 
 interface Comparison {
+  id: string;
   label: string;
   current: PeriodStats;
   previous: PeriodStats;
   periodLabel: { current: string; previous: string };
 }
+
+type ComparisonPeriod = 'weekly' | 'monthly' | 'last30days';
 
 const ComparativeStatsCard: React.FC<ComparativeStatsCardProps> = ({
   relapses,
@@ -30,10 +35,29 @@ const ComparativeStatsCard: React.FC<ComparativeStatsCardProps> = ({
   const colorScheme = useColorScheme();
   const isDark = colorScheme === 'dark';
   const [showInfo, setShowInfo] = useState(false);
+  const [selectedPeriod, setSelectedPeriod] = useState<ComparisonPeriod>('weekly');
 
+  // Load saved period preference on mount
+  useEffect(() => {
+    const loadPreference = async () => {
+      const saved = await getAppSetting('comparison_period_preference');
+      if (saved && ['weekly', 'monthly', 'last30days'].includes(saved)) {
+        setSelectedPeriod(saved as ComparisonPeriod);
+      }
+    };
+    loadPreference();
+  }, []);
+
+  // Handle period change with persistence and haptic feedback
+  const handlePeriodChange = async (period: ComparisonPeriod) => {
+    setSelectedPeriod(period);
+    await setAppSetting('comparison_period_preference', period);
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+  };
+
+  // PERFORMANCE: Only calculate the selected period instead of all 3
   const comparisons = useMemo(() => {
     const now = new Date();
-    const results: Comparison[] = [];
 
     // Helper to get stats for a date range
     const getStats = (startDate: Date, endDate: Date): PeriodStats => {
@@ -53,52 +77,59 @@ const ComparativeStatsCard: React.FC<ComparativeStatsCardProps> = ({
       return { relapses: periodRelapses, activities: periodActivities, successRate };
     };
 
-    // This Week vs Last Week
-    const thisWeekStart = new Date(now);
-    thisWeekStart.setDate(now.getDate() - now.getDay()); // Start of this week (Sunday)
-    thisWeekStart.setHours(0, 0, 0, 0);
+    // Only calculate the selected period (lazy evaluation)
+    switch (selectedPeriod) {
+      case 'weekly': {
+        const thisWeekStart = new Date(now);
+        thisWeekStart.setDate(now.getDate() - now.getDay());
+        thisWeekStart.setHours(0, 0, 0, 0);
+        const lastWeekStart = new Date(thisWeekStart);
+        lastWeekStart.setDate(lastWeekStart.getDate() - 7);
+        const lastWeekEnd = new Date(thisWeekStart);
 
-    const lastWeekStart = new Date(thisWeekStart);
-    lastWeekStart.setDate(lastWeekStart.getDate() - 7);
+        return [{
+          id: 'weekly',
+          label: 'Weekly',
+          current: getStats(thisWeekStart, now),
+          previous: getStats(lastWeekStart, lastWeekEnd),
+          periodLabel: { current: 'This week', previous: 'Last week' },
+        }];
+      }
 
-    const lastWeekEnd = new Date(thisWeekStart);
+      case 'monthly': {
+        const thisMonthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+        const lastMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+        const lastMonthEnd = new Date(now.getFullYear(), now.getMonth(), 1);
 
-    results.push({
-      label: 'Weekly',
-      current: getStats(thisWeekStart, now),
-      previous: getStats(lastWeekStart, lastWeekEnd),
-      periodLabel: { current: 'This week', previous: 'Last week' },
-    });
+        return [{
+          id: 'monthly',
+          label: 'Monthly',
+          current: getStats(thisMonthStart, now),
+          previous: getStats(lastMonthStart, lastMonthEnd),
+          periodLabel: { current: 'This month', previous: 'Last month' },
+        }];
+      }
 
-    // This Month vs Last Month
-    const thisMonthStart = new Date(now.getFullYear(), now.getMonth(), 1);
-    const lastMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-    const lastMonthEnd = new Date(now.getFullYear(), now.getMonth(), 1);
+      case 'last30days': {
+        const last30DaysStart = new Date(now);
+        last30DaysStart.setDate(now.getDate() - 30);
+        last30DaysStart.setHours(0, 0, 0, 0);
+        const prev30DaysStart = new Date(last30DaysStart);
+        prev30DaysStart.setDate(prev30DaysStart.getDate() - 30);
 
-    results.push({
-      label: 'Monthly',
-      current: getStats(thisMonthStart, now),
-      previous: getStats(lastMonthStart, lastMonthEnd),
-      periodLabel: { current: 'This month', previous: 'Last month' },
-    });
+        return [{
+          id: 'last30days',
+          label: 'Last 30 Days',
+          current: getStats(last30DaysStart, now),
+          previous: getStats(prev30DaysStart, last30DaysStart),
+          periodLabel: { current: 'Last 30 days', previous: 'Previous 30 days' },
+        }];
+      }
 
-    // Last 30 Days vs Previous 30 Days
-    const last30DaysStart = new Date(now);
-    last30DaysStart.setDate(now.getDate() - 30);
-    last30DaysStart.setHours(0, 0, 0, 0);
-
-    const prev30DaysStart = new Date(last30DaysStart);
-    prev30DaysStart.setDate(prev30DaysStart.getDate() - 30);
-
-    results.push({
-      label: 'Last 30 Days',
-      current: getStats(last30DaysStart, now),
-      previous: getStats(prev30DaysStart, last30DaysStart),
-      periodLabel: { current: 'Last 30 days', previous: 'Previous 30 days' },
-    });
-
-    return results;
-  }, [relapses, activities]);
+      default:
+        return [];
+    }
+  }, [relapses, activities, selectedPeriod]);
 
   const getTrendIcon = (current: number, previous: number, isLowerBetter: boolean) => {
     if (current === previous) {
@@ -187,6 +218,66 @@ const ComparativeStatsCard: React.FC<ComparativeStatsCardProps> = ({
           </Text>
         </View>
       )}
+
+      {/* Period Selector */}
+      <View className="flex-row p-1.5 mb-4 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-2xl">
+        <Pressable
+          onPress={() => handlePeriodChange('weekly')}
+          className={`flex-1 py-3 px-4 rounded-xl ${
+            selectedPeriod === 'weekly'
+              ? 'bg-emerald-100 dark:bg-emerald-900/40'
+              : ''
+          }`}
+        >
+          <Text
+            className={`text-sm font-bold text-center ${
+              selectedPeriod === 'weekly'
+                ? 'text-emerald-700 dark:text-emerald-400'
+                : 'text-gray-600 dark:text-gray-400'
+            }`}
+          >
+            Weekly
+          </Text>
+        </Pressable>
+
+        <Pressable
+          onPress={() => handlePeriodChange('monthly')}
+          className={`flex-1 py-3 px-4 rounded-xl ${
+            selectedPeriod === 'monthly'
+              ? 'bg-emerald-100 dark:bg-emerald-900/40'
+              : ''
+          }`}
+        >
+          <Text
+            className={`text-sm font-bold text-center ${
+              selectedPeriod === 'monthly'
+                ? 'text-emerald-700 dark:text-emerald-400'
+                : 'text-gray-600 dark:text-gray-400'
+            }`}
+          >
+            Monthly
+          </Text>
+        </Pressable>
+
+        <Pressable
+          onPress={() => handlePeriodChange('last30days')}
+          className={`flex-1 py-3 px-4 rounded-xl ${
+            selectedPeriod === 'last30days'
+              ? 'bg-emerald-100 dark:bg-emerald-900/40'
+              : ''
+          }`}
+        >
+          <Text
+            className={`text-sm font-bold text-center ${
+              selectedPeriod === 'last30days'
+                ? 'text-emerald-700 dark:text-emerald-400'
+                : 'text-gray-600 dark:text-gray-400'
+            }`}
+          >
+            Last 30D
+          </Text>
+        </Pressable>
+      </View>
 
       {comparisons.map((comparison, index) => (
         <View

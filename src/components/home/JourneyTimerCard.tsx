@@ -129,6 +129,11 @@ const JourneyTimerCardComponent: React.FC<JourneyTimerCardProps> = ({
   const colorScheme = useColorScheme();
   const [time, setTime] = useState(Date.now());
 
+  // Memoize card background style to prevent new object creation on every render
+  const cardBgStyle = useMemo(() => ({
+    backgroundColor: colorScheme === 'dark' ? '#111827' : '#ffffff'
+  }), [colorScheme]);
+
   useEffect(() => {
     // Update timer every second
     const interval = setInterval(() => {
@@ -143,7 +148,7 @@ const JourneyTimerCardComponent: React.FC<JourneyTimerCardProps> = ({
     return (
       <View className="px-6">
         <View
-          style={{ backgroundColor: colorScheme === 'dark' ? '#111827' : '#ffffff' }}
+          style={cardBgStyle}
           className="relative overflow-hidden border border-gray-200 shadow-md rounded-2xl dark:border-gray-700"
         >
           <View className="items-center justify-center p-6" style={{ minHeight: 250 }}>
@@ -171,7 +176,7 @@ const JourneyTimerCardComponent: React.FC<JourneyTimerCardProps> = ({
     <View className="px-6">
       {/* Card with Background Icon - Same style as Daily Inspiration */}
       <View
-        style={{ backgroundColor: colorScheme === 'dark' ? '#111827' : '#ffffff' }}
+        style={cardBgStyle}
         className="relative overflow-hidden border border-gray-200 shadow-md rounded-2xl dark:border-gray-800"
       >
         <View className="p-6">

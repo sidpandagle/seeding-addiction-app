@@ -6,7 +6,9 @@ interface RecoveryEducationModalProps {
   onClose: () => void;
 }
 
-export default function RecoveryEducationModal({ onClose }: RecoveryEducationModalProps) {
+export default function RecoveryEducationModal({
+  onClose,
+}: Readonly<RecoveryEducationModalProps>) {
   const colorScheme = useColorScheme();
 
   return (
@@ -42,18 +44,20 @@ export default function RecoveryEducationModal({ onClose }: RecoveryEducationMod
               </Text>
             </View>
             <Text className="mb-4 text-base leading-7 text-gray-700 dark:text-gray-300">
-              Recovery isn't about perfection—it's about{' '}
+              Okay, real talk: recovery isn't about being perfect forever. It's about{' '}
               <Text className="font-bold text-emerald-600 dark:text-emerald-400">
-                increasing time between relapses
+                stretching the time between slips
               </Text>
-              . Research shows that going from weekly relapses to monthly ones is massive progress,
-              even if you're not perfect.
+              . If you go from “this happens a lot” to “this happens way less,” that's your brain
+              learning. That's progress.
             </Text>
             <View className="p-4 border bg-emerald-50 dark:bg-emerald-950/30 border-emerald-300 dark:border-emerald-700 rounded-2xl">
               <Text className="text-base font-semibold leading-6 text-emerald-700 dark:text-emerald-300">
-                <Text className="font-bold">What's Acceptable?</Text> A 40-60% success rate is normal
-                in addiction recovery. After 5 years, successful recoveries see this improve to 85%.
-                Progress over time is what counts.
+                <Text className="font-bold">Quick reality check:</Text> relapse can be part of the
+                recovery process. NIH/NIDA often describes relapse rates for substance use disorders
+                around <Text className="font-bold">40–60%</Text>, which is in the same ballpark as
+                other chronic conditions when people stop following the plan. A slip isn't “I'm
+                broken.” It's a signal to adjust your strategy.
               </Text>
             </View>
           </View>
@@ -67,19 +71,20 @@ export default function RecoveryEducationModal({ onClose }: RecoveryEducationMod
               </Text>
             </View>
             <Text className="mb-4 text-base leading-7 text-gray-700 dark:text-gray-300">
-              Your brain releases dopamine for <Text className="italic">all</Text> rewards, but
-              there's a crucial difference:
+              Dopamine isn't just a “pleasure chemical.” It's more like your brain's{' '}
+              <Text className="italic">learning</Text> signal: “Yo, that mattered—remember it and do
+              it again.” The problem is some rewards hit like a microphone in your ear.
             </Text>
 
             {/* Cheap Dopamine */}
             <View className="p-4 mb-4 border border-red-300 bg-red-50 dark:bg-red-950/30 dark:border-red-700 rounded-2xl">
               <Text className="mb-2 text-base font-bold text-red-700 dark:text-red-300">
-                Cheap Dopamine (50-100% spike)
+                Cheap Dopamine (fast, intense, low-effort)
               </Text>
               <Text className="text-base leading-6 text-red-600 dark:text-red-400">
-                Social media, junk food, addictive behaviors. High reward, zero effort. Your brain
-                gets desensitized, needing more stimulation for the same feeling. This creates a
-                cycle of craving and dissatisfaction.
+                Think: endless scrolling, junk food, porn, binge gaming—anything that's high reward
+                with almost no effort. Your brain learns the shortcut, starts craving it, and normal
+                life can feel kind of “meh” for a while.
               </Text>
             </View>
 
@@ -89,9 +94,9 @@ export default function RecoveryEducationModal({ onClose }: RecoveryEducationMod
                 Natural Dopamine (earned rewards)
               </Text>
               <Text className="text-base leading-6 text-blue-600 dark:text-blue-400">
-                Exercise, learning, meaningful work, real conversations. These require effort but
-                build lasting satisfaction. Your brain stays sensitive to rewards and you feel
-                genuinely fulfilled.
+                Exercise, learning, meaningful work, real conversations—stuff that takes effort.
+                It's not always “fun” in the moment, but it builds real satisfaction and helps your
+                brain re-learn that normal rewards are actually rewarding.
               </Text>
             </View>
           </View>
@@ -105,19 +110,19 @@ export default function RecoveryEducationModal({ onClose }: RecoveryEducationMod
               </Text>
             </View>
             <Text className="mb-4 text-base leading-7 text-gray-700 dark:text-gray-300">
-              Here's the good news:{' '}
+              Here's the hopeful part: your brain is insanely adaptable. With time and repetition,
               <Text className="font-bold text-purple-600 dark:text-purple-400">
-                Your brain's reward system recovers
+                the reward system can recover
               </Text>
-              . Studies show cravings decrease significantly within 4 weeks of reducing cheap
-              dopamine sources.
+              , and the cravings can lose their grip. Not overnight—but over weeks and months,
+              things usually get noticeably easier.
             </Text>
             <View className="p-4 border border-purple-300 bg-purple-50 dark:bg-purple-950/30 dark:border-purple-700 rounded-2xl">
               <Text className="text-base leading-6 text-purple-700 dark:text-purple-300">
-                <Text className="font-bold">The Timeline:</Text> Most people see 85% relapse rate in
-                year 1, dropping to 40% by year 2, and just 15% by year 5. Each urge you resist
-                rewires your brain to prefer natural rewards. You're literally rebuilding your
-                dopamine sensitivity.
+                <Text className="font-bold">The key idea:</Text> cravings are often triggered by
+                stress and cues (people, places, moods, routines). Every time you notice the urge
+                and ride it out, you're training your brain: “We don't do that anymore.” That's
+                literally how new habits replace old ones.
               </Text>
             </View>
           </View>

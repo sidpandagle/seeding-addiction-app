@@ -1,7 +1,8 @@
-import { View, Text, TextInput, Pressable, ScrollView, KeyboardAvoidingView, Platform, Modal } from 'react-native';
+import { View, Text, TextInput, Pressable, ScrollView, KeyboardAvoidingView, Platform, Modal, ActivityIndicator } from 'react-native';
 import { useState, useEffect } from 'react';
 import * as Haptics from 'expo-haptics';
 import EmojiPicker from 'rn-emoji-keyboard';
+import DateTimePicker from '@react-native-community/datetimepicker';
 import { useActivityStore } from '../../stores/activityStore';
 import { useColorScheme } from '../../stores/themeStore';
 import { useCustomActivityTagsStore, formatActivityTag, SUGGESTED_EMOJIS, CustomActivityTag } from '../../stores/customActivityTagsStore';
@@ -11,6 +12,7 @@ import { ACTIVITY_CATEGORIES } from '../../constants/tags';
 import CustomAlert from '../common/CustomAlert';
 import { useAlert } from '../../hooks/useAlert';
 import { getLocalDateString } from '../../utils/dateHelpers';
+import { getJourneyStart } from '../../db/helpers';
 
 interface ActivityModalProps {
   onClose: () => void;
@@ -42,6 +44,13 @@ export default function ActivityModal({ onClose, preSelectedCategories = [] }: A
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [activityTip, setActivityTip] = useState<EducationalTip>(getRandomTip('activity'));
   const [reflectionPrompt] = useState(getRandomPrompt());
+
+  // Date/time picker state
+  const [showCustomDateTime, setShowCustomDateTime] = useState(false);
+  const [customTimestamp, setCustomTimestamp] = useState<Date>(new Date());
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [showTimePicker, setShowTimePicker] = useState(false);
+  const [dateTimeError, setDateTimeError] = useState<string | null>(null);
 
   // Custom tag creation state
   const [showAddTag, setShowAddTag] = useState(false);
@@ -98,6 +107,32 @@ export default function ActivityModal({ onClose, preSelectedCategories = [] }: A
     }
 
     return daysInARow;
+  };
+
+  // Validate custom timestamp against constraints
+  const validateCustomTimestamp = async (date: Date): Promise<string | null> => {
+    // Check if in future
+    if (date.getTime() > Date.now()) {
+      return 'Cannot log activities in the future';
+    }
+
+    // Check against journey start
+    const journeyStart = await getJourneyStart();
+    if (journeyStart) {
+      const journeyStartTime = new Date(journeyStart).getTime();
+      if (date.getTime() < journeyStartTime) {
+        const journeyDate = new Date(journeyStart).toLocaleDateString();
+        return `Cannot log activities before journey start (${journeyDate})`;
+      }
+    }
+
+    // Check reasonable past limit
+    const minTime = new Date('2000-01-01').getTime();
+    if (date.getTime() < minTime) {
+      return 'Date is too far in the past';
+    }
+
+    return null;
   };
 
   // Get most common category
@@ -193,7 +228,21 @@ export default function ActivityModal({ onClose, preSelectedCategories = [] }: A
     try {
       setIsSubmitting(true);
 
-      const timestamp = new Date().toISOString();
+      // Use custom timestamp if enabled, otherwise current time
+      const timestamp = showCustomDateTime
+        ? customTimestamp.toISOString()
+        : new Date().toISOString();
+
+      // Validate custom timestamp
+      if (showCustomDateTime) {
+        const validationError = await validateCustomTimestamp(customTimestamp);
+        if (validationError) {
+          setDateTimeError(validationError);
+          setIsSubmitting(false);
+          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+          return;
+        }
+      }
 
       await addActivity({
         timestamp,
@@ -210,6 +259,14 @@ export default function ActivityModal({ onClose, preSelectedCategories = [] }: A
     } catch (error) {
       console.error('Failed to save activity:', error);
       setIsSubmitting(false);
+
+      // Show user-friendly error alert
+      showAlert({
+        type: 'error',
+        title: 'Failed to Save',
+        message: 'Could not save your activity. Please try again.',
+        buttons: [{ text: 'OK', onPress: hideAlert }],
+      });
     }
   };
 
@@ -387,16 +444,109 @@ export default function ActivityModal({ onClose, preSelectedCategories = [] }: A
           </View>
         </View>
 
+        {/* Date/Time Selection Section */}
+        <View className="px-4 mt-6">
+          <View className="flex-row items-center justify-between mb-3">
+            <Text className="text-xs font-semibold tracking-wide text-gray-500 uppercase dark:text-gray-400">
+              When did this happen?
+            </Text>
+            <Pressable
+              onPress={() => {
+                setShowCustomDateTime(!showCustomDateTime);
+                if (!showCustomDateTime) {
+                  setCustomTimestamp(new Date());
+                  setDateTimeError(null);
+                }
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+              }}
+              className={`px-3 py-1.5 rounded-full ${
+                showCustomDateTime
+                  ? 'bg-blue-100 dark:bg-blue-900/30'
+                  : 'bg-gray-100 dark:bg-gray-800'
+              }`}
+            >
+              <Text className={`text-xs font-semibold ${
+                showCustomDateTime
+                  ? 'text-blue-700 dark:text-blue-300'
+                  : 'text-gray-600 dark:text-gray-400'
+              }`}>
+                {showCustomDateTime ? 'Custom Time' : 'Now'}
+              </Text>
+            </Pressable>
+          </View>
+
+          {/* Custom Date/Time Picker (conditionally shown) */}
+          {showCustomDateTime && (
+            <View className="p-4 bg-gray-50 border border-gray-200 dark:bg-gray-800 dark:border-gray-700 rounded-xl">
+              {/* Date and Time Display Buttons */}
+              <View className="flex-row gap-2 mb-3">
+                <Pressable
+                  onPress={() => setShowDatePicker(true)}
+                  className="flex-1 p-3 bg-white border border-gray-300 dark:bg-gray-700 dark:border-gray-600 rounded-lg"
+                >
+                  <Text className="text-xs font-medium text-gray-500 uppercase dark:text-gray-400">
+                    Date
+                  </Text>
+                  <Text className="mt-1 text-sm font-semibold text-gray-900 dark:text-white">
+                    {customTimestamp.toLocaleDateString()}
+                  </Text>
+                </Pressable>
+
+                <Pressable
+                  onPress={() => setShowTimePicker(true)}
+                  className="flex-1 p-3 bg-white border border-gray-300 dark:bg-gray-700 dark:border-gray-600 rounded-lg"
+                >
+                  <Text className="text-xs font-medium text-gray-500 uppercase dark:text-gray-400">
+                    Time
+                  </Text>
+                  <Text className="mt-1 text-sm font-semibold text-gray-900 dark:text-white">
+                    {customTimestamp.toLocaleTimeString([], {
+                      hour: '2-digit',
+                      minute: '2-digit'
+                    })}
+                  </Text>
+                </Pressable>
+              </View>
+
+              {/* Reset to Now Button */}
+              <Pressable
+                onPress={() => {
+                  setCustomTimestamp(new Date());
+                  setDateTimeError(null);
+                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                }}
+                className="self-start px-3 py-1.5 bg-gray-200 dark:bg-gray-600 rounded-lg"
+              >
+                <Text className="text-xs font-semibold text-gray-700 dark:text-gray-300">
+                  Reset to Now
+                </Text>
+              </Pressable>
+
+              {/* Validation Error Display */}
+              {dateTimeError && (
+                <View className="p-3 mt-3 bg-red-100 border border-red-200 dark:bg-red-900/30 dark:border-red-800 rounded-lg">
+                  <Text className="text-sm font-medium text-red-800 dark:text-red-200">
+                    {dateTimeError}
+                  </Text>
+                </View>
+              )}
+            </View>
+          )}
+        </View>
+
         {/* Action Buttons */}
         <View className="gap-4 px-4 mt-4 mb-8">
           <Pressable
             onPress={handleSave}
             disabled={isSubmitting}
-            className={`rounded-2xl py-4 ${isSubmitting
+            className={`rounded-2xl py-4 flex-row items-center justify-center gap-2 ${isSubmitting
               ? 'bg-blue-400 dark:bg-blue-600'
               : 'bg-blue-300 dark:bg-blue-700 active:bg-blue-400 dark:active:bg-blue-800'
               }`}
           >
+            {isSubmitting && (
+              <ActivityIndicator size="small" color={colorScheme === 'dark' ? '#ffffff' : '#1e40af'} />
+            )}
             <Text className={`text-lg font-bold text-center ${colorScheme === 'dark' ? 'text-white' : 'text-blue-800'}`}>
               {isSubmitting ? 'Saving...' : 'Log Activity'}
             </Text>
@@ -564,6 +714,40 @@ export default function ActivityModal({ onClose, preSelectedCategories = [] }: A
           buttons={alertState.buttons}
           onDismiss={hideAlert}
           dismissOnBackdrop={alertState.dismissOnBackdrop}
+        />
+      )}
+
+      {/* Native Date Picker */}
+      {showDatePicker && (
+        <DateTimePicker
+          value={customTimestamp}
+          mode="date"
+          display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+          onChange={(event, selectedDate) => {
+            setShowDatePicker(Platform.OS === 'ios');
+            if (selectedDate) {
+              setCustomTimestamp(selectedDate);
+              setDateTimeError(null);
+            }
+          }}
+          maximumDate={new Date()}
+          minimumDate={new Date('2000-01-01')}
+        />
+      )}
+
+      {/* Native Time Picker */}
+      {showTimePicker && (
+        <DateTimePicker
+          value={customTimestamp}
+          mode="time"
+          display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+          onChange={(event, selectedDate) => {
+            setShowTimePicker(Platform.OS === 'ios');
+            if (selectedDate) {
+              setCustomTimestamp(selectedDate);
+              setDateTimeError(null);
+            }
+          }}
         />
       )}
     </KeyboardAvoidingView>

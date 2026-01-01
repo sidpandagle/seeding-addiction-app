@@ -4,6 +4,7 @@
     "slug": "seeding",
     "scheme": "seeding",
     "version": "1.0.0",
+    "platforms": ["ios", "android"],
     "orientation": "portrait",
     "icon": "./assets/app-icon.png",
     "userInterfaceStyle": "light",

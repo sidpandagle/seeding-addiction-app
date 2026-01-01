@@ -68,6 +68,74 @@ const initDB = async (): Promise<void> => {
   } catch (error) {
     // Table might be empty or migration already done, ignore
   }
+
+  // Migration: Add UNIQUE constraint to earned_badges.badge_id
+  // Check if migration is needed
+  const needsBadgeMigration = await checkNeedsBadgeMigration(dbInstance);
+  if (needsBadgeMigration) {
+    await migrateBadgesTableToV2(dbInstance);
+  }
+};
+
+/**
+ * Check if badge table needs migration to add UNIQUE constraint
+ */
+const checkNeedsBadgeMigration = async (db: SQLite.SQLiteDatabase): Promise<boolean> => {
+  try {
+    const result = await db.getFirstAsync<{ value: string }>(
+      'SELECT value FROM app_settings WHERE key = ?',
+      ['badge_schema_version']
+    );
+    // If version is 2 or higher, migration already done
+    return !result || parseInt(result.value) < 2;
+  } catch (error) {
+    // If error (table doesn't exist yet), no migration needed
+    return false;
+  }
+};
+
+/**
+ * Migrate earned_badges table to add UNIQUE constraint on badge_id
+ */
+const migrateBadgesTableToV2 = async (db: SQLite.SQLiteDatabase): Promise<void> => {
+  console.log('[DB Migration] Starting badge table migration to add UNIQUE constraint...');
+
+  try {
+    await db.execAsync(`
+      -- Create new table with UNIQUE constraint
+      CREATE TABLE IF NOT EXISTS earned_badges_new (
+        id TEXT PRIMARY KEY NOT NULL,
+        badge_id TEXT NOT NULL UNIQUE,
+        unlocked_at TEXT NOT NULL
+      );
+
+      -- Copy data, keeping only first occurrence of each badge_id
+      INSERT INTO earned_badges_new (id, badge_id, unlocked_at)
+      SELECT id, badge_id, unlocked_at
+      FROM earned_badges
+      GROUP BY badge_id
+      HAVING unlocked_at = MIN(unlocked_at);
+
+      -- Replace old table
+      DROP TABLE earned_badges;
+      ALTER TABLE earned_badges_new RENAME TO earned_badges;
+
+      -- Recreate indexes
+      CREATE INDEX IF NOT EXISTS idx_earned_badges_unlocked_at ON earned_badges(unlocked_at DESC);
+      CREATE INDEX IF NOT EXISTS idx_earned_badges_badge_id ON earned_badges(badge_id);
+    `);
+
+    // Mark migration complete
+    await db.runAsync(
+      'INSERT OR REPLACE INTO app_settings (key, value) VALUES (?, ?)',
+      ['badge_schema_version', '2']
+    );
+
+    console.log('[DB Migration] Badge table migration completed successfully');
+  } catch (error) {
+    console.error('[DB Migration] Badge table migration failed:', error);
+    throw error;
+  }
 };
 
 /**

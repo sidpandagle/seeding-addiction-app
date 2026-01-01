@@ -1,11 +1,21 @@
-import React, { memo } from 'react';
+import React, { memo, useState, useEffect } from 'react';
 import { View, Text, ScrollView, Pressable } from 'react-native';
 import { Zap } from 'lucide-react-native';
 import { useColorScheme } from '../../stores/themeStore';
-import { QUICK_ACTIONS, getActionColorClasses, getActionDividerBorderColor, getQuickActionCategory } from '../../data/quickActionData';
+import { QUICK_ACTIONS, getActionColorClasses, getRandomBulletPoints, BULLET_POOLS, getQuickActionCategory, type QuickAction } from '../../data/quickActionData';
 
 interface QuickActionsProps {
   onActionPress?: (categories: string[]) => void;
+}
+
+/**
+ * Get fresh random bullet points for all actions
+ */
+function getRandomizedActions(): QuickAction[] {
+  return QUICK_ACTIONS.map(action => ({
+    ...action,
+    bulletPoints: getRandomBulletPoints(BULLET_POOLS[action.id as keyof typeof BULLET_POOLS] || action.bulletPoints),
+  }));
 }
 
 /**
@@ -14,6 +24,12 @@ interface QuickActionsProps {
  */
 const QuickActionsComponent: React.FC<QuickActionsProps> = ({ onActionPress }) => {
   const colorScheme = useColorScheme();
+  const [actions, setActions] = useState<QuickAction[]>(getRandomizedActions);
+
+  // Refresh bullet points on mount (each time user visits home page)
+  useEffect(() => {
+    setActions(getRandomizedActions());
+  }, []);
 
   const handleActionPress = (actionId: string) => {
     if (onActionPress) {
@@ -40,7 +56,7 @@ const QuickActionsComponent: React.FC<QuickActionsProps> = ({ onActionPress }) =
         showsHorizontalScrollIndicator={false}
         contentContainerClassName="gap-6"
       >
-        {QUICK_ACTIONS.map((action) => (
+        {actions.map((action) => (
           <Pressable
             key={action.id}
             onPress={() => handleActionPress(action.id)}

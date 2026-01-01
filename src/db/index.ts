@@ -13,6 +13,4 @@ export {
   getRelapsesCount,
   deleteRelapse,
   updateRelapse,
-  getUrges,
-  getUrgesCount,
 } from './helpers';

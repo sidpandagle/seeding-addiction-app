@@ -24,6 +24,16 @@ import InsightsModal from '../../src/components/history/InsightsModal';
 
 function DashboardScreen() {
   const colorScheme = useColorScheme();
+
+  // Memoize background styles to prevent new object creation on every render
+  const cardBgStyle = useMemo(() => ({
+    backgroundColor: colorScheme === 'dark' ? '#111827' : '#ffffff'
+  }), [colorScheme]);
+
+  const emergencyBtnStyle = useMemo(() => ({
+    backgroundColor: colorScheme === 'dark' ? 'rgba(153, 27, 27, 0.3)' : '#fecaca'
+  }), [colorScheme]);
+
   const [showModal, setShowModal] = useState(false);
   const [showActivityModal, setShowActivityModal] = useState(false);
   const [preSelectedCategories, setPreSelectedCategories] = useState<string[]>([]);
@@ -41,12 +51,10 @@ function DashboardScreen() {
   const setLastCheckedElapsedTime = useAchievementStore((state) => state.setLastCheckedElapsedTime);
   const achievementStoreHydrated = useAchievementStore((state) => state._hasHydrated);
 
-  // Notification store for milestone scheduling
-  const {
-    isEnabled: notificationsEnabled,
-    milestoneNotificationsEnabled,
-    scheduleUpcomingMilestones
-  } = useNotificationStore();
+  // Notification store for milestone scheduling - use specific selectors to prevent unnecessary re-renders
+  const notificationsEnabled = useNotificationStore((state) => state.isEnabled);
+  const milestoneNotificationsEnabled = useNotificationStore((state) => state.milestoneNotificationsEnabled);
+  const scheduleUpcomingMilestones = useNotificationStore((state) => state.scheduleUpcomingMilestones);
 
   // Use centralized hook for journey stats (now optimized - no continuous updates)
   const stats = useJourneyStats();
@@ -208,8 +216,11 @@ function DashboardScreen() {
           {/* Emergency Help Button */}
           <Pressable
             onPress={handleHelpPress}
-            style={{ backgroundColor: colorScheme === 'dark' ? 'rgba(153, 27, 27, 0.3)' : '#fecaca' }}
+            style={emergencyBtnStyle}
             className="items-center justify-center bg-red-200 w-14 h-14 rounded-xl active:scale-95"
+            accessibilityLabel="Emergency help"
+            accessibilityHint="Opens crisis resources and coping strategies"
+            accessibilityRole="button"
           >
             <AlertCircle size={28} color="#ef4444" strokeWidth={2.5} />
           </Pressable>
@@ -260,7 +271,7 @@ function DashboardScreen() {
             {/* Record Relapse - Secondary Action */}
             <Pressable
               onPress={handleRelapsePress}
-              style={{ backgroundColor: colorScheme === 'dark' ? '#111827' : '#ffffff' }}
+              style={cardBgStyle}
               className="flex-1 shadow-sm rounded-xl shadow-black"
             >
               <View className="items-center px-4 py-6">
@@ -293,7 +304,7 @@ function DashboardScreen() {
           <View className="flex-row gap-6 mb-6">
             {/* Total Attempts */}
             <View
-              style={{ backgroundColor: colorScheme === 'dark' ? '#111827' : '#ffffff' }}
+              style={cardBgStyle}
               className="relative flex-1 overflow-hidden border border-gray-200 shadow-sm shadow-black rounded-xl dark:border-gray-800"
             >
               <View className="p-4">
@@ -312,7 +323,7 @@ function DashboardScreen() {
 
             {/* Best Streak */}
             <View
-              style={{ backgroundColor: colorScheme === 'dark' ? '#111827' : '#ffffff' }}
+              style={cardBgStyle}
               className="relative flex-1 overflow-hidden border border-gray-200 shadow-sm shadow-black rounded-xl dark:border-gray-800"
             >
               <View className="p-4">
@@ -339,7 +350,7 @@ function DashboardScreen() {
           <View className="flex-row gap-6">
             {/* Activities Logged */}
             <View
-              style={{ backgroundColor: colorScheme === 'dark' ? '#111827' : '#ffffff' }}
+              style={cardBgStyle}
               className="relative flex-1 overflow-hidden border border-gray-200 shadow-sm shadow-black rounded-xl dark:border-gray-800"
             >
               <View className="p-4">
@@ -358,7 +369,7 @@ function DashboardScreen() {
 
             {/* Success Rate */}
             <View
-              style={{ backgroundColor: colorScheme === 'dark' ? '#111827' : '#ffffff' }}
+              style={cardBgStyle}
               className="relative flex-1 overflow-hidden border border-gray-200 shadow-sm shadow-black rounded-xl dark:border-gray-800"
             >
               <View className="p-4">

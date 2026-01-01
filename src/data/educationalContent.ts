@@ -103,7 +103,7 @@ export const RELAPSE_RECOVERY_TIPS: EducationalTip[] = [
   {
     id: 'r2',
     title: `Energy Depletion Is Real`,
-    content: `Relapse drains your vital energy and crashes your dopamine. Your brain will be in a storm for 7–14 days as it rebalances. Every clean day you had built momentum. This sets you back. But you can rebuild—it just costs time.`,
+    content: `Relapse drains your vital energy and crashes your dopamine. Your brain typically rebalances over 7–14 days, though recovery timelines vary. Every clean day you had built momentum. This sets you back. But you can rebuild—it just costs time.`,
     type: 'relapse',
     emoji: '⚡',
   },
@@ -145,7 +145,7 @@ export const RELAPSE_RECOVERY_TIPS: EducationalTip[] = [
   {
     id: 'r8',
     title: `Rebuilding Is Possible, But Costly`,
-    content: `Yes, you can recover from relapse. But understand: it takes 7–14 days to restabilize dopamine. The neural pathways you built weaken but don't disappear. You're not starting from zero, but you are starting over. Make sure the cost was worth it.`,
+    content: `Yes, you can recover from relapse. But understand: it typically takes 7–14 days to restabilize dopamine, though timelines vary. The neural pathways you built weaken but don't disappear. You're not starting from zero, but you are starting over. Make sure the cost was worth it.`,
     type: 'relapse',
     emoji: '🔧',
   },
@@ -158,7 +158,7 @@ export const SCIENCE_FACTS: EducationalTip[] = [
   {
     id: 's1',
     title: `The 7-Day Hormone Boost`,
-    content: `After a week of discipline, studies show testosterone can rise up to 145%. You’ll feel it as confidence, energy, and drive. Your biology is cheering you on.`,
+    content: `After a week of discipline, some studies suggest testosterone levels may increase significantly (effects vary by individual). You might feel it as confidence, energy, and drive. Your biology is cheering you on.`,
     type: 'science',
     emoji: '🔬',
   },
@@ -172,7 +172,7 @@ export const SCIENCE_FACTS: EducationalTip[] = [
   {
     id: 's3',
     title: `Dopamine Reset Effect`,
-    content: `Overstimulation dulls dopamine receptors by up to 50%. Abstaining lets them heal. It’s like cleansing your taste buds—soon, real life will feel rich again.`,
+    content: `Overstimulation can significantly reduce dopamine receptor sensitivity (varies by individual). Abstaining lets them heal. It's like cleansing your taste buds—soon, real life will feel rich again.`,
     type: 'science',
     emoji: '🔋',
   },

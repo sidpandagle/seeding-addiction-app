@@ -1,62 +1,60 @@
-import { View, Text, ScrollView, Pressable, Linking } from 'react-native';
+import { View, Text, ScrollView, Pressable } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { LinearGradient } from 'expo-linear-gradient';
-import { X, Info, Shield, HelpCircle, Heart, Coffee, ChevronRight } from 'lucide-react-native';
+import { X, Shield, HelpCircle } from 'lucide-react-native';
 import { useColorScheme } from '../../stores/themeStore';
 
 interface AboutModalProps {
   onClose: () => void;
 }
 
-export default function AboutModal({ onClose }: AboutModalProps) {
+export default function AboutModal({
+  onClose,
+}: Readonly<AboutModalProps>) {
   const colorScheme = useColorScheme();
 
   const faqItems = [
     {
       question: "What's the plant metaphor?",
-      answer: "Your recovery journey is like growing a plant. When you 'Track Your Growth' by logging healthy activities, you nurture your progress. Growth stages progress from a seed 🫘 to a full tree 🌳 as you build resilience and maintain your streak.",
+      answer:
+        "It's just a way to make this whole thing feel a little lighter. Your journey is like growing a plant: your plant grows automatically with time—from seed 🫘 to a full tree 🌳 over the course of your recovery journey. When you track healthy activities, you're building resilience and spotting patterns that help you stay strong. The plant represents your time, the activities represent your momentum. If you log a relapse, your plant returns to the seed stage and your journey timer resets.",
     },
     {
       question: "Should I track every relapse?",
-      answer: "Honesty with yourself is key to recovery. Tracking relapses helps identify patterns and triggers. Remember: every restart is still progress. There's no judgment here - just data to help you grow stronger.",
+      answer:
+        "If you can, yeah—because it's not about shame, it's about patterns. Tracking helps you spot what led up to it (stress, boredom, late nights, certain apps, whatever). And if you don't log one, that's okay too. This app isn't your judge—it's your notebook.",
     },
     {
       question: "How do achievements unlock?",
-      answer: "There are two types: Milestones unlock automatically based on time since your last relapse (14 milestones from 5 minutes to 1 year). Badges unlock when you hit activity goals like logging activities 3 days in a row. Check the Achievements tab to track both!",
+      answer:
+        "Two kinds. Milestones are time-based (how long since your last relapse). Badges are action-based (like logging healthy activities a few days in a row). Think of it as: time shows endurance, actions show momentum.",
     },
     {
       question: "Is my data really private?",
-      answer: "Yes - 100% local storage, no accounts, no cloud sync, no tracking. Your data never leaves your device. We don't collect any personal information or usage analytics. Your journey is entirely your own.",
+      answer:
+        "Yep. Your recovery data is 100% local: no accounts, no cloud sync, no tracking. Everything stays on your phone. Premium subscriptions use RevenueCat for payment processing only—your personal recovery data never leaves your device.",
     },
     {
       question: "What are the activity categories?",
-      answer: "Activities are grouped into categories like Exercise, Meditation, Social Connection, Creative Expression, and more. You can select up to 5 categories per entry, create custom tags with emojis, and add optional reflections about what you did.",
+      answer:
+        "They're just buckets to help you see what actually helps you. Stuff like Exercise, Meditation, Social Connection, Creative Expression, etc. You can pick up to 5 per entry, add custom emoji tags, and write a quick note if you want.",
     },
     {
       question: "How does the resistance ratio work?",
-      answer: "The resistance ratio compares your healthy activities to relapses. A higher percentage means you're building more positive habits relative to setbacks. It's a measure of your overall recovery momentum.",
+      answer:
+        "Super simple: it's a vibe-check for momentum. It compares how often you're doing healthy stuff versus how often you're slipping. Higher means you're stacking more good days and better habits relative to setbacks.",
     },
     {
       question: "Can I export my data?",
-      answer: "Yes! Premium users can export their journey data in three formats: Excel (with charts and insights), CSV (for spreadsheets), or detailed text reports to share with therapists or support groups. Your data remains under your control.",
+      answer:
+        "Yep (Premium). You can export as Excel with comprehensive analytics, charts, and insights. Handy if you want to review things on a bigger screen or share a summary with someone you trust.",
     },
     {
       question: "What if I forget to log activities?",
-      answer: "You can enable daily reminders in Settings to get a notification at your preferred time. Random motivational messages throughout the day can also help keep you engaged with your journey.",
+      answer:
+        "Totally normal. Turn on daily reminders in Settings and pick a time that fits your day (like after dinner). The goal is to make logging feel like brushing your teeth—not a huge project.",
     },
   ];
-
-  const handleBuyMeCoffee = async () => {
-    const url = 'https://buymeacoffee.com/sidp';
-    try {
-      const supported = await Linking.canOpenURL(url);
-      if (supported) {
-        await Linking.openURL(url);
-      }
-    } catch (error) {
-      console.error('Error opening Buy Me a Coffee:', error);
-    }
-  };
 
   return (
     <View className="flex-1 bg-gray-50 dark:bg-gray-950">
@@ -71,7 +69,7 @@ export default function AboutModal({ onClose }: AboutModalProps) {
                 About Seeding
               </Text>
               <Text className="mt-1 text-sm font-medium tracking-wide text-emerald-700 dark:text-emerald-400">
-                Privacy-focused recovery tracking
+                Private recovery tracking, built for you
               </Text>
             </View>
             <Pressable
@@ -110,7 +108,8 @@ export default function AboutModal({ onClose }: AboutModalProps) {
               Version 1.0.0
             </Text>
             <Text className="mt-4 text-sm leading-6 text-center text-gray-600 dark:text-gray-400">
-              A compassionate companion for your recovery journey. Track progress, build healthy habits, and grow stronger every day.
+              Think of Seeding like a calm, private pocket journal. Track what helps, notice patterns,
+              and keep moving forward—one day at a time.
             </Text>
           </View>
         </View>
@@ -141,7 +140,9 @@ export default function AboutModal({ onClose }: AboutModalProps) {
 
             <View className="pt-4 border-t border-gray-100 dark:border-gray-800">
               <Text className="text-xs leading-5 text-gray-500 dark:text-gray-500">
-                We believe your recovery journey is deeply personal. That's why Seeding was built with privacy as a core principle. Your data never leaves your device, and we don't collect any analytics or personal information.
+                Your journey is personal. That's why Seeding keeps everything on your device and skips
+                accounts and analytics. You should be able to use this app without worrying who's
+                watching.
               </Text>
             </View>
           </View>
@@ -160,7 +161,7 @@ export default function AboutModal({ onClose }: AboutModalProps) {
             {faqItems.map((item, index) => (
               <View
                 key={index}
-                className={`p-4 ${index !== faqItems.length - 1 ? 'border-b border-gray-100 dark:border-gray-800' : ''}`}
+                className={`p-4 ${index === faqItems.length - 1 ? '' : 'border-b border-gray-100 dark:border-gray-800'}`}
               >
                 <Text className="mb-2 text-sm font-bold text-gray-900 dark:text-white">
                   {item.question}
@@ -177,7 +178,8 @@ export default function AboutModal({ onClose }: AboutModalProps) {
         <View className="px-6 mt-4 mb-4">
           <View className="p-4 border-2 border-emerald-200 bg-emerald-50 dark:bg-emerald-900/20 dark:border-emerald-800 rounded-xl">
             <Text className="text-sm font-medium leading-5 text-center text-emerald-800 dark:text-emerald-300">
-              Made with care for those on their recovery journey. You're not alone, and every step forward matters.
+              Built with care for people trying to get better. You're not alone—and even messy progress
+              is still progress.
             </Text>
           </View>
         </View>

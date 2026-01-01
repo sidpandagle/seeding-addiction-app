@@ -96,8 +96,8 @@ const HistoryCalendar = React.memo(function HistoryCalendar({
         }
       } else {
         // Default blue for non-marked dates
-        selectedColor = isDark ? '#1d4ed8' : '#3B82F6'; // blue-700/blue-500
-        selectedTextColor = '#FFFFFF';
+        selectedColor = isDark ? '#1d4ed8' : '#bfdbfe'; // blue-700/blue-200
+        selectedTextColor = isDark ? '#FFFFFF' : '#111827'; // white/gray-900
       }
 
       marks[selectedDate] = {
@@ -163,8 +163,8 @@ const HistoryCalendar = React.memo(function HistoryCalendar({
           // Show calendar from journey start or first relapse
           minDate={journeyStart || undefined}
           style={{
-            paddingVertical: 16,
-            paddingHorizontal: 12,
+            paddingVertical: 18,
+            paddingHorizontal: 14,
           }}
         />
       </View>

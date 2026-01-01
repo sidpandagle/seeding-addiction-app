@@ -1,5 +1,5 @@
 import { View, Text, Pressable } from 'react-native';
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Badge, BadgeCategory, EarnedBadge } from '../../db/schema';
 import { Filter } from 'lucide-react-native';
 import { useColorScheme } from '../../stores/themeStore';
@@ -35,29 +35,31 @@ export default function BadgeGrid({
   const [selectedCategory, setSelectedCategory] = useState<BadgeCategory | 'all'>('all');
   const [showFilterModal, setShowFilterModal] = useState(false);
 
-  // Filter badges by category
-  const filteredBadges =
-    selectedCategory === 'all'
+  // Filter and sort badges - memoized to prevent recalculation on every render
+  const sortedBadges = useMemo(() => {
+    // Filter by category
+    const filtered = selectedCategory === 'all'
       ? badges
       : badges.filter((b) => b.category === selectedCategory);
 
-  // Sort: Earned first, then by progress, then alphabetically
-  const sortedBadges = [...filteredBadges].sort((a, b) => {
-    const aEarned = earnedBadgeIds.has(a.id);
-    const bEarned = earnedBadgeIds.has(b.id);
+    // Sort: Earned first, then by progress, then alphabetically
+    return [...filtered].sort((a, b) => {
+      const aEarned = earnedBadgeIds.has(a.id);
+      const bEarned = earnedBadgeIds.has(b.id);
 
-    if (aEarned && !bEarned) return -1;
-    if (!aEarned && bEarned) return 1;
+      if (aEarned && !bEarned) return -1;
+      if (!aEarned && bEarned) return 1;
 
-    // If both locked, sort by progress
-    if (!aEarned && !bEarned) {
-      const aProgress = badgeProgress[a.id]?.progress || 0;
-      const bProgress = badgeProgress[b.id]?.progress || 0;
-      if (aProgress !== bProgress) return bProgress - aProgress;
-    }
+      // If both locked, sort by progress
+      if (!aEarned && !bEarned) {
+        const aProgress = badgeProgress[a.id]?.progress || 0;
+        const bProgress = badgeProgress[b.id]?.progress || 0;
+        if (aProgress !== bProgress) return bProgress - aProgress;
+      }
 
-    return a.title.localeCompare(b.title);
-  });
+      return a.title.localeCompare(b.title);
+    });
+  }, [badges, selectedCategory, earnedBadgeIds, badgeProgress]);
 
   return (
     <View className="flex-1">

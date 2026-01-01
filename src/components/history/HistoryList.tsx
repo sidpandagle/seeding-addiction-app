@@ -19,28 +19,32 @@ export default function HistoryList({ entries, onUpgradePress }: HistoryListProp
   const { isPremium } = usePremium();
   const customTags = useCustomActivityTagsStore(state => state.customTags);
 
-  // Get all unique tags/categories from both relapses and activities
-  // Filters out deleted custom activity tags
-  const allTags = useMemo(() => {
+  // Get all unique tags/categories AND their counts in a single pass (O(n) instead of O(n²))
+  const { allTags, tagCounts } = useMemo(() => {
     const tags = new Set<string>();
+    const counts: Record<string, { relapse: number; activity: number }> = {};
 
-    // Add relapse tags
     entries.forEach(entry => {
       if (entry.type === 'relapse' && entry.data.tags) {
-        entry.data.tags.forEach(tag => tags.add(tag));
-      }
-    });
-
-    // Add activity categories (only valid/active ones)
-    entries.forEach(entry => {
-      if (entry.type === 'activity' && entry.data.categories) {
-        // Filter out deleted custom tags
+        entry.data.tags.forEach(tag => {
+          tags.add(tag);
+          if (!counts[tag]) counts[tag] = { relapse: 0, activity: 0 };
+          counts[tag].relapse++;
+        });
+      } else if (entry.type === 'activity' && entry.data.categories) {
         const validCategories = filterValidCategories(entry.data.categories, customTags);
-        validCategories.forEach(category => tags.add(category));
+        validCategories.forEach(category => {
+          tags.add(category);
+          if (!counts[category]) counts[category] = { relapse: 0, activity: 0 };
+          counts[category].activity++;
+        });
       }
     });
 
-    return Array.from(tags).sort();
+    return {
+      allTags: Array.from(tags).sort(),
+      tagCounts: counts,
+    };
   }, [entries, customTags]);
 
   // Filter entries for free users (30 days only)
@@ -123,9 +127,9 @@ export default function HistoryList({ entries, onUpgradePress }: HistoryListProp
                 </Text>
               </Pressable>
               {allTags.map((tag) => {
-                const relapseCount = entries.filter((e) => e.type === 'relapse' && e.data.tags?.includes(tag)).length;
-                const activityCount = entries.filter((e) => e.type === 'activity' && getValidCategories(e.data.categories).includes(tag)).length;
-                const totalCount = relapseCount + activityCount;
+                // Use pre-calculated counts (O(1) lookup instead of O(n) filter)
+                const counts = tagCounts[tag] || { relapse: 0, activity: 0 };
+                const totalCount = counts.relapse + counts.activity;
 
                 return (
                   <Pressable
@@ -252,9 +256,10 @@ export default function HistoryList({ entries, onUpgradePress }: HistoryListProp
               </View>
             )}
 
-            {!isRelapse && (() => {
+            {!isRelapse && item.data.categories && (() => {
               const validCats = getValidCategories(item.data.categories);
-              return validCats.length > 0 ? (
+              if (validCats.length === 0) return null;
+              return (
                 <View className="flex-row flex-wrap gap-2 mt-2">
                   {validCats.map((category: string) => (
                     <View key={category} className="px-4 py-2 bg-green-50 dark:bg-green-900/30 rounded-xl">
@@ -264,7 +269,7 @@ export default function HistoryList({ entries, onUpgradePress }: HistoryListProp
                     </View>
                   ))}
                 </View>
-              ) : null;
+              );
             })()}
           </View>
         );

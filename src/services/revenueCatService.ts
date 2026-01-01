@@ -49,7 +49,7 @@ class RevenueCatService {
     }
 
     if (this.initialized) {
-      console.log('[RevenueCat] Already initialized');
+      if (__DEV__) console.log('[RevenueCat] Already initialized');
       return Promise.resolve();
     }
 
@@ -81,9 +81,9 @@ class RevenueCatService {
       }
 
       this.initialized = true;
-      console.log('[RevenueCat] Initialized successfully');
+      if (__DEV__) console.log('[RevenueCat] Initialized successfully');
     } catch (error) {
-      console.error('[RevenueCat] Initialization error:', error);
+      if (__DEV__) console.error('[RevenueCat] Initialization error:', error);
       this.initializationPromise = null; // Allow retry
       throw error;
     }
@@ -120,7 +120,7 @@ class RevenueCatService {
         customerInfo,
       };
     } catch (error) {
-      console.error('[RevenueCat] Error getting subscription info:', error);
+      if (__DEV__) console.error('[RevenueCat] Error getting subscription info:', error);
       // Return safe default on error
       return {
         isPremium: false,
@@ -140,13 +140,13 @@ class RevenueCatService {
       const offerings = await Purchases.getOfferings();
 
       if (!offerings.current) {
-        console.warn('[RevenueCat] No current offering available');
+        if (__DEV__) console.warn('[RevenueCat] No current offering available');
         return null;
       }
 
       return offerings;
     } catch (error) {
-      console.error('[RevenueCat] Error getting offerings:', error);
+      if (__DEV__) console.error('[RevenueCat] Error getting offerings:', error);
       return null;
     }
   }
@@ -161,7 +161,7 @@ class RevenueCatService {
       const { customerInfo } = await Purchases.purchasePackage(pkg);
       const isPremium = this.hasPremiumEntitlement(customerInfo);
 
-      console.log('[RevenueCat] Purchase successful:', pkg.identifier);
+      if (__DEV__) console.log('[RevenueCat] Purchase successful:', pkg.identifier);
 
       return {
         success: true,
@@ -171,7 +171,7 @@ class RevenueCatService {
     } catch (error: any) {
       // Handle user cancellation gracefully
       if (error.userCancelled) {
-        console.log('[RevenueCat] User cancelled purchase');
+        if (__DEV__) console.log('[RevenueCat] User cancelled purchase');
         return {
           success: false,
           isPremium: false,
@@ -179,7 +179,7 @@ class RevenueCatService {
         };
       }
 
-      console.error('[RevenueCat] Purchase error:', error);
+      if (__DEV__) console.error('[RevenueCat] Purchase error:', error);
       return {
         success: false,
         isPremium: false,
@@ -198,7 +198,7 @@ class RevenueCatService {
       const customerInfo = await Purchases.restorePurchases();
       const isPremium = this.hasPremiumEntitlement(customerInfo);
 
-      console.log('[RevenueCat] Restore purchases completed');
+      if (__DEV__) console.log('[RevenueCat] Restore purchases completed');
 
       return {
         success: true,
@@ -206,7 +206,7 @@ class RevenueCatService {
         customerInfo,
       };
     } catch (error: any) {
-      console.error('[RevenueCat] Restore purchases error:', error);
+      if (__DEV__) console.error('[RevenueCat] Restore purchases error:', error);
       return {
         success: false,
         isPremium: false,
@@ -241,7 +241,7 @@ class RevenueCatService {
       await this.ensureInitialized();
       return await Purchases.getCustomerInfo();
     } catch (error) {
-      console.error('[RevenueCat] Error getting customer info:', error);
+      if (__DEV__) console.error('[RevenueCat] Error getting customer info:', error);
       return null;
     }
   }
@@ -253,9 +253,9 @@ class RevenueCatService {
     try {
       await this.ensureInitialized();
       await Purchases.logIn(userId);
-      console.log('[RevenueCat] User identified:', userId);
+      if (__DEV__) console.log('[RevenueCat] User identified:', userId);
     } catch (error) {
-      console.error('[RevenueCat] Error identifying user:', error);
+      if (__DEV__) console.error('[RevenueCat] Error identifying user:', error);
     }
   }
 
@@ -266,10 +266,10 @@ class RevenueCatService {
     try {
       if (this.initialized) {
         await Purchases.logOut();
-        console.log('[RevenueCat] User logged out');
+        if (__DEV__) console.log('[RevenueCat] User logged out');
       }
     } catch (error) {
-      console.error('[RevenueCat] Logout error:', error);
+      if (__DEV__) console.error('[RevenueCat] Logout error:', error);
     }
   }
 

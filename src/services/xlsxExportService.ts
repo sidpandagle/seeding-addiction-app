@@ -17,6 +17,7 @@ interface ExportOptions {
   includeInsights?: boolean;
   sortOrder?: 'newest' | 'oldest';
   groupBy?: 'month' | 'week' | 'none';
+  maxRecords?: number; // Safety limit to prevent memory issues
 }
 
 class XLSXExportService {
@@ -28,7 +29,7 @@ class XLSXExportService {
     charts: CapturedChart[] = []
   ): Promise<boolean> {
     try {
-      // Set defaults
+      // Set defaults with safety limit to prevent memory issues on large datasets
       const opts = {
         includeRelapses: true,
         includeActivities: true,
@@ -36,13 +37,14 @@ class XLSXExportService {
         includeInsights: true,
         sortOrder: 'newest' as const,
         groupBy: 'month' as const,
+        maxRecords: 5000, // Safety limit per type - prevents memory issues
         ...options,
       };
 
-      // Gather all data
+      // Gather data with limits to prevent memory issues
       const [relapses, activities, journeyStart] = await Promise.all([
-        getRelapses(),
-        getActivities(),
+        getRelapses(opts.maxRecords),
+        getActivities(opts.maxRecords),
         getJourneyStart(),
       ]);
 

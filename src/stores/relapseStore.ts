@@ -140,8 +140,8 @@ export const useRelapseStore = create<RelapseStore>((set, get) => ({
       await dbHelpers.deleteRelapse(id);
       set({ error: null });
 
-      // Re-check badges as relapse data has changed
-      badgeOrchestrator.checkBadgesNow();
+      // Re-check badges as relapse data has changed (debounced for deletions)
+      badgeOrchestrator.checkBadgesDebounced();
     } catch (error) {
       // Rollback on error - restore the deleted relapse
       if (relapseToDelete) {
@@ -176,8 +176,8 @@ export const useRelapseStore = create<RelapseStore>((set, get) => ({
           };
         });
 
-        // Re-check badges as relapse data has changed
-        badgeOrchestrator.checkBadgesNow();
+        // Re-check badges as relapse data has changed (debounced for updates)
+        badgeOrchestrator.checkBadgesDebounced();
       } else {
         set({
           error: 'Relapse not found',
@@ -214,7 +214,7 @@ export const useRelapseStore = create<RelapseStore>((set, get) => ({
       // 6. Reset this store's state
       set({ relapses: [], latestTimestamp: null, loading: false });
 
-      console.log('[RelapseStore] Full reset completed');
+      if (__DEV__) console.log('[RelapseStore] Full reset completed');
     } catch (error) {
       set({
         error: error instanceof Error ? error.message : 'Failed to reset data',
@@ -245,14 +245,24 @@ export const useRelapsesError = () => useRelapseStore((state) => state.error);
 /**
  * Select only the actions (never causes re-renders)
  * Use when you only need to call actions, not read state
+ * Uses shallow comparison to prevent unnecessary re-renders
  */
-export const useRelapseActions = () => useRelapseStore((state) => ({
-  loadRelapses: state.loadRelapses,
-  addRelapse: state.addRelapse,
-  deleteRelapse: state.deleteRelapse,
-  updateRelapse: state.updateRelapse,
-  resetAllData: state.resetAllData,
-}));
+export const useRelapseActions = () => useRelapseStore(
+  (state) => ({
+    loadRelapses: state.loadRelapses,
+    addRelapse: state.addRelapse,
+    deleteRelapse: state.deleteRelapse,
+    updateRelapse: state.updateRelapse,
+    resetAllData: state.resetAllData,
+  }),
+  // Shallow equality check - actions are stable references, so this object won't change
+  (a, b) =>
+    a.loadRelapses === b.loadRelapses &&
+    a.addRelapse === b.addRelapse &&
+    a.deleteRelapse === b.deleteRelapse &&
+    a.updateRelapse === b.updateRelapse &&
+    a.resetAllData === b.resetAllData
+);
 
 /**
  * Select relapse count only (memoized to prevent re-renders on same count)

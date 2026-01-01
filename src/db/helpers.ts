@@ -9,6 +9,8 @@ import {
   validateCategory,
   validateJourneyStartDate
 } from '../utils/validation';
+import { checkAllBadges } from '../utils/badgeChecker';
+import { useBadgeStore } from '../stores/badgeStore';
 
 /**
  * Generate a cryptographically secure UUID v4
@@ -351,11 +353,20 @@ export const getEarnedBadges = async (): Promise<EarnedBadge[]> => {
  */
 export const addEarnedBadge = async (badgeId: string): Promise<EarnedBadge> => {
   const db = await getDatabase();
+
+  // Check if badge already earned
+  const existing = await getEarnedBadgeById(badgeId);
+  if (existing) {
+    console.warn(`[DB] Badge ${badgeId} already earned at ${existing.unlocked_at}`);
+    return existing;
+  }
+
   const id = generateUUID();
   const unlockedAt = new Date().toISOString();
 
+  // Use INSERT OR IGNORE as additional safety (requires UNIQUE constraint)
   await db.runAsync(
-    'INSERT INTO earned_badges (id, badge_id, unlocked_at) VALUES (?, ?, ?)',
+    'INSERT OR IGNORE INTO earned_badges (id, badge_id, unlocked_at) VALUES (?, ?, ?)',
     [id, badgeId, unlockedAt]
   );
 
@@ -364,6 +375,37 @@ export const addEarnedBadge = async (badgeId: string): Promise<EarnedBadge> => {
     badge_id: badgeId,
     unlocked_at: unlockedAt,
   };
+};
+
+/**
+ * Add multiple earned badges atomically using a transaction
+ */
+export const addEarnedBadgesBatch = async (badgeIds: string[]): Promise<EarnedBadge[]> => {
+  const db = await getDatabase();
+  const earnedBadges: EarnedBadge[] = [];
+
+  await db.execAsync('BEGIN TRANSACTION;');
+
+  try {
+    for (const badgeId of badgeIds) {
+      const id = generateUUID();
+      const unlockedAt = new Date().toISOString();
+
+      // INSERT OR IGNORE prevents duplicates if UNIQUE constraint exists
+      await db.runAsync(
+        'INSERT OR IGNORE INTO earned_badges (id, badge_id, unlocked_at) VALUES (?, ?, ?)',
+        [id, badgeId, unlockedAt]
+      );
+
+      earnedBadges.push({ id, badge_id: badgeId, unlocked_at: unlockedAt });
+    }
+
+    await db.execAsync('COMMIT;');
+    return earnedBadges;
+  } catch (error) {
+    await db.execAsync('ROLLBACK;');
+    throw error;
+  }
 };
 
 /**
@@ -396,4 +438,66 @@ export const getEarnedBadgeById = async (badgeId: string): Promise<EarnedBadge |
 export const deleteAllBadges = async (): Promise<void> => {
   const db = await getDatabase();
   await db.runAsync('DELETE FROM earned_badges');
+};
+
+/**
+ * Clean slate migration: Delete all earned badges and re-award based on current data
+ * This ensures badge consistency by recalculating which badges should be earned
+ */
+export const cleanSlateRebadge = async (): Promise<number> => {
+  const db = await getDatabase();
+
+  await db.execAsync('BEGIN TRANSACTION;');
+
+  try {
+    // 1. Clear all earned badges
+    await db.execAsync('DELETE FROM earned_badges;');
+    console.log('[Migration] Cleared all existing badges');
+
+    // 2. Load all data needed for badge checking
+    const [activities, relapses, journeyStart] = await Promise.all([
+      getActivities(1000),
+      getRelapses(100),
+      getJourneyStart(),
+    ]);
+
+    console.log(`[Migration] Loaded ${activities.length} activities, ${relapses.length} relapses`);
+
+    // 3. Check which badges should be earned based on current data
+    const { newlyUnlocked } = await checkAllBadges(
+      activities,
+      [], // No earned badges yet - fresh start
+      relapses,
+      journeyStart || undefined
+    );
+
+    console.log(`[Migration] Found ${newlyUnlocked.length} badges to award`);
+
+    // 4. Insert all earned badges using batch insert (much faster than individual inserts)
+    if (newlyUnlocked.length > 0) {
+      const unlockedAt = new Date().toISOString();
+      const values = newlyUnlocked.map(badge => {
+        const id = generateUUID();
+        return `('${id}', '${badge.id}', '${unlockedAt}')`;
+      }).join(', ');
+
+      await db.execAsync(
+        `INSERT INTO earned_badges (id, badge_id, unlocked_at) VALUES ${values}`
+      );
+    }
+
+    await db.execAsync('COMMIT;');
+    console.log('[Migration] Successfully committed badge migration');
+
+    // 5. Sync to Zustand store
+    const earnedBadges = await getEarnedBadges();
+    useBadgeStore.getState().setEarnedBadges(earnedBadges);
+    console.log(`[Migration] Synced ${earnedBadges.length} badges to store`);
+
+    return earnedBadges.length;
+  } catch (error) {
+    await db.execAsync('ROLLBACK;');
+    console.error('[Migration] Badge migration failed, rolled back:', error);
+    throw error;
+  }
 };

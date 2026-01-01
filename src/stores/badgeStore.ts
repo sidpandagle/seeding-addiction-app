@@ -39,6 +39,17 @@ interface BadgeStore {
   setIsCheckingBadges: (isChecking: boolean) => void;
   setLastCheckedTimestamp: (timestamp: string) => void;
 
+  // Batch update for performance - reduces multiple re-renders to one
+  batchUpdate: (updates: {
+    earnedBadges?: EarnedBadge[];
+    addEarnedBadges?: EarnedBadge[];
+    celebrationQueue?: Badge[];
+    addToCelebrationQueue?: Badge[];
+    badgeProgress?: Record<string, BadgeProgress>;
+    isCheckingBadges?: boolean;
+    lastCheckedTimestamp?: string;
+  }) => void;
+
   // Selectors
   isBadgeEarned: (badgeId: string) => boolean;
   getBadgeProgress: (badgeId: string) => BadgeProgress | null;
@@ -107,6 +118,41 @@ export const useBadgeStore = create<BadgeStore>()(
       setIsCheckingBadges: (isChecking: boolean) => set({ isCheckingBadges: isChecking }),
 
       setLastCheckedTimestamp: (timestamp: string) => set({ lastCheckedTimestamp: timestamp }),
+
+      // Batch update for performance - single re-render instead of multiple
+      batchUpdate: (updates) =>
+        set((state) => {
+          const newState: Partial<BadgeStore> = {};
+
+          // Handle earned badges
+          if (updates.earnedBadges !== undefined) {
+            newState.earnedBadges = updates.earnedBadges;
+          } else if (updates.addEarnedBadges && updates.addEarnedBadges.length > 0) {
+            newState.earnedBadges = [...state.earnedBadges, ...updates.addEarnedBadges];
+          }
+
+          // Handle celebration queue
+          if (updates.celebrationQueue !== undefined) {
+            newState.celebrationQueue = updates.celebrationQueue;
+          } else if (updates.addToCelebrationQueue && updates.addToCelebrationQueue.length > 0) {
+            newState.celebrationQueue = [...state.celebrationQueue, ...updates.addToCelebrationQueue];
+          }
+
+          // Handle badge progress - merge with existing
+          if (updates.badgeProgress !== undefined) {
+            newState.badgeProgress = { ...state.badgeProgress, ...updates.badgeProgress };
+          }
+
+          // Handle simple boolean/string updates
+          if (updates.isCheckingBadges !== undefined) {
+            newState.isCheckingBadges = updates.isCheckingBadges;
+          }
+          if (updates.lastCheckedTimestamp !== undefined) {
+            newState.lastCheckedTimestamp = updates.lastCheckedTimestamp;
+          }
+
+          return newState;
+        }),
 
       // Selectors
       isBadgeEarned: (badgeId: string) => {

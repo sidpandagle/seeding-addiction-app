@@ -1,4 +1,4 @@
-import type { Relapse, Urge } from '../db/schema';
+import type { Relapse, Activity } from '../db/schema';
 
 export interface WeeklyPatternData {
   day: string;
@@ -15,10 +15,10 @@ export interface MonthlyTrendData {
 }
 
 export interface ResistanceRatioData {
-  urgeCount: number;
+  activityCount: number;
   relapseCount: number;
   totalEvents: number;
-  urgePercentage: number;
+  activityPercentage: number;
   relapsePercentage: number;
   successRate: number;
 }
@@ -67,6 +67,7 @@ export function calculateWeeklyPattern(relapses: Relapse[]): WeeklyPatternData[]
 /**
  * Calculate monthly trend over the last 6 months
  * Shows relapse count per month to visualize trends
+ * PERFORMANCE: Uses Map for O(1) lookup instead of O(n) find()
  */
 export function calculateMonthlyTrend(relapses: Relapse[], months: number = 6): MonthlyTrendData[] {
   const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
@@ -90,30 +91,32 @@ export function calculateMonthlyTrend(relapses: Relapse[], months: number = 6): 
   const currentMonth = now.getMonth();
   const currentYear = now.getFullYear();
 
-  // Generate last N months
+  // Generate last N months and create lookup map
   const monthsData: MonthlyTrendData[] = [];
+  const monthLookup = new Map<string, MonthlyTrendData>(); // O(1) lookup
+
   for (let i = months - 1; i >= 0; i--) {
     const targetMonth = currentMonth - i;
     const targetYear = currentYear + Math.floor(targetMonth / 12);
     const normalizedMonth = ((targetMonth % 12) + 12) % 12;
 
-    monthsData.push({
+    const monthData: MonthlyTrendData = {
       month: monthNamesFull[normalizedMonth],
       monthShort: monthNames[normalizedMonth],
       year: targetYear,
       count: 0,
-    });
+    };
+
+    monthsData.push(monthData);
+    // Key format: "month-year" for O(1) lookup
+    monthLookup.set(`${normalizedMonth}-${targetYear}`, monthData);
   }
 
-  // Count relapses per month
+  // Count relapses per month using O(1) Map lookup instead of O(n) find()
   relapses.forEach((relapse) => {
     const date = new Date(relapse.timestamp);
-    const relapseMonth = date.getMonth();
-    const relapseYear = date.getFullYear();
-
-    const matchingMonth = monthsData.find(
-      (m) => monthNames.indexOf(m.monthShort) === relapseMonth && m.year === relapseYear
-    );
+    const key = `${date.getMonth()}-${date.getFullYear()}`;
+    const matchingMonth = monthLookup.get(key);
 
     if (matchingMonth) {
       matchingMonth.count++;
@@ -142,7 +145,7 @@ export function formatShortDate(timestamp: string): string {
 
 /**
  * Calculate resistance ratio data
- * Shows success rate in resisting urges vs relapses
+ * Shows balance between healthy activities and relapses
  *
  * Research-based interpretation thresholds:
  * - 80%+: Exceptional recovery progress (top tier)
@@ -155,23 +158,23 @@ export function formatShortDate(timestamp: string): string {
  * not absolute perfection. Studies show success rates improve significantly
  * over 5 years (from 15% in year 1 to 85% by year 5).
  */
-export function calculateResistanceRatio(relapses: Relapse[], urges: Urge[]): ResistanceRatioData {
-  const urgeCount = urges.length;
+export function calculateResistanceRatio(relapses: Relapse[], activities: Activity[]): ResistanceRatioData {
+  const activityCount = activities.length;
   const relapseCount = relapses.length;
-  const totalEvents = urgeCount + relapseCount;
+  const totalEvents = activityCount + relapseCount;
 
   // Calculate percentages
-  const urgePercentage = totalEvents > 0 ? Math.round((urgeCount / totalEvents) * 100) : 0;
+  const activityPercentage = totalEvents > 0 ? Math.round((activityCount / totalEvents) * 100) : 0;
   const relapsePercentage = totalEvents > 0 ? Math.round((relapseCount / totalEvents) * 100) : 0;
 
-  // Success rate is the same as urge percentage
-  const successRate = urgePercentage;
+  // Success rate is the same as activity percentage
+  const successRate = activityPercentage;
 
   return {
-    urgeCount,
+    activityCount,
     relapseCount,
     totalEvents,
-    urgePercentage,
+    activityPercentage,
     relapsePercentage,
     successRate,
   };

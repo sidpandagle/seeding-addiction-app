@@ -1,5 +1,6 @@
 import * as SecureStore from 'expo-secure-store';
 import * as LocalAuthentication from 'expo-local-authentication';
+import * as Crypto from 'expo-crypto';
 import { Platform } from 'react-native';
 
 // Keys for secure storage
@@ -35,10 +36,10 @@ export const initializeEncryptionKey = async (): Promise<string> => {
       return existingKey;
     }
 
-    // Generate a new random encryption key (256 bits = 32 bytes = 64 hex chars)
-    const key = Array.from({ length: 32 }, () =>
-      Math.floor(Math.random() * 256).toString(16).padStart(2, '0')
-    ).join('');
+    // Generate a new random encryption key using cryptographically secure RNG
+    // (256 bits = 32 bytes = 64 hex chars)
+    const randomBytes = await Crypto.getRandomBytesAsync(32);
+    const key = Array.from(randomBytes, (byte) => byte.toString(16).padStart(2, '0')).join('');
 
     // Store it securely
     await setItem(ENCRYPTION_KEY, key);

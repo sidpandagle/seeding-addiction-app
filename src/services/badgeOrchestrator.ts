@@ -13,7 +13,9 @@ import type { Badge } from '../db/schema';
 class BadgeOrchestrator {
   private static instance: BadgeOrchestrator;
   private isChecking = false;
+  private isSyncing = false;
   private debounceTimer: NodeJS.Timeout | null = null;
+  private pendingCheck = false; // Queue for pending check requests
 
   private constructor() {}
 
@@ -30,11 +32,15 @@ class BadgeOrchestrator {
   /**
    * Check all badges immediately
    * Returns newly unlocked badges
+   * If a check is already in progress, queues another check to run after
    */
   async checkBadgesNow(): Promise<Badge[]> {
-    // Prevent concurrent checks
+    // If already checking, queue another check for when this one finishes
     if (this.isChecking) {
-      console.log('[BadgeOrchestrator] Badge check already in progress, skipping');
+      if (__DEV__) {
+        console.log('[BadgeOrchestrator] Badge check already in progress, queuing for later');
+      }
+      this.pendingCheck = true;
       return [];
     }
 
@@ -42,7 +48,9 @@ class BadgeOrchestrator {
       this.isChecking = true;
       useBadgeStore.getState().setIsCheckingBadges(true);
 
-      console.log('[BadgeOrchestrator] Starting badge check...');
+      if (__DEV__) {
+        console.log('[BadgeOrchestrator] Starting badge check...');
+      }
 
       // Load data from database
       const [activities, earnedBadges, relapses, journeyStart] = await Promise.all([
@@ -52,7 +60,9 @@ class BadgeOrchestrator {
         dbHelpers.getJourneyStart(),
       ]);
 
-      console.log(`[BadgeOrchestrator] Loaded ${activities.length} activities, ${earnedBadges.length} earned badges, ${relapses.length} relapses`);
+      if (__DEV__) {
+        console.log(`[BadgeOrchestrator] Loaded ${activities.length} activities, ${earnedBadges.length} earned badges, ${relapses.length} relapses`);
+      }
 
       // Run badge checker
       const { newlyUnlocked, progress } = await checkAllBadges(
@@ -62,45 +72,71 @@ class BadgeOrchestrator {
         journeyStart || undefined
       );
 
-      console.log(`[BadgeOrchestrator] Badge check complete: ${newlyUnlocked.length} newly unlocked, ${progress.length} in progress`);
+      if (__DEV__) {
+        console.log(`[BadgeOrchestrator] Badge check complete: ${newlyUnlocked.length} newly unlocked, ${progress.length} in progress`);
+      }
+
+      // Build progress record for batch update
+      const progressRecord: Record<string, { badgeId: string; progress: number; current: number; required: number }> = {};
+      for (const progressItem of progress) {
+        progressRecord[progressItem.badgeId] = progressItem;
+      }
 
       // Save newly unlocked badges to database and store
       if (newlyUnlocked.length > 0) {
-        console.log('[BadgeOrchestrator] Saving newly unlocked badges:', newlyUnlocked.map(b => b.id));
-
-        for (const badge of newlyUnlocked) {
-          try {
-            const earnedBadge = await dbHelpers.addEarnedBadge(badge.id);
-            useBadgeStore.getState().addEarnedBadge(earnedBadge);
-            useBadgeStore.getState().enqueueCelebration(badge);
-          } catch (error) {
-            console.error(`[BadgeOrchestrator] Error saving badge ${badge.id}:`, error);
-          }
+        if (__DEV__) {
+          console.log('[BadgeOrchestrator] Saving newly unlocked badges:', newlyUnlocked.map(b => b.id));
         }
 
-        // Trigger haptic feedback
         try {
+          // Save all badges atomically using transaction
+          const savedBadges = await dbHelpers.addEarnedBadgesBatch(
+            newlyUnlocked.map(b => b.id)
+          );
+
+          // Get badges for celebration queue
+          const celebrationBadges = savedBadges
+            .map(eb => newlyUnlocked.find(b => b.id === eb.badge_id))
+            .filter((b): b is Badge => b !== undefined);
+
+          // PERFORMANCE: Single batch update instead of multiple individual calls
+          useBadgeStore.getState().batchUpdate({
+            addEarnedBadges: savedBadges,
+            addToCelebrationQueue: celebrationBadges,
+            badgeProgress: progressRecord,
+            lastCheckedTimestamp: new Date().toISOString(),
+          });
+
+          // Trigger haptic feedback
           await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
         } catch (error) {
-          console.warn('[BadgeOrchestrator] Haptic feedback failed:', error);
+          console.error('[BadgeOrchestrator] Error saving badges:', error);
+          // Store not updated if database failed - maintains consistency
         }
+      } else {
+        // No new badges, still update progress and timestamp in single call
+        useBadgeStore.getState().batchUpdate({
+          badgeProgress: progressRecord,
+          lastCheckedTimestamp: new Date().toISOString(),
+        });
       }
-
-      // Update badge progress
-      for (const progressItem of progress) {
-        useBadgeStore.getState().setBadgeProgress(progressItem.badgeId, progressItem);
-      }
-
-      // Update last checked timestamp
-      useBadgeStore.getState().setLastCheckedTimestamp(new Date().toISOString());
 
       return newlyUnlocked;
     } catch (error) {
-      console.error('[BadgeOrchestrator] Error checking badges:', error);
+      if (__DEV__) {
+        console.error('[BadgeOrchestrator] Error checking badges:', error);
+      }
       return [];
     } finally {
       this.isChecking = false;
       useBadgeStore.getState().setIsCheckingBadges(false);
+
+      // If there was a pending check request, run it now
+      if (this.pendingCheck) {
+        this.pendingCheck = false;
+        // Use setTimeout to avoid stack overflow from recursive calls
+        setTimeout(() => this.checkBadgesNow(), 0);
+      }
     }
   }
 
@@ -114,7 +150,9 @@ class BadgeOrchestrator {
       clearTimeout(this.debounceTimer);
     }
 
-    console.log('[BadgeOrchestrator] Badge check scheduled (500ms debounce)');
+    if (__DEV__) {
+      console.log('[BadgeOrchestrator] Badge check scheduled (500ms debounce)');
+    }
 
     // Schedule new check
     this.debounceTimer = setTimeout(() => {
@@ -126,15 +164,33 @@ class BadgeOrchestrator {
   /**
    * Sync earned badges from database to store
    * Used when screens come into focus
+   * Protected with mutex to prevent race conditions
    */
   async syncBadgesFromDB(): Promise<void> {
+    // Prevent concurrent syncs and don't sync while checking badges
+    if (this.isSyncing || this.isChecking) {
+      if (__DEV__) {
+        console.log('[BadgeOrchestrator] Sync skipped - another operation in progress');
+      }
+      return;
+    }
+
     try {
-      console.log('[BadgeOrchestrator] Syncing badges from database...');
+      this.isSyncing = true;
+      if (__DEV__) {
+        console.log('[BadgeOrchestrator] Syncing badges from database...');
+      }
       const badges = await dbHelpers.getEarnedBadges();
       useBadgeStore.getState().setEarnedBadges(badges);
-      console.log(`[BadgeOrchestrator] Synced ${badges.length} badges from database`);
+      if (__DEV__) {
+        console.log(`[BadgeOrchestrator] Synced ${badges.length} badges from database`);
+      }
     } catch (error) {
-      console.error('[BadgeOrchestrator] Error syncing badges:', error);
+      if (__DEV__) {
+        console.error('[BadgeOrchestrator] Error syncing badges:', error);
+      }
+    } finally {
+      this.isSyncing = false;
     }
   }
 
@@ -152,8 +208,11 @@ class BadgeOrchestrator {
     if (this.debounceTimer) {
       clearTimeout(this.debounceTimer);
       this.debounceTimer = null;
-      console.log('[BadgeOrchestrator] Cancelled pending badge check');
+      if (__DEV__) {
+        console.log('[BadgeOrchestrator] Cancelled pending badge check');
+      }
     }
+    this.pendingCheck = false;
   }
 }
 

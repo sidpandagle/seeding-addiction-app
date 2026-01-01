@@ -8,6 +8,22 @@ import {
 } from '../../data/educationalContent';
 import { X } from 'lucide-react-native';
 
+const POWER_AFFIRMATIONS = [
+  "Okay. This urge is LOUD, but it's not the boss. It's just your brain asking for the old shortcut. Breathe for 10 seconds and watch it like a notification—no need to click.",
+  "Lowkey, cravings are just your brain being dramatic. You don't have to argue with it. Just don't move toward it. Stay still, stay safe, stay in control.",
+  "This feeling is temporary. Urges rise, peak, and fade. Give it 10–15 minutes and it will chill out. You can do 10 minutes. Easyyyy.",
+  "Having an urge doesn't mean you're failing—it means you're healing. The pattern is trying to pull you back, and you're learning a new one. Main character energy: you choose what happens next.",
+  "Your brain is trying to sell you a 'quick fix.' It's giving scam. The " +
+    "after-feeling is never worth it. Choose the option that future-you thanks you for.",
+  "Highkey: future you is watching. 30-minutes-from-now you is gonna be proud you held the line. Hold it down for that version of you.",
+  "Two voices right now: the craving voice and your real voice. The craving is loud, not wise. Pick your voice.",
+  "Every time you resist, you're literally rewiring. That's a W. You're teaching your brain: 'we're not doing that anymore.' Keep stacking wins.",
+  "If you slip, you reset. No shame, no spiral. But right now you're in control—lock in for 60 seconds. Then another 60. One minute at a time.",
+  "Cravings come in waves. Let it pass through without acting. Do one tiny interrupt: drink water, wash your face, step outside, text someone, move your body. Break the loop.",
+  "Your streak isn't just a number—it's receipts. Proof you can do hard things. Don't trade a long-term win for a short-term moment.",
+  "This urge is uncomfortable, not unstoppable. You're built for discomfort. Stay grounded, stay steady, let's gooooo.",
+];
+
 // Fisher-Yates shuffle helper
 function shuffleArray<T>(array: T[]): T[] {
   const shuffled = [...array];
@@ -26,7 +42,9 @@ interface EmergencyHelpModalProps {
   onClose: () => void;
 }
 
-export default function EmergencyHelpModal({ onClose }: EmergencyHelpModalProps) {
+export default function EmergencyHelpModal({
+  onClose,
+}: Readonly<EmergencyHelpModalProps>) {
   const colorScheme = useColorScheme();
   const relapses = useRelapseStore((state) => state.relapses);
 
@@ -34,6 +52,9 @@ export default function EmergencyHelpModal({ onClose }: EmergencyHelpModalProps)
   const [randomGiveIn] = useState(() => getRandomItems(TAPE_FORWARD.giveIn, 4));
   const [randomResist] = useState(() => getRandomItems(TAPE_FORWARD.resist, 4));
   const [randomShockActions] = useState(() => getRandomItems(PHYSICAL_SHOCK_ACTIONS, 6));
+  const [randomAffirmation] = useState(() =>
+    POWER_AFFIRMATIONS[Math.floor(Math.random() * POWER_AFFIRMATIONS.length)]
+  );
 
   // Calculate current streak (days since last relapse)
   const streakDays = useMemo(() => {
@@ -41,50 +62,16 @@ export default function EmergencyHelpModal({ onClose }: EmergencyHelpModalProps)
       return 0;
     }
 
-    const lastRelapseTime = new Date(relapses[relapses.length - 1].timestamp).getTime();
-    const now = new Date().getTime();
+    const lastRelapse = relapses.at(-1);
+    if (!lastRelapse) {
+      return 0;
+    }
+
+    const lastRelapseTime = new Date(lastRelapse.timestamp).getTime();
+    const now = Date.now();
     const daysPassed = Math.floor((now - lastRelapseTime) / (1000 * 60 * 60 * 24));
     return daysPassed;
   }, [relapses]);
-
-  // Dynamic plant emoji based on streak progress - with impactful messages
-  const getPlantStage = (days: number) => {
-    if (days >= 90) return {
-      emoji: '🌳',
-      label: 'Mighty Oak',
-      message: "You've proven you can do this. 90+ days of rewiring. You're not fighting urges anymore — you're defeating a weakened enemy."
-    };
-    if (days >= 30) return {
-      emoji: '🌿',
-      label: 'Thriving',
-      message: "A month of healing. Your brain is physically changing. The neural pathways of addiction are weakening. Don't rebuild them now."
-    };
-    if (days >= 7) return {
-      emoji: '🪴',
-      label: 'Growing Strong',
-      message: "Your roots are spreading. Each day they grow deeper. One moment of weakness destroys weeks of growth."
-    };
-    return {
-      emoji: '🌱',
-      label: 'Seedling',
-      message: "The hardest part is starting. You already did that. Don't uproot what you just planted."
-    };
-  };
-
-  // Rotating dynamic messages for streak display
-  const getStreakMessage = (days: number): string => {
-    const messages = [
-      `${days} days of your life invested in healing. Is a few seconds of pleasure worth throwing that away?`,
-      `${days} days. That's ${days} nights of peaceful sleep. ${days} mornings of clarity. Gone in one moment.`,
-      `Your brain has been healing for ${days} days. One relapse and you're not back to day 1 — you're back to day negative.`,
-      `${days} days of proof that you're stronger than the urge. Don't let the urge win today.`,
-    ];
-    // Use current hour to rotate messages (changes every hour)
-    const hourIndex = new Date().getHours() % messages.length;
-    return messages[hourIndex];
-  };
-
-  const plantStage = getPlantStage(streakDays);
 
   return (
     <KeyboardAvoidingView
@@ -106,30 +93,20 @@ export default function EmergencyHelpModal({ onClose }: EmergencyHelpModalProps)
             <Pressable
               onPress={onClose}
               className="items-center justify-center w-12 h-12 bg-white rounded-2xl dark:bg-gray-800 active:bg-gray-50 dark:active:bg-gray-700"
+              accessibilityLabel="Close"
+              accessibilityHint="Closes the emergency help modal"
+              accessibilityRole="button"
             >
               <X size={20} color={colorScheme === 'dark' ? '#FFFFFF' : '#000000'} strokeWidth={2.5} />
             </Pressable>
           </View>
         </View>
 
-        {/* SECTION: Reality Check - Plant/Streak */}
+        {/* SECTION: Reality Check - Power Affirmation */}
         <View className="px-5 pb-5">
-          <View className="p-5 border bg-emerald-100 dark:bg-emerald-950/30 border-emerald-100 dark:border-emerald-700 rounded-xl">
-            <View className="items-center mb-4">
-              <Text className="mb-3 text-8xl">{plantStage.emoji}</Text>
-              {streakDays > 0 && (
-                <Text className="text-2xl font-bold text-emerald-900 dark:text-emerald-100">
-                  {streakDays} {streakDays === 1 ? 'day' : 'days'} of growth
-                </Text>
-              )}
-            </View>
-            <Text className="mb-3 text-lg font-semibold leading-6 text-center text-emerald-900 dark:text-emerald-100">
-              {streakDays > 0
-                ? getStreakMessage(streakDays)
-                : "You've started your journey. Don't reset the progress you're making right now."}
-            </Text>
-            <Text className="text-sm text-center text-emerald-800 dark:text-emerald-200">
-              {plantStage.message}
+          <View className="relative p-5 bg-gray-900 dark:bg-gray-800 rounded-xl">
+            <Text className="text-xl font-bold leading-7 text-center text-white">
+              {randomAffirmation}
             </Text>
           </View>
         </View>
@@ -148,7 +125,7 @@ export default function EmergencyHelpModal({ onClose }: EmergencyHelpModalProps)
                 If you give in:
               </Text>
               {randomGiveIn.map((item, index) => (
-                <Text key={index} className="mb-1.5 text-sm text-justify text-red-700 dark:text-red-300">
+                <Text key={`givein-${index}-${item.slice(0, 15)}`} className="mb-1.5 text-sm text-red-700 dark:text-red-300">
                   - {item}
                 </Text>
               ))}
@@ -159,7 +136,7 @@ export default function EmergencyHelpModal({ onClose }: EmergencyHelpModalProps)
                 If you resist:
               </Text>
               {randomResist.map((item, index) => (
-                <Text key={index} className="text-sm text-emerald-700 dark:text-emerald-300">
+                <Text key={`resist-${index}-${item.slice(0, 15)}`} className="text-sm text-emerald-700 dark:text-emerald-300">
                   - {item}
                 </Text>
               ))}
@@ -175,7 +152,7 @@ export default function EmergencyHelpModal({ onClose }: EmergencyHelpModalProps)
           <View className="flex-row flex-wrap gap-2">
             {randomShockActions.map((action, index) => (
               <View
-                key={index}
+                key={`shock-${index}-${action.action.slice(0, 10)}`}
                 className="flex-row items-center px-3 py-2.5 border bg-indigo-100 dark:bg-indigo-950/30 border-indigo-100 dark:border-indigo-700 rounded-lg"
                 style={{ width: '48%' }}
               >

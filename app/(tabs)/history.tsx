@@ -19,8 +19,10 @@ type ViewMode = 'list' | 'calendar';
 
 function HistoryScreen() {
   const colorScheme = useColorScheme();
-  const { relapses } = useRelapseStore();
-  const { activities, loadActivities } = useActivityStore();
+  // Use specific selectors to prevent re-renders when other store values change
+  const relapses = useRelapseStore((state) => state.relapses);
+  const activities = useActivityStore((state) => state.activities);
+  const loadActivities = useActivityStore((state) => state.loadActivities);
   const { isPremium } = usePremium();
   const [journeyStart, setJourneyStart] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<ViewMode>('list');

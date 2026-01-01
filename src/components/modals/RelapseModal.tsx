@@ -1,4 +1,4 @@
-import { View, Text, TextInput, Pressable, ScrollView, KeyboardAvoidingView, Platform } from 'react-native';
+import { View, Text, TextInput, Pressable, ScrollView, KeyboardAvoidingView, Platform, Alert, ActivityIndicator } from 'react-native';
 import { useState, useEffect } from 'react';
 import { useRelapseStore, useLatestRelapseTimestamp } from '../../stores/relapseStore';
 import { useColorScheme } from '../../stores/themeStore';
@@ -124,6 +124,13 @@ export default function RelapseModal({ onClose, existingRelapse }: RelapseModalP
     } catch (error) {
       console.error('Failed to save relapse:', error);
       setIsSubmitting(false);
+
+      // Show user-friendly error alert
+      Alert.alert(
+        'Failed to Save',
+        'Could not save your entry. Please try again.',
+        [{ text: 'OK', style: 'default' }]
+      );
     }
   };
 
@@ -313,12 +320,15 @@ export default function RelapseModal({ onClose, existingRelapse }: RelapseModalP
           <Pressable
             onPress={handleSave}
             disabled={isSubmitting}
-            className={`rounded-2xl py-4 ${isSubmitting
+            className={`rounded-2xl py-4 flex-row items-center justify-center gap-2 ${isSubmitting
               ? 'bg-amber-400 dark:bg-amber-600'
-              : 'bg-amber-200 dark:bg-amber-700 active:bg-amber-300 dark:active:bg-amber-800'
+              : 'bg-amber-200 dark:bg-amber-600 active:bg-amber-300 dark:active:bg-amber-700'
               }`}
           >
-            <Text className={`text-lg font-bold text-center ${colorScheme === 'dark' ? 'text-white' : 'text-amber-700'}`}>
+            {isSubmitting && (
+              <ActivityIndicator size="small" color={colorScheme === 'dark' ? '#ffffff' : '#92400e'} />
+            )}
+            <Text className={`text-lg font-bold text-center ${colorScheme === 'dark' ? 'text-amber-100' : 'text-amber-700'}`}>
               {isSubmitting ? 'Alright then...' : existingRelapse ? 'Update' : 'Are you sure?'}
             </Text>
           </Pressable>

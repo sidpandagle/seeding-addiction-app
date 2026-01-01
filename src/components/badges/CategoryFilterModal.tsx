@@ -39,7 +39,7 @@ export default function CategoryFilterModal({
   selectedCategory,
   onSelectCategory,
   onClose,
-}: CategoryFilterModalProps) {
+}: Readonly<CategoryFilterModalProps>) {
   const colorScheme = useColorScheme();
 
   const categories: (BadgeCategory | 'all')[] = [
@@ -67,7 +67,7 @@ export default function CategoryFilterModal({
         onPress={() => handleSelectCategory(item)}
         className={`flex-row items-center p-4 mb-2 border rounded-2xl ${
           isSelected
-            ? 'bg-amber-50 dark:bg-amber-900/30 border-amber-500 dark:border-amber-600'
+            ? 'bg-amber-100 dark:bg-amber-900/30 border-amber-100 dark:border-amber-600'
             : 'bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700'
         }`}
       >
@@ -87,7 +87,7 @@ export default function CategoryFilterModal({
         </View>
 
         {isSelected && (
-          <View className="p-2 bg-amber-500 rounded-full">
+          <View className="p-2 rounded-full bg-amber-500">
             <Check size={16} color="#fff" strokeWidth={3} />
           </View>
         )}
@@ -125,7 +125,7 @@ export default function CategoryFilterModal({
           </Text>
           <Pressable
             onPress={onClose}
-            className="p-2 rounded-full bg-gray-200 dark:bg-gray-800"
+            className="p-2 bg-gray-200 rounded-full dark:bg-gray-800"
           >
             <X size={20} color={colorScheme === 'dark' ? '#fff' : '#000'} strokeWidth={2.5} />
           </Pressable>

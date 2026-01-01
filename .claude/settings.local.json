@@ -39,7 +39,8 @@
       "mcp__ide__getDiagnostics",
       "Bash(npx expo-doctor)",
       "WebSearch",
-      "Bash(ls:*)"
+      "Bash(ls:*)",
+      "Bash(npx ts-node:*)"
     ],
     "deny": [],
     "ask": []

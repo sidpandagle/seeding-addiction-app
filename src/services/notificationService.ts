@@ -27,14 +27,14 @@ Notifications.setNotificationHandler({
 
 // Daily check-in reminder messages
 export const DAILY_REMINDER_MESSAGES = [
-  { title: '🌱 Daily Check-In', body: 'How are you doing today? Take a moment to water your plant!' },
+  { title: '🌱 Daily Check-In', body: 'How are you doing today? Take a moment to track your growth!' },
   { title: '🌿 Good Morning!', body: 'A new day, a fresh start. How\'s your journey going today?' },
   { title: '💚 Time To Check In', body: 'Remember to nurture your growth today. How are you feeling?' },
   { title: '🌸 Daily Reflection', body: 'Take a moment for yourself. Track your progress and celebrate!' },
   { title: '🌟 You\'re Doing Great!', body: 'Time for your daily check-in. Let\'s see how you\'re growing!' },
   { title: '🌺 Mindful Moment', body: 'Pause and reflect on your journey. How are you today?' },
   { title: '☀️ Rise & Shine!', body: 'A beautiful day to grow stronger. Time for your check-in!' },
-  { title: '🌼 Daily Care', body: 'Just like your plant needs water, you need self-care. Check in with yourself!' },
+  { title: '🌼 Daily Care', body: 'Take a moment for self-care and reflection. Check in with yourself!' },
   { title: '🦋 Progress Check', body: 'Every day is transformation. How are you feeling right now?' },
   { title: '💫 Your Daily Moment', body: 'This is your time to reflect and grow. How\'s your day going?' },
 ];
@@ -90,7 +90,7 @@ class NotificationService {
     try {
       // Check if device supports notifications
       if (!Device.isDevice) {
-        console.log('[Notifications] Physical device required for notifications');
+        if (__DEV__) console.log('[Notifications] Physical device required for notifications');
         return false;
       }
 
@@ -104,7 +104,7 @@ class NotificationService {
       }
 
       if (finalStatus !== 'granted') {
-        console.log('[Notifications] Permission not granted');
+        if (__DEV__) console.log('[Notifications] Permission not granted');
         return false;
       }
 
@@ -140,10 +140,10 @@ class NotificationService {
       }
 
       this.initialized = true;
-      console.log('[Notifications] Initialized successfully');
+      if (__DEV__) console.log('[Notifications] Initialized successfully');
       return true;
     } catch (error) {
-      console.error('[Notifications] Initialization error:', error);
+      if (__DEV__) console.error('[Notifications] Initialization error:', error);
       return false;
     }
   }
@@ -226,7 +226,7 @@ class NotificationService {
       },
     });
 
-    console.log(`[Notifications] Daily reminder scheduled for ${hour}:${minute}`);
+    if (__DEV__) console.log(`[Notifications] Daily reminder scheduled for ${hour}:${minute}`);
   }
 
   /**
@@ -246,13 +246,12 @@ class NotificationService {
     if (enabled) {
       await this.scheduleRandomNotifications();
     } else {
-      // Cancel random notifications
+      // Cancel random notifications in parallel (much faster than sequential)
       const scheduled = await Notifications.getAllScheduledNotificationsAsync();
-      for (const notif of scheduled) {
-        if (notif.identifier.startsWith('random-')) {
-          await Notifications.cancelScheduledNotificationAsync(notif.identifier);
-        }
-      }
+      const randomNotifs = scheduled.filter(n => n.identifier.startsWith('random-'));
+      await Promise.all(
+        randomNotifs.map(n => Notifications.cancelScheduledNotificationAsync(n.identifier))
+      );
     }
   }
 
@@ -261,13 +260,12 @@ class NotificationService {
    * Uses fixed times to prevent duplicate/inconsistent scheduling
    */
   async scheduleRandomNotifications(): Promise<void> {
-    // Cancel existing random notifications first
+    // Cancel existing random notifications first (in parallel for performance)
     const scheduled = await Notifications.getAllScheduledNotificationsAsync();
     const randomNotifications = scheduled.filter(n => n.identifier.startsWith('random-'));
-
-    for (const notif of randomNotifications) {
-      await Notifications.cancelScheduledNotificationAsync(notif.identifier);
-    }
+    await Promise.all(
+      randomNotifications.map(n => Notifications.cancelScheduledNotificationAsync(n.identifier))
+    );
 
     // Use fixed times to prevent scheduling inconsistencies
     // Morning, afternoon, and evening motivational messages
@@ -301,7 +299,7 @@ class NotificationService {
       });
     }
 
-    console.log('[Notifications] Random notifications scheduled at fixed times');
+    if (__DEV__) console.log('[Notifications] Random notifications scheduled at fixed times');
   }
 
   /**
@@ -339,7 +337,7 @@ class NotificationService {
       }
     }
 
-    console.log(`[Notifications] Milestone notifications cancelled (${cancelledCount} total)`);
+    if (__DEV__) console.log(`[Notifications] Milestone notifications cancelled (${cancelledCount} total)`);
   }
 
   /**
@@ -382,7 +380,7 @@ class NotificationService {
       },
     });
 
-    console.log(`[Notifications] Milestone ACHIEVED notification scheduled for stage ${stageIndex} (${stage.label}) at ${targetDate.toISOString()}`);
+    if (__DEV__) console.log(`[Notifications] Milestone ACHIEVED notification scheduled for stage ${stageIndex} (${stage.label}) at ${targetDate.toISOString()}`);
   }
 
   /**
@@ -404,7 +402,7 @@ class NotificationService {
 
     // Skip "Almost There" for short milestones (under 1 hour)
     if (milestoneDurationMs < SHORT_MILESTONE_THRESHOLD_MS) {
-      console.log(`[Notifications] Skipping "Almost There" for short milestone: ${stage.label}`);
+      if (__DEV__) console.log(`[Notifications] Skipping "Almost There" for short milestone: ${stage.label}`);
       return;
     }
 
@@ -438,7 +436,7 @@ class NotificationService {
       },
     });
 
-    console.log(`[Notifications] Almost There notification scheduled for stage ${stageIndex} (${stage.label}) at ${almostThereDate.toISOString()}`);
+    if (__DEV__) console.log(`[Notifications] Almost There notification scheduled for stage ${stageIndex} (${stage.label}) at ${almostThereDate.toISOString()}`);
   }
 
   /**
@@ -488,7 +486,7 @@ class NotificationService {
       previousMilestoneMs = stageMs;
     }
 
-    console.log('[Notifications] Milestone notifications scheduled');
+    if (__DEV__) console.log('[Notifications] Milestone notifications scheduled');
   }
 
   /**
@@ -529,9 +527,9 @@ class NotificationService {
       // Reset initialized flag to allow fresh initialization
       this.initialized = false;
 
-      console.log('[Notifications] Service fully reset');
+      if (__DEV__) console.log('[Notifications] Service fully reset');
     } catch (error) {
-      console.error('[Notifications] Reset error:', error);
+      if (__DEV__) console.error('[Notifications] Reset error:', error);
       throw error;
     }
   }

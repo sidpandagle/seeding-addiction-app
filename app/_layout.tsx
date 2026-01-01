@@ -7,8 +7,10 @@ import { useRelapseStore } from '../src/stores/relapseStore';
 import { useBadgeStore } from '../src/stores/badgeStore';
 import { useColorScheme as useColorSchemeStore } from '../src/stores/themeStore';
 import { useSubscriptionStore } from '../src/stores/subscriptionStore';
+import { useNotificationStore } from '../src/stores/notificationStore';
 import { AppLock } from '../src/components/common/AppLock';
 import { ThemeTransitionOverlay } from '../src/components/common/ThemeTransitionOverlay';
+import { ErrorBoundary } from '../src/components/common/ErrorBoundary';
 import { initializeEncryptionKey } from '../src/services/security';
 import { initializeDatabase } from '../src/db/schema';
 import { useFonts, Poppins_400Regular, Poppins_500Medium, Poppins_600SemiBold, Poppins_700Bold } from '@expo-google-fonts/poppins';
@@ -32,6 +34,7 @@ SplashScreen.preventAutoHideAsync();
 export default function RootLayout() {
   const loadRelapses = useRelapseStore((state) => state.loadRelapses);
   const initializeSubscriptions = useSubscriptionStore((state) => state.initialize);
+  const initializeNotifications = useNotificationStore((state) => state.initialize);
   const colorScheme = useColorSchemeStore();
   const { setColorScheme } = useColorScheme();
   const [isReady, setIsReady] = useState(false);
@@ -69,6 +72,9 @@ export default function RootLayout() {
         // This ensures journey start and relapse data are available when home screen renders
         await loadRelapses();
 
+        // Initialize notifications after data is loaded (needs journey data for milestone scheduling)
+        await initializeNotifications();
+
         // Mark as ready after all critical data is loaded
         setIsReady(true);
       } catch (err) {
@@ -80,7 +86,7 @@ export default function RootLayout() {
     };
 
     initialize();
-  }, [loadRelapses, initializeSubscriptions]);
+  }, [loadRelapses, initializeSubscriptions, initializeNotifications]);
 
   // Global badge celebration watcher
   useEffect(() => {
@@ -152,25 +158,27 @@ export default function RootLayout() {
   }
 
   return (
-    <SafeAreaProvider>
-      <AppLock>
-        <Animated.View
-          entering={FadeIn.duration(150)}
-          style={{
-            flex: 1,
-            backgroundColor: colorScheme === 'dark' ? '#030712' : '#f9fafb'
-          }}
-        >
-          <Stack screenOptions={{ headerShown: false }}>
-            <Stack.Screen name="index" />
-            <Stack.Screen name="onboarding" />
-            <Stack.Screen name="(tabs)" />
-          </Stack>
+    <ErrorBoundary>
+      <SafeAreaProvider>
+        <AppLock>
+          <Animated.View
+            entering={FadeIn.duration(150)}
+            style={{
+              flex: 1,
+              backgroundColor: colorScheme === 'dark' ? '#030712' : '#f9fafb'
+            }}
+          >
+            <Stack screenOptions={{ headerShown: false }}>
+              <Stack.Screen name="index" />
+              <Stack.Screen name="onboarding" />
+              <Stack.Screen name="(tabs)" />
+            </Stack>
 
-          {/* Theme transition overlay - masks re-render delay with smooth animation */}
-          <ThemeTransitionOverlay />
-        </Animated.View>
-      </AppLock>
-    </SafeAreaProvider>
+            {/* Theme transition overlay - masks re-render delay with smooth animation */}
+            <ThemeTransitionOverlay />
+          </Animated.View>
+        </AppLock>
+      </SafeAreaProvider>
+    </ErrorBoundary>
   );
 }

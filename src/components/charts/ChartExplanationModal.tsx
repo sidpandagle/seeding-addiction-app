@@ -20,7 +20,7 @@ const CHART_EXPLANATIONS = {
       {
         heading: 'How It\'s Calculated',
         items: [
-          'Counts all logged activities (water your plant actions)',
+          'Counts all logged activities (tracked growth actions)',
           'Counts all logged relapses',
           'Calculates percentage: (Activities ÷ Total Events) × 100',
           'Example: 80 activities + 20 relapses = 80% engagement ratio',

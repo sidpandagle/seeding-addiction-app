@@ -222,7 +222,7 @@ export const BADGE_DEFINITIONS: Badge[] = [
     id: 'well_rounded',
     category: 'diversity',
     title: 'Well-Rounded',
-    description: 'Complete 10+ activities in every category. True balance in all aspects of life!',
+    description: 'Complete 10+ activities in all 5 major categories (Physical, Mindfulness, Social, Learning, Creative). True balance in all aspects of life!',
     emoji: '🌈',
     unlockCriteria: {
       type: 'custom',
@@ -272,7 +272,7 @@ export const BADGE_DEFINITIONS: Badge[] = [
     id: 'first_month_tracking',
     category: 'milestone',
     title: 'First Month',
-    description: 'Track activities for 30 days. The first month is the foundation of lasting change!',
+    description: 'Log activities on 30 different days. The first month is the foundation of lasting change!',
     emoji: '📆',
     unlockCriteria: {
       type: 'time_tracking',
@@ -283,7 +283,7 @@ export const BADGE_DEFINITIONS: Badge[] = [
     id: 'quarter_year',
     category: 'milestone',
     title: 'Quarter Year',
-    description: 'Track activities for 90 days. Three months of growth - a quarter year of progress!',
+    description: 'Log activities on 90 different days. Three months of growth - a quarter year of progress!',
     emoji: '🎊',
     unlockCriteria: {
       type: 'time_tracking',
@@ -294,7 +294,7 @@ export const BADGE_DEFINITIONS: Badge[] = [
     id: 'half_year',
     category: 'milestone',
     title: 'Half Year Hero',
-    description: 'Track activities for 180 days. Half a year of transformation - you\'re a hero!',
+    description: 'Log activities on 180 different days. Half a year of transformation - you\'re a hero!',
     emoji: '🏅',
     unlockCriteria: {
       type: 'time_tracking',
@@ -305,7 +305,7 @@ export const BADGE_DEFINITIONS: Badge[] = [
     id: 'one_year_champion',
     category: 'milestone',
     title: 'One Year Star',
-    description: 'Track activities for 365 days. A full year of dedication - you are a shining star!',
+    description: 'Log activities on 365 different days. A full year of dedication - you are a shining star!',
     emoji: '👑',
     unlockCriteria: {
       type: 'time_tracking',
@@ -353,7 +353,7 @@ export const BADGE_DEFINITIONS: Badge[] = [
     id: 'night_owl_support',
     category: 'recovery',
     title: 'Night Owl',
-    description: 'Log 10+ activities between 10 PM and 6 AM. Finding strength in the quiet hours!',
+    description: 'Log 10+ activities between 9 PM and 6 AM. Finding strength in the quiet hours!',
     emoji: '🌙',
     unlockCriteria: {
       type: 'custom',

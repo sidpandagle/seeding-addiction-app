@@ -73,7 +73,7 @@ const checkBadgeUnlock = async (
       return checkCategoryDiversity(badge, activities, threshold!);
 
     case 'time_tracking':
-      return checkTimeTracking(badge, journeyStart, threshold!);
+      return checkTimeTracking(badge, journeyStart, threshold!, activities);
 
     case 'custom':
       return checkCustom(badge, activities, earnedBadges, relapses, customCheck!);
@@ -265,21 +265,35 @@ const checkCategoryDiversity = (
 
 /**
  * Check time tracking badges
+ * Counts unique days with at least 1 activity since journey start
  */
 const checkTimeTracking = (
   badge: Badge,
   journeyStart: string | undefined,
-  threshold: number
+  threshold: number,
+  activities: Activity[]
 ): { unlocked: boolean; progressData?: BadgeProgress } => {
   if (!journeyStart) {
     return { unlocked: false };
   }
 
-  const daysSinceStart = Math.floor(
-    (Date.now() - new Date(journeyStart).getTime()) / (1000 * 60 * 60 * 24)
+  // Filter activities since journey start
+  const journeyStartTime = new Date(journeyStart).getTime();
+  const activitiesSinceStart = activities.filter(
+    (a) => new Date(a.timestamp).getTime() >= journeyStartTime
   );
 
-  const unlocked = daysSinceStart >= threshold;
+  // Count unique days with activities using Set
+  const uniqueDaysWithActivity = new Set(
+    activitiesSinceStart.map((a) => {
+      const activityDate = new Date(a.timestamp);
+      activityDate.setHours(0, 0, 0, 0);
+      return activityDate.getTime();
+    })
+  );
+
+  const daysTracked = uniqueDaysWithActivity.size;
+  const unlocked = daysTracked >= threshold;
 
   return {
     unlocked,
@@ -287,8 +301,8 @@ const checkTimeTracking = (
       ? undefined
       : {
           badgeId: badge.id,
-          progress: Math.min(daysSinceStart / threshold, 1),
-          current: daysSinceStart,
+          progress: Math.min(daysTracked / threshold, 1),
+          current: daysTracked,
           required: threshold,
         },
   };
@@ -589,7 +603,7 @@ const checkEarlyBird = (
 ): { unlocked: boolean; progressData?: BadgeProgress } => {
   const earlyActivities = activities.filter((a) => {
     const hour = new Date(a.timestamp).getHours();
-    return hour < 8;
+    return hour >= 5 && hour < 9; // 5 AM to 9 AM (matches badge description)
   });
 
   const count = earlyActivities.length;
@@ -658,7 +672,10 @@ const checkVarietyLover = (
   for (const activity of sorted) {
     const activityTime = new Date(activity.timestamp).getTime();
 
-    activity.categories?.forEach((category) => {
+    if (!activity.categories) continue;
+
+    // Replace forEach with for...of so return works correctly
+    for (const category of activity.categories) {
       const lastUsed = categoryLastUsed.get(category);
 
       if (lastUsed) {
@@ -670,7 +687,7 @@ const checkVarietyLover = (
       }
 
       categoryLastUsed.set(category, activityTime);
-    });
+    }
   }
 
   return { unlocked: false };
