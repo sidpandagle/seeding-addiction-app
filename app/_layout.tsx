@@ -1,5 +1,5 @@
 import { Stack } from 'expo-router';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { View, LogBox, Alert } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { enableScreens } from 'react-native-screens';
@@ -17,6 +17,7 @@ import { useFonts, Poppins_400Regular, Poppins_500Medium, Poppins_600SemiBold, P
 import { useColorScheme } from 'nativewind';
 import * as SplashScreen from 'expo-splash-screen';
 import Animated, { FadeIn } from 'react-native-reanimated';
+import { useReducedMotion, ANIMATION_PRESETS } from '../src/hooks/useReducedMotion';
 import "../global.css";
 
 // Suppress deprecation warnings from third-party libraries
@@ -39,6 +40,18 @@ export default function RootLayout() {
   const { setColorScheme } = useColorScheme();
   const [isReady, setIsReady] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const reducedMotion = useReducedMotion();
+
+  // Background color for consistent theming across navigation
+  const backgroundColor = colorScheme === 'dark' ? '#030712' : '#f9fafb';
+
+  // Memoize screen options for stack navigator
+  const screenOptions = useMemo(() => ({
+    headerShown: false,
+    animation: reducedMotion ? 'none' as const : 'fade' as const,
+    animationDuration: ANIMATION_PRESETS.navigation.fade,
+    contentStyle: { backgroundColor },
+  }), [reducedMotion, backgroundColor]);
 
   // Badge celebration - global watcher
   const celebrationQueue = useBadgeStore((state) => state.celebrationQueue);
@@ -165,12 +178,18 @@ export default function RootLayout() {
             entering={FadeIn.duration(150)}
             style={{
               flex: 1,
-              backgroundColor: colorScheme === 'dark' ? '#030712' : '#f9fafb'
+              backgroundColor,
             }}
           >
-            <Stack screenOptions={{ headerShown: false }}>
+            <Stack screenOptions={screenOptions}>
               <Stack.Screen name="index" />
-              <Stack.Screen name="onboarding" />
+              <Stack.Screen
+                name="onboarding"
+                options={{
+                  animation: reducedMotion ? 'none' : 'slide_from_right',
+                  animationDuration: ANIMATION_PRESETS.navigation.slide,
+                }}
+              />
               <Stack.Screen name="(tabs)" />
             </Stack>
 

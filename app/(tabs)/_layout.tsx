@@ -4,10 +4,15 @@ import { Home, History, Trophy, Settings } from 'lucide-react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useMemo } from 'react';
 import { AnimatedTabBarIcon } from '../../src/components/navigation/AnimatedTabBarIcon';
+import { useReducedMotion } from '../../src/hooks/useReducedMotion';
 
 export default function TabsLayout() {
   const colorScheme = useColorScheme();
   const insets = useSafeAreaInsets();
+  const reducedMotion = useReducedMotion();
+  
+  // Background color matching the screen backgrounds (gray-950 dark, gray-50 light)
+  const backgroundColor = colorScheme === 'dark' ? '#030712' : '#f9fafb';
 
   // Memoize screen options to prevent recalculation on every render
   const screenOptions = useMemo(() => ({
@@ -37,14 +42,19 @@ export default function TabsLayout() {
     // Set background color for screen container to prevent white flash
     // Using Tailwind gray-950 (dark) and gray-50 (light) to match tab screen backgrounds
     sceneStyle: {
-      backgroundColor: colorScheme === 'dark' ? '#030712' : '#f9fafb',
+      backgroundColor,
+    },
+    // Content style applies earlier than sceneStyle - helps prevent white flash
+    contentStyle: {
+      backgroundColor,
     },
     // Performance optimizations for faster tab switching
     lazy: false, // Preload all tabs to eliminate mounting delays
     unmountOnBlur: false, // Keep screens mounted for instant switching
     freezeOnBlur: true, // Freeze inactive screens to save resources
-    animation: 'none' as const, // Disable animation to prevent potential white flashes during transitions
-  }), [colorScheme, insets.bottom]);
+    // Smooth fade animation (respects reduced motion preference)
+    animation: reducedMotion ? 'none' as const : 'fade' as const,
+  }), [colorScheme, insets.bottom, backgroundColor, reducedMotion]);
 
   return (
     <Tabs screenOptions={screenOptions}>

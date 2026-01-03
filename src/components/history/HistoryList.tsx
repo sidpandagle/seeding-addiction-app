@@ -1,10 +1,11 @@
 import { FlatList, View, Text, Pressable, ScrollView } from 'react-native';
 import { useState, useMemo } from 'react';
-import { LinearGradient } from 'expo-linear-gradient';
+import Animated, { FadeInUp, LinearTransition } from 'react-native-reanimated';
 import { Lock, Crown } from 'lucide-react-native';
 import type { HistoryEntry } from '../../types/history';
 import { filterValidCategories } from '../../constants/tags';
 import { usePremium } from '../../hooks/usePremium';
+import { useReducedMotion, ANIMATION_PRESETS, getStaggerDelay } from '../../hooks/useReducedMotion';
 import { useCustomActivityTagsStore } from '../../stores/customActivityTagsStore';
 
 interface HistoryListProps {
@@ -17,6 +18,7 @@ const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
 export default function HistoryList({ entries, onUpgradePress }: HistoryListProps) {
   const [selectedTag, setSelectedTag] = useState<string | null>(null);
   const { isPremium } = usePremium();
+  const reducedMotion = useReducedMotion();
   const customTags = useCustomActivityTagsStore(state => state.customTags);
 
   // Get all unique tags/categories AND their counts in a single pass (O(n) instead of O(n²))
@@ -191,12 +193,22 @@ export default function HistoryList({ entries, onUpgradePress }: HistoryListProp
           </Pressable>
         ) : null
       }
-      renderItem={({ item }) => {
+      renderItem={({ item, index }) => {
         const isRelapse = item.type === 'relapse';
         const data = item.data;
+        
+        // Staggered entrance animation with capped delay
+        const enteringAnimation = reducedMotion 
+          ? undefined 
+          : FadeInUp.duration(ANIMATION_PRESETS.list.duration).delay(
+              getStaggerDelay(index, ANIMATION_PRESETS.list.staggerDelay, ANIMATION_PRESETS.list.maxStaggerDelay)
+            );
 
         return (
-          <View className={`p-6 mx-6 mb-4 bg-white shadow-sm dark:bg-gray-900 rounded-xl border ${
+          <Animated.View
+            entering={enteringAnimation}
+            layout={reducedMotion ? undefined : LinearTransition.duration(200)}
+            className={`p-6 mx-6 mb-4 bg-white dark:bg-gray-900 rounded-xl border ${
             isRelapse
               ? 'border-red-200 dark:border-red-900/50'
               : 'border-emerald-200 dark:border-emerald-900/50'
@@ -271,7 +283,7 @@ export default function HistoryList({ entries, onUpgradePress }: HistoryListProp
                 </View>
               );
             })()}
-          </View>
+          </Animated.View>
         );
       }}
     />

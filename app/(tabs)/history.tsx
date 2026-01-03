@@ -6,6 +6,7 @@ import { useRelapseStore } from '../../src/stores/relapseStore';
 import { useActivityStore } from '../../src/stores/activityStore';
 import { useColorScheme } from '../../src/stores/themeStore';
 import { usePremium } from '../../src/hooks/usePremium';
+import { useReducedMotion } from '../../src/hooks/useReducedMotion';
 import { getJourneyStart } from '../../src/db/helpers';
 import ViewToggle from '../../src/components/history/ViewToggle';
 import HistoryList from '../../src/components/history/HistoryList';
@@ -19,6 +20,7 @@ type ViewMode = 'list' | 'calendar';
 
 function HistoryScreen() {
   const colorScheme = useColorScheme();
+  const reducedMotion = useReducedMotion();
   // Use specific selectors to prevent re-renders when other store values change
   const relapses = useRelapseStore((state) => state.relapses);
   const activities = useActivityStore((state) => state.activities);
@@ -87,7 +89,7 @@ function HistoryScreen() {
             }
           }}
           style={{ backgroundColor: colorScheme === 'dark' ? '#111827' : '#ffffff' }}
-          className="flex-row items-center justify-between p-5 border border-gray-200 shadow-sm dark:border-gray-800 rounded-xl"
+          className="flex-row items-center justify-between p-5 border border-gray-200 dark:border-gray-800 rounded-xl"
         >
           <View className="flex-row items-center flex-1 gap-3">
             <View className="items-center justify-center w-12 h-12 bg-blue-100 rounded-full dark:bg-blue-900/30">
@@ -150,7 +152,7 @@ function HistoryScreen() {
       {/* Insights Modal */}
       <Modal
         visible={showInsightsModal}
-        animationType="slide"
+        animationType={reducedMotion ? 'none' : 'slide'}
         presentationStyle="pageSheet"
         onRequestClose={() => setShowInsightsModal(false)}
       >

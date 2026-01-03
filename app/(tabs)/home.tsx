@@ -21,9 +21,11 @@ import { Sprout, AlertCircle, RotateCcw, TrendingUp, Award, Heart, Sparkles } fr
 import { useJourneyStats } from '../../src/hooks/useJourneyStats';
 import { useJourneyStartLoader } from '../../src/hooks/useJourneyStartLoader';
 import InsightsModal from '../../src/components/history/InsightsModal';
+import { useReducedMotion } from '../../src/hooks/useReducedMotion';
 
 function DashboardScreen() {
   const colorScheme = useColorScheme();
+  const reducedMotion = useReducedMotion();
 
   // Memoize background styles to prevent new object creation on every render
   const cardBgStyle = useMemo(() => ({
@@ -253,7 +255,7 @@ function DashboardScreen() {
             {/* Log Activity - Primary Action */}
             <Pressable
               onPress={() => handleActivityPress()}
-              className="flex-1 border shadow-sm bg-emerald-100 dark:bg-emerald-950/30 border-emerald-100 dark:border-emerald-700 rounded-xl"
+              className="flex-1 border bg-emerald-100 dark:bg-emerald-950/30 border-emerald-100 dark:border-emerald-700 rounded-xl"
             >
               <View className="items-center px-4 py-6">
                 <View className="items-center justify-center mb-3 rounded-lg w-14 h-14">
@@ -272,7 +274,7 @@ function DashboardScreen() {
             <Pressable
               onPress={handleRelapsePress}
               style={cardBgStyle}
-              className="flex-1 shadow-sm rounded-xl shadow-black"
+              className="flex-1 border border-gray-200 rounded-xl dark:border-gray-800"
             >
               <View className="items-center px-4 py-6">
                 <View className="items-center justify-center mb-3 w-14 h-14 rounded-xl bg-emerald-50 dark:bg-emerald-950/30">
@@ -305,7 +307,7 @@ function DashboardScreen() {
             {/* Total Attempts */}
             <View
               style={cardBgStyle}
-              className="relative flex-1 overflow-hidden border border-gray-200 shadow-sm shadow-black rounded-xl dark:border-gray-800"
+              className="relative flex-1 overflow-hidden border border-gray-200 rounded-xl dark:border-gray-800"
             >
               <View className="p-4">
                 <Text className="mb-2 text-xs font-medium tracking-wide text-gray-600 uppercase dark:text-gray-400">
@@ -324,7 +326,7 @@ function DashboardScreen() {
             {/* Best Streak */}
             <View
               style={cardBgStyle}
-              className="relative flex-1 overflow-hidden border border-gray-200 shadow-sm shadow-black rounded-xl dark:border-gray-800"
+              className="relative flex-1 overflow-hidden border border-gray-200 rounded-xl dark:border-gray-800"
             >
               <View className="p-4">
                 <Text className="mb-2 text-xs font-medium tracking-wide text-gray-600 uppercase dark:text-gray-400">
@@ -351,7 +353,7 @@ function DashboardScreen() {
             {/* Activities Logged */}
             <View
               style={cardBgStyle}
-              className="relative flex-1 overflow-hidden border border-gray-200 shadow-sm shadow-black rounded-xl dark:border-gray-800"
+              className="relative flex-1 overflow-hidden border border-gray-200 rounded-xl dark:border-gray-800"
             >
               <View className="p-4">
                 <Text className="mb-2 text-xs font-medium tracking-wide text-gray-600 uppercase dark:text-gray-400">
@@ -370,7 +372,7 @@ function DashboardScreen() {
             {/* Success Rate */}
             <View
               style={cardBgStyle}
-              className="relative flex-1 overflow-hidden border border-gray-200 shadow-sm shadow-black rounded-xl dark:border-gray-800"
+              className="relative flex-1 overflow-hidden border border-gray-200 rounded-xl dark:border-gray-800"
             >
               <View className="p-4">
                 <Text className="mb-2 text-xs font-medium tracking-wide text-gray-600 uppercase dark:text-gray-400">
@@ -403,7 +405,7 @@ function DashboardScreen() {
         {/* Relapse Modal */}
         <Modal
           visible={showModal}
-          animationType="slide"
+          animationType={reducedMotion ? 'none' : 'slide'}
           presentationStyle="pageSheet"
           onRequestClose={() => setShowModal(false)}
         >
@@ -413,7 +415,7 @@ function DashboardScreen() {
         {/* Activity Modal */}
         <Modal
           visible={showActivityModal}
-          animationType="slide"
+          animationType={reducedMotion ? 'none' : 'slide'}
           presentationStyle="pageSheet"
           onRequestClose={handleActivityModalClose}
         >
@@ -426,7 +428,7 @@ function DashboardScreen() {
         {/* Emergency Help Modal */}
         <Modal
           visible={showHelpModal}
-          animationType="slide"
+          animationType={reducedMotion ? 'none' : 'slide'}
           presentationStyle="pageSheet"
           onRequestClose={() => setShowHelpModal(false)}
         >
@@ -443,7 +445,7 @@ function DashboardScreen() {
         {/* Insights Modal */}
         <Modal
           visible={showInsightsModal}
-          animationType="slide"
+          animationType={reducedMotion ? 'none' : 'slide'}
           presentationStyle="pageSheet"
           onRequestClose={() => setShowInsightsModal(false)}
         >

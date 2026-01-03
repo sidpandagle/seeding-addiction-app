@@ -31,9 +31,9 @@ export function ThemeTransitionOverlay() {
     if (isTransitioning) {
       // Fade in → hold → fade out sequence (optimized timing for snappier feel)
       opacity.value = withSequence(
-        withTiming(1, { duration: 100 }), // Fade in
-        withTiming(1, { duration: 50 }), // Hold while components re-render
-        withTiming(0, { duration: 100 }, (finished) => {
+        withTiming(1, { duration: 200 }), // Fade in
+        withTiming(1, { duration: 500 }), // Hold while components re-render
+        withTiming(0, { duration: 200 }, (finished) => {
           // Animation complete - clear transitioning state
           if (finished) {
             runOnJS(setTransitioning)(false);

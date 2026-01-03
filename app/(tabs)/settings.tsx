@@ -16,6 +16,7 @@ import { useRelapseStore } from '../../src/stores/relapseStore';
 import { useColorScheme, useThemeStore } from '../../src/stores/themeStore';
 import { useNotificationStore } from '../../src/stores/notificationStore';
 import { usePremium } from '../../src/hooks/usePremium';
+import { useReducedMotion } from '../../src/hooks/useReducedMotion';
 import { Settings2, Palette, Lock, Database, Sun, Moon, Shield, Trash2, Info, Brain, Coffee, BookOpen, Crown, Star, Bell, Clock, Sparkles, Trophy, Download, Sheet } from 'lucide-react-native';
 import { exportService } from '../../src/services/exportService';
 import RecoveryEducationModal from '../../src/components/modals/RecoveryEducationModal';
@@ -31,6 +32,7 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 export default function SettingsScreen() {
   const router = useRouter();
   const colorScheme = useColorScheme();
+  const reducedMotion = useReducedMotion();
   const resetAllData = useRelapseStore((state) => state.resetAllData);
   const { isPremium, expirationDate, willRenew } = usePremium();
   const [appLockEnabled, setAppLockEnabledState] = useState(false);
@@ -798,7 +800,7 @@ export default function SettingsScreen() {
       {/* Recovery Education Modal */}
       <Modal
         visible={showEducationModal}
-        animationType="slide"
+        animationType={reducedMotion ? 'none' : 'slide'}
         presentationStyle="pageSheet"
         onRequestClose={() => setShowEducationModal(false)}
       >
@@ -808,7 +810,7 @@ export default function SettingsScreen() {
       {/* How to Use Modal */}
       <Modal
         visible={showHowToUseModal}
-        animationType="slide"
+        animationType={reducedMotion ? 'none' : 'slide'}
         presentationStyle="pageSheet"
         onRequestClose={() => setShowHowToUseModal(false)}
       >
@@ -818,7 +820,7 @@ export default function SettingsScreen() {
       {/* About Modal */}
       <Modal
         visible={showAboutModal}
-        animationType="slide"
+        animationType={reducedMotion ? 'none' : 'slide'}
         presentationStyle="pageSheet"
         onRequestClose={() => setShowAboutModal(false)}
       >

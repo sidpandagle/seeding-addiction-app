@@ -1,8 +1,10 @@
 import React, { useMemo, useState, useEffect } from 'react';
 import { View, Text, Pressable } from 'react-native';
+import Animated, { FadeInDown } from 'react-native-reanimated';
 import { TrendingUp, TrendingDown, Minus, Activity, AlertCircle, Info, X } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
 import { useColorScheme } from '../../stores/themeStore';
+import { useReducedMotion, ANIMATION_PRESETS } from '../../hooks/useReducedMotion';
 import { getAppSetting, setAppSetting } from '../../db/helpers';
 import type { Relapse } from '../../db/schema';
 import type { Activity as ActivityType } from '../../db/schema';
@@ -33,6 +35,7 @@ const ComparativeStatsCard: React.FC<ComparativeStatsCardProps> = ({
   activities,
 }) => {
   const colorScheme = useColorScheme();
+  const reducedMotion = useReducedMotion();
   const isDark = colorScheme === 'dark';
   const [showInfo, setShowInfo] = useState(false);
   const [selectedPeriod, setSelectedPeriod] = useState<ComparisonPeriod>('weekly');
@@ -165,7 +168,10 @@ const ComparativeStatsCard: React.FC<ComparativeStatsCardProps> = ({
 
   if (relapses.length === 0 && activities.length === 0) {
     return (
-      <View className="p-5 mb-4 bg-white border border-gray-200 dark:bg-gray-900 dark:border-gray-800 rounded-2xl">
+      <Animated.View
+        entering={reducedMotion ? undefined : FadeInDown.duration(ANIMATION_PRESETS.card.duration)}
+        className="p-5 mb-4 bg-white border border-gray-200 dark:bg-gray-900 dark:border-gray-800 rounded-2xl"
+      >
         <View className="flex-row items-center mb-3">
           <View className="items-center justify-center w-10 h-10 mr-3 rounded-full bg-blue-100 dark:bg-blue-900/40">
             <Activity size={20} color="#3b82f6" />
@@ -177,12 +183,15 @@ const ComparativeStatsCard: React.FC<ComparativeStatsCardProps> = ({
         <Text className="text-sm text-gray-500 dark:text-gray-400 text-center py-4">
           Start tracking to see comparisons over time
         </Text>
-      </View>
+      </Animated.View>
     );
   }
 
   return (
-    <View className="p-5 mb-4 bg-white border border-gray-200 dark:bg-gray-900 dark:border-gray-800 rounded-2xl">
+    <Animated.View
+      entering={reducedMotion ? undefined : FadeInDown.duration(ANIMATION_PRESETS.card.duration)}
+      className="p-5 mb-4 bg-white border border-gray-200 dark:bg-gray-900 dark:border-gray-800 rounded-2xl"
+    >
       {/* Header */}
       <View className="flex-row items-center justify-between mb-4">
         <View className="flex-row items-center flex-1">
@@ -334,7 +343,7 @@ const ComparativeStatsCard: React.FC<ComparativeStatsCardProps> = ({
           </View>
         </View>
       ))}
-    </View>
+    </Animated.View>
   );
 };
 

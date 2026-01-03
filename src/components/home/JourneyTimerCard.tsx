@@ -1,7 +1,9 @@
 import React, { useState, useEffect, memo, useMemo, useRef } from 'react';
 import { View, Text, Animated, ActivityIndicator } from 'react-native';
+import Reanimated, { FadeIn } from 'react-native-reanimated';
 import { useColorScheme } from '../../stores/themeStore';
 import { millisecondsToTimeBreakdown, getCheckpointProgress } from '../../utils/growthStages';
+import { useReducedMotion, ANIMATION_PRESETS } from '../../hooks/useReducedMotion';
 
 interface JourneyTimerCardProps {
   startTime: string | null; // ISO timestamp (can be null while loading)
@@ -127,12 +129,35 @@ const JourneyTimerCardComponent: React.FC<JourneyTimerCardProps> = ({
   nextCheckpoint,
 }) => {
   const colorScheme = useColorScheme();
+  const reducedMotion = useReducedMotion();
   const [time, setTime] = useState(Date.now());
 
   // Memoize card background style to prevent new object creation on every render
   const cardBgStyle = useMemo(() => ({
     backgroundColor: colorScheme === 'dark' ? '#111827' : '#ffffff'
   }), [colorScheme]);
+
+  // Calculate elapsed time (0 when not started)
+  const elapsed = useMemo(() => {
+    if (!startTime) return 0;
+    return Math.max(0, time - new Date(startTime).getTime());
+  }, [startTime, time]);
+
+  // Calculate time breakdown
+  const timeBreakdown = useMemo(() => 
+    millisecondsToTimeBreakdown(elapsed),
+  [elapsed]);
+
+  // Calculate checkpoint progress for the progress indicator
+  const checkpointProgress = useMemo(() => {
+    return getCheckpointProgress(elapsed);
+  }, [elapsed]);
+
+  // Get progress value (0 to 1)
+  const progressValue = checkpointProgress.progress;
+
+  // Entrance animation (respects reduced motion)
+  const enteringAnimation = reducedMotion ? undefined : FadeIn.duration(ANIMATION_PRESETS.card.duration);
 
   useEffect(() => {
     // Update timer every second
@@ -149,7 +174,7 @@ const JourneyTimerCardComponent: React.FC<JourneyTimerCardProps> = ({
       <View className="px-6">
         <View
           style={cardBgStyle}
-          className="relative overflow-hidden border border-gray-200 shadow-md rounded-2xl dark:border-gray-700"
+          className="relative overflow-hidden border border-gray-200 rounded-2xl dark:border-gray-700"
         >
           <View className="items-center justify-center p-6" style={{ minHeight: 250 }}>
             <ActivityIndicator size="large" color="#10b981" />
@@ -160,24 +185,15 @@ const JourneyTimerCardComponent: React.FC<JourneyTimerCardProps> = ({
     );
   }
 
-  // Calculate elapsed time
-  const elapsed = Math.max(0, time - new Date(startTime).getTime());
-  const { days, hours, minutes, seconds } = millisecondsToTimeBreakdown(elapsed);
-
-  // Calculate checkpoint progress for the progress indicator
-  const checkpointProgress = useMemo(() => {
-    return getCheckpointProgress(elapsed);
-  }, [elapsed]);
-
-  // Get progress value (0 to 1)
-  const progressValue = checkpointProgress.progress;
+  // Destructure time breakdown
+  const { days, hours, minutes, seconds } = timeBreakdown;
 
   return (
-    <View className="px-6">
+    <Reanimated.View entering={enteringAnimation} className="px-6">
       {/* Card with Background Icon - Same style as Daily Inspiration */}
       <View
         style={cardBgStyle}
-        className="relative overflow-hidden border border-gray-200 shadow-md rounded-2xl dark:border-gray-800"
+        className="relative overflow-hidden border border-gray-200 rounded-2xl dark:border-gray-800"
       >
         <View className="p-6">
           {/* Decorative Background Icon - Bottom Right */}
@@ -271,7 +287,7 @@ const JourneyTimerCardComponent: React.FC<JourneyTimerCardProps> = ({
           </View>
         </View>
       </View>
-    </View>
+    </Reanimated.View>
   );
 };
 

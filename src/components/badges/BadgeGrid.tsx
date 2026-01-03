@@ -1,8 +1,10 @@
 import { View, Text, Pressable } from 'react-native';
 import { useState, useMemo } from 'react';
+import Animated, { FadeIn } from 'react-native-reanimated';
 import { Badge, BadgeCategory, EarnedBadge } from '../../db/schema';
 import { Filter } from 'lucide-react-native';
 import { useColorScheme } from '../../stores/themeStore';
+import { useReducedMotion, ANIMATION_PRESETS, getStaggerDelay } from '../../hooks/useReducedMotion';
 import BadgeCard from './BadgeCard';
 import CategoryFilterModal from './CategoryFilterModal';
 
@@ -32,6 +34,7 @@ export default function BadgeGrid({
   onBadgePress,
 }: Readonly<BadgeGridProps>) {
   const colorScheme = useColorScheme();
+  const reducedMotion = useReducedMotion();
   const [selectedCategory, setSelectedCategory] = useState<BadgeCategory | 'all'>('all');
   const [showFilterModal, setShowFilterModal] = useState(false);
 
@@ -91,10 +94,18 @@ export default function BadgeGrid({
         {sortedBadges.map((badge, index) => {
           const isLocked = !earnedBadgeIds.has(badge.id);
           const progress = badgeProgress[badge.id];
+          
+          // Staggered entrance animation with capped delay
+          const enteringAnimation = reducedMotion 
+            ? undefined 
+            : FadeIn.duration(ANIMATION_PRESETS.grid.duration).delay(
+                getStaggerDelay(index, ANIMATION_PRESETS.grid.staggerDelay, ANIMATION_PRESETS.grid.maxStaggerDelay)
+              );
 
           return (
-            <View
+            <Animated.View
               key={badge.id}
+              entering={enteringAnimation}
               className="p-3"
               style={{ width: '33.33%' }}
             >
@@ -107,7 +118,7 @@ export default function BadgeGrid({
                 onPress={() => onBadgePress?.(badge)}
                 staggerIndex={index}
               />
-            </View>
+            </Animated.View>
           );
         })}
       </View>

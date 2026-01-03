@@ -110,7 +110,7 @@ export default function CalendarRelapseDetails({ selectedDate, entries }: Calend
             return (
               <View
                 key={relapse.id}
-                className={`bg-white border border-red-200 dark:border-red-900/50 shadow-sm dark:bg-gray-900 rounded-xl ${index < dayRelapses.length - 1 ? 'mb-3' : ''}`}
+                className={`bg-white border border-red-200 dark:border-red-900/50 dark:bg-gray-900 rounded-xl ${index < dayRelapses.length - 1 ? 'mb-3' : ''}`}
               >
                 <View className="p-5">
                   <View className="flex-row items-start justify-between mb-3">
@@ -184,7 +184,7 @@ export default function CalendarRelapseDetails({ selectedDate, entries }: Calend
             return (
               <View
                 key={activity.id}
-                className={`bg-white border border-emerald-200 dark:border-emerald-900/50 shadow-sm dark:bg-gray-900 rounded-xl ${index < dayActivities.length - 1 ? 'mb-3' : ''}`}
+                className={`bg-white border border-emerald-200 dark:border-emerald-900/50 dark:bg-gray-900 rounded-xl ${index < dayActivities.length - 1 ? 'mb-3' : ''}`}
               >
                 <View className="p-5">
                   <View className="flex-row items-start justify-between mb-3">
