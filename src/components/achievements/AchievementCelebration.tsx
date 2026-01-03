@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { View, Text, Modal, Pressable } from 'react-native';
 import Animated, { FadeIn, ZoomIn, ZoomOut, SlideInUp } from 'react-native-reanimated';
-import { Achievement } from './AchievementBadge';
+import { Achievement } from '../../utils/growthStages';
 import * as Haptics from 'expo-haptics';
 
 interface AchievementCelebrationProps {

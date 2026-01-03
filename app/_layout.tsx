@@ -6,7 +6,6 @@ import { enableScreens } from 'react-native-screens';
 import { useRelapseStore } from '../src/stores/relapseStore';
 import { useBadgeStore } from '../src/stores/badgeStore';
 import { useColorScheme as useColorSchemeStore } from '../src/stores/themeStore';
-import { useSubscriptionStore } from '../src/stores/subscriptionStore';
 import { useNotificationStore } from '../src/stores/notificationStore';
 import { AppLock } from '../src/components/common/AppLock';
 import { ThemeTransitionOverlay } from '../src/components/common/ThemeTransitionOverlay';
@@ -34,7 +33,6 @@ SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
   const loadRelapses = useRelapseStore((state) => state.loadRelapses);
-  const initializeSubscriptions = useSubscriptionStore((state) => state.initialize);
   const initializeNotifications = useNotificationStore((state) => state.initialize);
   const colorScheme = useColorSchemeStore();
   const { setColorScheme } = useColorScheme();
@@ -78,7 +76,6 @@ export default function RootLayout() {
         await Promise.all([
           initializeDatabase(),
           initializeEncryptionKey(),
-          initializeSubscriptions(),
         ]);
 
         // Load initial data BEFORE marking as ready to prevent timer glitches
@@ -99,7 +96,7 @@ export default function RootLayout() {
     };
 
     initialize();
-  }, [loadRelapses, initializeSubscriptions, initializeNotifications]);
+  }, []);
 
   // Global badge celebration watcher
   useEffect(() => {

@@ -15,9 +15,8 @@ import {
 import { useRelapseStore } from '../../src/stores/relapseStore';
 import { useColorScheme, useThemeStore } from '../../src/stores/themeStore';
 import { useNotificationStore } from '../../src/stores/notificationStore';
-import { usePremium } from '../../src/hooks/usePremium';
 import { useReducedMotion } from '../../src/hooks/useReducedMotion';
-import { Settings2, Palette, Lock, Database, Sun, Moon, Shield, Trash2, Info, Brain, Coffee, BookOpen, Crown, Star, Bell, Clock, Sparkles, Trophy, Download, Sheet } from 'lucide-react-native';
+import { Settings2, Palette, Lock, Database, Sun, Moon, Shield, Trash2, Info, Brain, Coffee, BookOpen, Bell, Clock, Sparkles, Trophy, Download, Sheet } from 'lucide-react-native';
 import { exportService } from '../../src/services/exportService';
 import RecoveryEducationModal from '../../src/components/modals/RecoveryEducationModal';
 import CustomAlert from '../../src/components/common/CustomAlert';
@@ -25,8 +24,6 @@ import ConfirmationDialog from '../../src/components/common/ConfirmationDialog';
 import { useAlert } from '../../src/hooks/useAlert';
 import HowToUseModal from '../../src/components/modals/HowToUseModal';
 import AboutModal from '../../src/components/modals/AboutModal';
-import { PaywallModal } from '../../src/components/premium/PaywallModal';
-import { CustomerCenter } from '../../src/components/premium/CustomerCenter';
 import DateTimePicker from '@react-native-community/datetimepicker';
 
 export default function SettingsScreen() {
@@ -34,15 +31,12 @@ export default function SettingsScreen() {
   const colorScheme = useColorScheme();
   const reducedMotion = useReducedMotion();
   const resetAllData = useRelapseStore((state) => state.resetAllData);
-  const { isPremium, expirationDate, willRenew } = usePremium();
   const [appLockEnabled, setAppLockEnabledState] = useState(false);
   const [biometricAvailable, setBiometricAvailable] = useState(false);
   const [authMethodName, setAuthMethodName] = useState('Biometric');
   const [showEducationModal, setShowEducationModal] = useState(false);
   const [showHowToUseModal, setShowHowToUseModal] = useState(false);
   const [showAboutModal, setShowAboutModal] = useState(false);
-  const [showPaywallModal, setShowPaywallModal] = useState(false);
-  const [showCustomerCenter, setShowCustomerCenter] = useState(false);
   const [showTimePicker, setShowTimePicker] = useState(false);
 
   // Notification state
@@ -267,11 +261,6 @@ export default function SettingsScreen() {
   };
 
   const handleExportXLSX = async () => {
-    if (!isPremium) {
-      setShowPaywallModal(true);
-      return;
-    }
-
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     const success = await exportService.exportToXLSX();
 
@@ -379,79 +368,6 @@ export default function SettingsScreen() {
           </View>
         </View>
 
-        {/* Premium Section */}
-        <View className="px-6 mt-6">
-          <View className="flex-row items-center gap-2 mb-3">
-            <Crown size={18} color={colorScheme === 'dark' ? '#fbbf24' : '#f59e0b'} strokeWidth={2.5} />
-            <Text className="text-sm font-bold tracking-wider text-gray-600 uppercase dark:text-gray-400">
-              Premium
-            </Text>
-          </View>
-
-          {isPremium ? (
-            <View className="p-5 bg-white border border-gray-200 dark:bg-gray-900 dark:border-gray-800 rounded-2xl">
-              <View className="flex-row items-center mb-4">
-                <View className="items-center justify-center w-12 h-12 mr-3 bg-purple-100 rounded-full dark:bg-purple-900/30">
-                  <Star size={24} color="#a855f7" fill="#a855f7" strokeWidth={2} />
-                </View>
-                <View className="flex-1">
-                  <Text className="text-lg font-bold dark:text-white">
-                    Seeding Pro
-                  </Text>
-                  <Text className="text-sm text-purple-900 dark:text-purple-100">
-                    Active subscription
-                  </Text>
-                </View>
-              </View>
-
-              {expirationDate && (
-                <View className="p-3 mb-3 rounded-xl">
-                  <Text className="text-xs font-semibold dark:text-purple-100">
-                    {willRenew ? 'Renews on' : 'Expires on'}
-                  </Text>
-                  <Text className="mt-1 text-sm font-bold dark:text-white">
-                    {new Date(expirationDate).toLocaleDateString('en-US', {
-                      year: 'numeric',
-                      month: 'long',
-                      day: 'numeric'
-                    })}
-                  </Text>
-                </View>
-              )}
-
-              <Pressable
-                onPress={() => setShowCustomerCenter(true)}
-                className="p-3 bg-purple-100 rounded-xl dark:bg-purple-900/20 active:opacity-70"
-              >
-                <Text className="font-semibold text-center text-purple-600 dark:text-purple-400">
-                  Manage Subscription
-                </Text>
-              </Pressable>
-            </View>
-          ) : (
-            <Pressable
-              onPress={() => setShowPaywallModal(true)}
-              className="p-5 overflow-hidden bg-white border border-white dark:bg-gray-900 dark:border-gray-900 rounded-2xl active:opacity-70"
-            >
-              <View className="flex-row items-center justify-between">
-                <View className="flex-row items-center flex-1">
-                  <View className="items-center justify-center w-10 h-10 mr-3 rounded-full bg-amber-50 dark:bg-amber-900/30">
-                    <Crown size={20} color="#f59e0b" strokeWidth={2.5} />
-                  </View>
-                  <View className="flex-1">
-                    <Text className="text-base font-bold text-gray-900 dark:text-white">
-                      Upgrade to Pro
-                    </Text>
-                    <Text className="mt-0.5 text-sm text-gray-500 dark:text-gray-400">
-                      Unlock all premium features
-                    </Text>
-                  </View>
-                </View>
-                <Text className="text-xl font-medium text-amber-600 dark:text-amber-400">→</Text>
-              </View>
-            </Pressable>
-          )}
-        </View>
 
         {/* Notifications Section */}
         <View className="px-6 mt-6">
@@ -664,18 +580,13 @@ export default function SettingsScreen() {
 
 
 
-        {/* Export Section (Pro) */}
+        {/* Export Section */}
         <View className="px-6 mt-6">
           <View className="flex-row items-center gap-2 mb-3">
             <Download size={18} color={colorScheme === 'dark' ? '#3b82f6' : '#2563eb'} strokeWidth={2.5} />
             <Text className="text-sm font-bold tracking-wider text-gray-600 uppercase dark:text-gray-400">
               Export Data
             </Text>
-            {!isPremium && (
-              <View className="px-2 py-0.5 bg-purple-100 dark:bg-purple-900/30 rounded-full">
-                <Text className="text-xs font-semibold text-purple-700 dark:text-purple-300">PRO</Text>
-              </View>
-            )}
           </View>
 
           <Pressable
@@ -696,7 +607,6 @@ export default function SettingsScreen() {
                   </Text>
                 </View>
               </View>
-              {!isPremium && <Lock size={20} color="#9CA3AF" strokeWidth={2.5} />}
             </View>
           </Pressable>
         </View>
@@ -850,21 +760,7 @@ export default function SettingsScreen() {
         onConfirm={confirmResetData}
         onCancel={() => setShowConfirmDialog(false)}
         isDestructive={true}
-      />
-
-      {/* Paywall Modal */}
-      <PaywallModal
-        visible={showPaywallModal}
-        onClose={() => setShowPaywallModal(false)}
-      />
-
-      {/* Customer Center */}
-      <CustomerCenter
-        visible={showCustomerCenter}
-        onClose={() => setShowCustomerCenter(false)}
-      />
-
-      {/* Time Picker for Daily Reminder */}
+      />      {/* Time Picker for Daily Reminder */}
       {showTimePicker && (
         <DateTimePicker
           value={dailyReminderTime

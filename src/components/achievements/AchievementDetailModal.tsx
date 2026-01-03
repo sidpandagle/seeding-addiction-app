@@ -2,7 +2,7 @@ import React from 'react';
 import { View, Text, Modal, Pressable, ScrollView } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { useColorScheme } from '../../stores/themeStore';
-import { Achievement } from './AchievementBadge';
+import { Achievement } from '../../utils/growthStages';
 import { X } from 'lucide-react-native';
 
 interface AchievementDetailModalProps {

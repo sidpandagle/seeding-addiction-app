@@ -5,7 +5,6 @@ import { History, BarChart3, Lock } from 'lucide-react-native';
 import { useRelapseStore } from '../../src/stores/relapseStore';
 import { useActivityStore } from '../../src/stores/activityStore';
 import { useColorScheme } from '../../src/stores/themeStore';
-import { usePremium } from '../../src/hooks/usePremium';
 import { useReducedMotion } from '../../src/hooks/useReducedMotion';
 import { getJourneyStart } from '../../src/db/helpers';
 import ViewToggle from '../../src/components/history/ViewToggle';
@@ -13,11 +12,8 @@ import HistoryList from '../../src/components/history/HistoryList';
 import HistoryCalendar from '../../src/components/history/HistoryCalendar';
 import CalendarRelapseDetails from '../../src/components/history/CalendarRelapseDetails';
 import InsightsModal from '../../src/components/history/InsightsModal';
-import { PaywallModal } from '../../src/components/premium/PaywallModal';
 import { createRelapseEntry, createActivityEntry, sortHistoryEntries } from '../../src/types/history';
-
 type ViewMode = 'list' | 'calendar';
-
 function HistoryScreen() {
   const colorScheme = useColorScheme();
   const reducedMotion = useReducedMotion();
@@ -25,18 +21,14 @@ function HistoryScreen() {
   const relapses = useRelapseStore((state) => state.relapses);
   const activities = useActivityStore((state) => state.activities);
   const loadActivities = useActivityStore((state) => state.loadActivities);
-  const { isPremium } = usePremium();
   const [journeyStart, setJourneyStart] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<ViewMode>('list');
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [showInsightsModal, setShowInsightsModal] = useState(false);
-  const [showPaywallModal, setShowPaywallModal] = useState(false);
-
   // Load activities when component mounts
   useEffect(() => {
     loadActivities();
   }, [loadActivities]);
-
   // Load journey start timestamp for calendar
   useEffect(() => {
     const loadJourneyStart = async () => {
@@ -45,20 +37,16 @@ function HistoryScreen() {
     };
     loadJourneyStart();
   }, []);
-
   // Combine relapses and activities into unified history entries
   const historyEntries = useMemo(() => {
     const relapseEntries = relapses.map(createRelapseEntry);
     const activityEntries = activities.map(createActivityEntry);
     return sortHistoryEntries([...relapseEntries, ...activityEntries]);
   }, [relapses, activities]);
-
   // Calculate user stats for current streak
-
   return (
     <View className="flex-1 bg-gray-50 dark:bg-gray-950">
       <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'} />
-
       {/* Elegant Header */}
       <View className="pt-16 pb-2">
         <View className="px-6">
@@ -77,16 +65,11 @@ function HistoryScreen() {
           </View>
         </View>
       </View>
-
       {/* View Advanced Insights Button */}
       <View className="px-6 pb-0">
         <Pressable
           onPress={() => {
-            if (isPremium) {
-              setShowInsightsModal(true);
-            } else {
-              setShowPaywallModal(true);
-            }
+            setShowInsightsModal(true);
           }}
           style={{ backgroundColor: colorScheme === 'dark' ? '#111827' : '#ffffff' }}
           className="flex-row items-center justify-between p-5 border border-gray-200 dark:border-gray-800 rounded-xl"
@@ -100,11 +83,6 @@ function HistoryScreen() {
                 <Text className="text-base font-bold text-gray-900 dark:text-white">
                   View Advanced Insights
                 </Text>
-                {!isPremium && (
-                  <View className="px-2 py-0.5 bg-purple-100 dark:bg-purple-900/30 rounded-full">
-                    <Text className="text-xs font-semibold text-purple-700 dark:text-purple-300">PRO</Text>
-                  </View>
-                )}
               </View>
               <Text className="text-sm text-gray-500 dark:text-gray-400">
                 {historyEntries.length >= 2
@@ -113,23 +91,16 @@ function HistoryScreen() {
               </Text>
             </View>
           </View>
-          {!isPremium && (
-            <View className="ml-3">
-              <Lock size={20} color={colorScheme === 'dark' ? '#9CA3AF' : '#6B7280'} strokeWidth={2.5} />
-            </View>
-          )}
         </Pressable>
       </View>
-
       {/* View Toggle */}
       <View className="px-6 mt-6 mb-4">
         <ViewToggle mode={viewMode} onModeChange={setViewMode} />
       </View>
-
       {/* Content Views */}
       <View className="flex-1">
         {viewMode === 'list' ? (
-          <HistoryList entries={historyEntries} onUpgradePress={() => setShowPaywallModal(true)} />
+          <HistoryList entries={historyEntries} />
         ) : (
           <ScrollView
             className="flex-1"
@@ -146,9 +117,7 @@ function HistoryScreen() {
           </ScrollView>
         )}
       </View>
-
       
-
       {/* Insights Modal */}
       <Modal
         visible={showInsightsModal}
@@ -157,16 +126,8 @@ function HistoryScreen() {
         onRequestClose={() => setShowInsightsModal(false)}
       >
         <InsightsModal onClose={() => setShowInsightsModal(false)} />
-      </Modal>
-
-      {/* Paywall Modal */}
-      <PaywallModal
-        visible={showPaywallModal}
-        onClose={() => setShowPaywallModal(false)}
-      />
-    </View>
+      </Modal>    </View>
   );
 }
-
 // Memoize to prevent unnecessary re-renders on tab switches
 export default memo(HistoryScreen);

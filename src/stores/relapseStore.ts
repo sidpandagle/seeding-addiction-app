@@ -245,7 +245,6 @@ export const useRelapsesError = () => useRelapseStore((state) => state.error);
 /**
  * Select only the actions (never causes re-renders)
  * Use when you only need to call actions, not read state
- * Uses shallow comparison to prevent unnecessary re-renders
  */
 export const useRelapseActions = () => useRelapseStore(
   (state) => ({
@@ -254,14 +253,7 @@ export const useRelapseActions = () => useRelapseStore(
     deleteRelapse: state.deleteRelapse,
     updateRelapse: state.updateRelapse,
     resetAllData: state.resetAllData,
-  }),
-  // Shallow equality check - actions are stable references, so this object won't change
-  (a, b) =>
-    a.loadRelapses === b.loadRelapses &&
-    a.addRelapse === b.addRelapse &&
-    a.deleteRelapse === b.deleteRelapse &&
-    a.updateRelapse === b.updateRelapse &&
-    a.resetAllData === b.resetAllData
+  })
 );
 
 /**

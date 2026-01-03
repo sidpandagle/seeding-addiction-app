@@ -1,23 +1,17 @@
 import { FlatList, View, Text, Pressable, ScrollView } from 'react-native';
 import { useState, useMemo } from 'react';
 import Animated, { FadeInUp, LinearTransition } from 'react-native-reanimated';
-import { Lock, Crown } from 'lucide-react-native';
 import type { HistoryEntry } from '../../types/history';
 import { filterValidCategories } from '../../constants/tags';
-import { usePremium } from '../../hooks/usePremium';
 import { useReducedMotion, ANIMATION_PRESETS, getStaggerDelay } from '../../hooks/useReducedMotion';
 import { useCustomActivityTagsStore } from '../../stores/customActivityTagsStore';
 
 interface HistoryListProps {
   entries: HistoryEntry[];
-  onUpgradePress?: () => void;
 }
 
-const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
-
-export default function HistoryList({ entries, onUpgradePress }: HistoryListProps) {
+export default function HistoryList({ entries }: HistoryListProps) {
   const [selectedTag, setSelectedTag] = useState<string | null>(null);
-  const { isPremium } = usePremium();
   const reducedMotion = useReducedMotion();
   const customTags = useCustomActivityTagsStore(state => state.customTags);
 
@@ -49,23 +43,8 @@ export default function HistoryList({ entries, onUpgradePress }: HistoryListProp
     };
   }, [entries, customTags]);
 
-  // Filter entries for free users (30 days only)
-  const timeFilteredEntries = useMemo(() => {
-    if (isPremium) return entries;
-
-    const thirtyDaysAgo = Date.now() - THIRTY_DAYS_MS;
-    return entries.filter(e => new Date(e.data.timestamp).getTime() >= thirtyDaysAgo);
-  }, [entries, isPremium]);
-
-  // Count entries older than 30 days (for showing upgrade prompt)
-  const olderEntriesCount = useMemo(() => {
-    if (isPremium) return 0;
-    const thirtyDaysAgo = Date.now() - THIRTY_DAYS_MS;
-    return entries.filter(e => new Date(e.data.timestamp).getTime() < thirtyDaysAgo).length;
-  }, [entries, isPremium]);
-
   const filteredEntries = useMemo(() => {
-    let filtered = timeFilteredEntries;
+    let filtered = entries;
 
     // Filter by tag (applies to both relapses and activities)
     if (selectedTag) {
@@ -82,7 +61,7 @@ export default function HistoryList({ entries, onUpgradePress }: HistoryListProp
     }
 
     return filtered;
-  }, [timeFilteredEntries, selectedTag, customTags]);
+  }, [entries, selectedTag, customTags]);
 
   // Helper to get valid categories for an activity entry
   const getValidCategories = (categories: string[] | undefined): string[] => {
@@ -168,31 +147,7 @@ export default function HistoryList({ entries, onUpgradePress }: HistoryListProp
           </Text>
         </View>
       }
-      ListFooterComponent={
-        olderEntriesCount > 0 && onUpgradePress ? (
-          <Pressable
-            onPress={onUpgradePress}
-            className="p-5 mx-6 mb-6 border border-purple-200 bg-purple-50 dark:bg-purple-900/20 dark:border-purple-800 rounded-2xl"
-          >
-            <View className="flex-row items-center gap-3">
-              <View className="items-center justify-center w-12 h-12 bg-purple-100 rounded-full dark:bg-purple-900/40">
-                <Lock size={22} color="#a855f7" strokeWidth={2.5} />
-              </View>
-              <View className="flex-1">
-                <View className="flex-row items-center gap-2">
-                  <Text className="text-base font-bold text-purple-900 dark:text-purple-100">
-                    {olderEntriesCount} older entries hidden
-                  </Text>
-                </View>
-                <Text className="text-sm text-purple-700 dark:text-purple-300">
-                  Upgrade to Pro to view your complete history
-                </Text>
-              </View>
-              <Crown size={20} color="#a855f7" strokeWidth={2.5} />
-            </View>
-          </Pressable>
-        ) : null
-      }
+      ListFooterComponent={null}
       renderItem={({ item, index }) => {
         const isRelapse = item.type === 'relapse';
         const data = item.data;

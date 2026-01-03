@@ -32,7 +32,7 @@ export default function AboutModal({
     {
       question: "Is my data really private?",
       answer:
-        "Yep. Your recovery data is 100% local: no accounts, no cloud sync, no tracking. Everything stays on your phone. Premium subscriptions use RevenueCat for payment processing only—your personal recovery data never leaves your device.",
+        "Yep. Your recovery data is 100% local: no accounts, no cloud sync, no tracking. Everything stays on your phone",
     },
     {
       question: "What are the activity categories?",
@@ -47,7 +47,7 @@ export default function AboutModal({
     {
       question: "Can I export my data?",
       answer:
-        "Yep (Premium). You can export as Excel with comprehensive analytics, charts, and insights. Handy if you want to review things on a bigger screen or share a summary with someone you trust.",
+        "Yep! You can export as Excel with comprehensive analytics, charts, and insights. Handy if you want to review things on a bigger screen or share a summary with someone you trust.",
     },
     {
       question: "What if I forget to log activities?",
