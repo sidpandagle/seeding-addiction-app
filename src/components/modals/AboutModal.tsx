@@ -17,12 +17,12 @@ export default function AboutModal({
     {
       question: "What's the plant metaphor?",
       answer:
-        "It's just a way to make this whole thing feel a little lighter. Your journey is like growing a plant: your plant grows automatically with time—from seed 🫘 to a full tree 🌳 over the course of your recovery journey. When you track healthy activities, you're building resilience and spotting patterns that help you stay strong. The plant represents your time, the activities represent your momentum. If you log a relapse, your plant returns to the seed stage and your journey timer resets.",
+        "It's just a way to make this whole thing feel a little lighter. Your journey is like growing a plant: your plant grows automatically with time,from seed 🫘 to a full tree 🌳 over the course of your recovery journey. When you track healthy activities, you're building resilience and spotting patterns that help you stay strong. The plant represents your time, the activities represent your momentum. If you log a relapse, your plant returns to the seed stage and your journey timer resets.",
     },
     {
       question: "Should I track every relapse?",
       answer:
-        "If you can, yeah—because it's not about shame, it's about patterns. Tracking helps you spot what led up to it (stress, boredom, late nights, certain apps, whatever). And if you don't log one, that's okay too. This app isn't your judge—it's your notebook.",
+        "If you can, yeah,because it's not about shame, it's about patterns. Tracking helps you spot what led up to it (stress, boredom, late nights, certain apps, whatever). And if you don't log one, that's okay too. This app isn't your judge,it's your notebook.",
     },
     {
       question: "How do achievements unlock?",
@@ -52,7 +52,7 @@ export default function AboutModal({
     {
       question: "What if I forget to log activities?",
       answer:
-        "Totally normal. Turn on daily reminders in Settings and pick a time that fits your day (like after dinner). The goal is to make logging feel like brushing your teeth—not a huge project.",
+        "Totally normal. Turn on daily reminders in Settings and pick a time that fits your day (like after dinner). The goal is to make logging feel like brushing your teeth,not a huge project.",
     },
   ];
 
@@ -109,7 +109,7 @@ export default function AboutModal({
             </Text>
             <Text className="mt-4 text-sm leading-6 text-center text-gray-600 dark:text-gray-400">
               Think of Seeding like a calm, private pocket journal. Track what helps, notice patterns,
-              and keep moving forward—one day at a time.
+              and keep moving forward,one day at a time.
             </Text>
           </View>
         </View>
@@ -178,7 +178,7 @@ export default function AboutModal({
         <View className="px-6 mt-4 mb-4">
           <View className="p-4 border-2 border-emerald-200 bg-emerald-50 dark:bg-emerald-900/20 dark:border-emerald-800 rounded-xl">
             <Text className="text-sm font-medium leading-5 text-center text-emerald-800 dark:text-emerald-300">
-              Built with care for people trying to get better. You're not alone—and even messy progress
+              Built with care for people trying to get better. You're not alone,and even messy progress
               is still progress.
             </Text>
           </View>

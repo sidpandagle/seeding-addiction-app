@@ -9,18 +9,18 @@ import {
 import { X } from 'lucide-react-native';
 
 const POWER_AFFIRMATIONS = [
-  "Okay. This urge is LOUD, but it's not the boss. It's just your brain asking for the old shortcut. Breathe for 10 seconds and watch it like a notification—no need to click.",
+  "Okay. This urge is LOUD, but it's not the boss. It's just your brain asking for the old shortcut. Breathe for 10 seconds and watch it like a notification,no need to click.",
   "Lowkey, cravings are just your brain being dramatic. You don't have to argue with it. Just don't move toward it. Stay still, stay safe, stay in control.",
   "This feeling is temporary. Urges rise, peak, and fade. Give it 10–15 minutes and it will chill out. You can do 10 minutes. Easyyyy.",
-  "Having an urge doesn't mean you're failing—it means you're healing. The pattern is trying to pull you back, and you're learning a new one. Main character energy: you choose what happens next.",
+  "Having an urge doesn't mean you're failing,it means you're healing. The pattern is trying to pull you back, and you're learning a new one. Main character energy: you choose what happens next.",
   "Your brain is trying to sell you a 'quick fix.' It's giving scam. The " +
     "after-feeling is never worth it. Choose the option that future-you thanks you for.",
   "Highkey: future you is watching. 30-minutes-from-now you is gonna be proud you held the line. Hold it down for that version of you.",
   "Two voices right now: the craving voice and your real voice. The craving is loud, not wise. Pick your voice.",
   "Every time you resist, you're literally rewiring. That's a W. You're teaching your brain: 'we're not doing that anymore.' Keep stacking wins.",
-  "If you slip, you reset. No shame, no spiral. But right now you're in control—lock in for 60 seconds. Then another 60. One minute at a time.",
+  "If you slip, you reset. No shame, no spiral. But right now you're in control,lock in for 60 seconds. Then another 60. One minute at a time.",
   "Cravings come in waves. Let it pass through without acting. Do one tiny interrupt: drink water, wash your face, step outside, text someone, move your body. Break the loop.",
-  "Your streak isn't just a number—it's receipts. Proof you can do hard things. Don't trade a long-term win for a short-term moment.",
+  "Your streak isn't just a number,it's receipts. Proof you can do hard things. Don't trade a long-term win for a short-term moment.",
   "This urge is uncomfortable, not unstoppable. You're built for discomfort. Stay grounded, stay steady, let's gooooo.",
 ];
 
@@ -147,7 +147,7 @@ export default function EmergencyHelpModal({
         {/* SECTION 4: Physical Shock Actions */}
         <View className="px-5 pb-5">
           <Text className="mb-3 text-xs font-bold tracking-wider text-gray-600 uppercase dark:text-gray-400">
-            Shock Your System — Pick One Now
+            Shock Your System , Pick One Now
           </Text>
           <View className="flex-row flex-wrap gap-2">
             {randomShockActions.map((action, index) => (

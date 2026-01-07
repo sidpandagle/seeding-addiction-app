@@ -38,7 +38,7 @@ export default function HowToUseModal({ onClose }: HowToUseModalProps) {
         'Quick Actions: One-tap activity logging from home screen cards',
         'Custom Tags: Add personalized activity tags with emojis (long press to remove)',
         'View weekly stats, streaks, and your most common activities',
-        'Privacy reminder: All data stays on your device—no cloud, no tracking',
+        'Privacy reminder: All data stays on your device,no cloud, no tracking',
       ],
     },
     {
@@ -69,7 +69,7 @@ export default function HowToUseModal({ onClose }: HowToUseModalProps) {
         'Education: Learn about dopamine science and recovery principles',
         'Export: Save your data as CSV, Excel, or detailed text reports',
         'Data Management: Reset all data if needed (irreversible action)',
-        'Your data is 100% local—no accounts, no cloud sync, no tracking',
+        'Your data is 100% local,no accounts, no cloud sync, no tracking',
       ],
     },
   ];

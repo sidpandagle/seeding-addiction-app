@@ -4,6 +4,7 @@ import { StatusBar } from 'expo-status-bar';
 import { useColorScheme } from '../../stores/themeStore';
 import { Achievement } from '../../utils/growthStages';
 import { X } from 'lucide-react-native';
+import AnimatedEmoji from '../common/AnimatedEmoji';
 
 interface AchievementDetailModalProps {
   achievement: Achievement | null;
@@ -83,7 +84,12 @@ export default function AchievementDetailModal({
                   <X size={24} color="#FFFFFF" />
                 </Pressable>
                 <View className="items-center">
-                  <Text style={{ fontSize: 80 }}>{achievement.emoji}</Text>
+                  <AnimatedEmoji
+                    emoji={achievement.emoji}
+                    size={80}
+                    behavior="loop"
+                    accessibilityLabel={achievement.title}
+                  />
                   <Text className="mt-3 text-2xl font-bold text-center text-white">
                     {achievement.title}
                   </Text>
@@ -101,8 +107,13 @@ export default function AchievementDetailModal({
                   <X size={24} color={colorScheme === 'dark' ? '#FFFFFF' : '#000000'} />
                 </Pressable>
                 <View className="items-center">
-                  <View className="relative">
-                    <Text style={{ fontSize: 80, opacity: 0.3 }}>{achievement.emoji}</Text>
+                  <View className="relative" style={{ opacity: 0.3 }}>
+                    <AnimatedEmoji
+                      emoji={achievement.emoji}
+                      size={80}
+                      behavior="static"
+                      accessibilityLabel={`${achievement.title} (locked)`}
+                    />
                     <View className="absolute top-0 right-0">
                       <Text style={{ fontSize: 40 }}>🔒</Text>
                     </View>

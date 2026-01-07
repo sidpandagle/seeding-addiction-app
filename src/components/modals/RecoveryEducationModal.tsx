@@ -72,7 +72,7 @@ export default function RecoveryEducationModal({
             </View>
             <Text className="mb-4 text-base leading-7 text-gray-700 dark:text-gray-300">
               Dopamine isn't just a “pleasure chemical.” It's more like your brain's{' '}
-              <Text className="italic">learning</Text> signal: “Yo, that mattered—remember it and do
+              <Text className="italic">learning</Text> signal: “Yo, that mattered,remember it and do
               it again.” The problem is some rewards hit like a microphone in your ear.
             </Text>
 
@@ -82,7 +82,7 @@ export default function RecoveryEducationModal({
                 Cheap Dopamine (fast, intense, low-effort)
               </Text>
               <Text className="text-base leading-6 text-red-600 dark:text-red-400">
-                Think: endless scrolling, junk food, porn, binge gaming—anything that's high reward
+                Think: endless scrolling, junk food, porn, binge gaming,anything that's high reward
                 with almost no effort. Your brain learns the shortcut, starts craving it, and normal
                 life can feel kind of “meh” for a while.
               </Text>
@@ -94,7 +94,7 @@ export default function RecoveryEducationModal({
                 Natural Dopamine (earned rewards)
               </Text>
               <Text className="text-base leading-6 text-blue-600 dark:text-blue-400">
-                Exercise, learning, meaningful work, real conversations—stuff that takes effort.
+                Exercise, learning, meaningful work, real conversations,stuff that takes effort.
                 It's not always “fun” in the moment, but it builds real satisfaction and helps your
                 brain re-learn that normal rewards are actually rewarding.
               </Text>
@@ -114,7 +114,7 @@ export default function RecoveryEducationModal({
               <Text className="font-bold text-purple-600 dark:text-purple-400">
                 the reward system can recover
               </Text>
-              , and the cravings can lose their grip. Not overnight—but over weeks and months,
+              , and the cravings can lose their grip. Not overnight,but over weeks and months,
               things usually get noticeably easier.
             </Text>
             <View className="p-4 border border-purple-300 bg-purple-50 dark:bg-purple-950/30 dark:border-purple-700 rounded-2xl">

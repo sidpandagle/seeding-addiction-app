@@ -28,7 +28,7 @@ export function useJourneyStartLoader() {
           journeyStartLoadedRef.current = true;
         }
       } catch (error) {
-        console.error('Error loading journey start:', error);
+        if (__DEV__) console.error('Error loading journey start:', error);
         if (isMounted) {
           setIsLoading(false);
         }

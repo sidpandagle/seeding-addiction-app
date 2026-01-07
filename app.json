@@ -12,6 +12,7 @@
     "assetBundlePatterns": [
       "assets/fonts/**",
       "assets/images/**",
+      "assets/lottie/**",
       "assets/*.png"
     ],
     "ios": {

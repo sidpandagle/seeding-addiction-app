@@ -5,6 +5,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useState, useEffect } from 'react';
 import Animated, { FadeInDown, useSharedValue, useAnimatedStyle, withSpring } from 'react-native-reanimated';
 import * as Haptics from 'expo-haptics';
+import * as StoreReview from 'expo-store-review';
 import {
   isBiometricAvailable,
   isAppLockEnabled,
@@ -16,7 +17,7 @@ import { useRelapseStore } from '../../src/stores/relapseStore';
 import { useColorScheme, useThemeStore } from '../../src/stores/themeStore';
 import { useNotificationStore } from '../../src/stores/notificationStore';
 import { useReducedMotion } from '../../src/hooks/useReducedMotion';
-import { Settings2, Palette, Lock, Database, Sun, Moon, Shield, Trash2, Info, Brain, Coffee, BookOpen, Bell, Clock, Sparkles, Trophy, Download, Sheet } from 'lucide-react-native';
+import { Settings2, Palette, Lock, Database, Sun, Moon, Shield, Trash2, Info, Brain, Coffee, BookOpen, Bell, Clock, Sparkles, Trophy, Download, Sheet, Star } from 'lucide-react-native';
 import { exportService } from '../../src/services/exportService';
 import RecoveryEducationModal from '../../src/components/modals/RecoveryEducationModal';
 import CustomAlert from '../../src/components/common/CustomAlert';
@@ -276,6 +277,39 @@ export default function SettingsScreen() {
         type: 'error',
         title: 'Export Failed',
         message: 'Could not export to Excel. Please try again.',
+        buttons: [{ text: 'OK', onPress: hideAlert }],
+      });
+    }
+  };
+
+  const handleRateApp = async () => {
+    try {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+
+      const isAvailable = await StoreReview.isAvailableAsync();
+
+      if (isAvailable) {
+        await StoreReview.requestReview();
+      } else {
+        // Fallback: Open store page directly
+        const storeUrl = await StoreReview.storeUrl();
+        if (storeUrl) {
+          await Linking.openURL(storeUrl);
+        } else {
+          showAlert({
+            type: 'info',
+            title: 'Rate Seeding',
+            message: 'Thank you for your support! Please visit your app store to rate Seeding.',
+            buttons: [{ text: 'OK', onPress: hideAlert }],
+          });
+        }
+      }
+    } catch (error) {
+      console.error('Error opening rating:', error);
+      showAlert({
+        type: 'error',
+        title: 'Error',
+        message: 'Could not open app rating. Please try again later.',
         buttons: [{ text: 'OK', onPress: hideAlert }],
       });
     }
@@ -639,6 +673,38 @@ export default function SettingsScreen() {
                 </View>
               </View>
               <Text className="text-xl font-medium text-amber-600 dark:text-amber-400">→</Text>
+            </View>
+          </Pressable>
+        </View>
+
+        {/* Rate App Section */}
+        <View className="px-6 mt-6">
+          <View className="flex-row items-center gap-2 mb-3">
+            <Star size={18} color={colorScheme === 'dark' ? '#fbbf24' : '#f59e0b'} strokeWidth={2.5} />
+            <Text className="text-sm font-bold tracking-wider text-gray-600 uppercase dark:text-gray-400">
+              Feedback
+            </Text>
+          </View>
+
+          <Pressable
+            onPress={handleRateApp}
+            className="p-5 bg-white border border-gray-200 dark:bg-gray-900 dark:border-gray-800 rounded-2xl active:opacity-70"
+          >
+            <View className="flex-row items-center justify-between">
+              <View className="flex-row items-center flex-1">
+                <View className="items-center justify-center w-10 h-10 mr-3 rounded-full bg-yellow-50 dark:bg-yellow-900/30">
+                  <Star size={20} color="#fbbf24" strokeWidth={2.5} />
+                </View>
+                <View className="flex-1">
+                  <Text className="text-base font-bold text-gray-900 dark:text-white">
+                    Rate This App
+                  </Text>
+                  <Text className="mt-0.5 text-sm text-gray-500 dark:text-gray-400">
+                    Share your feedback on the app store
+                  </Text>
+                </View>
+              </View>
+              <Text className="text-xl font-medium text-yellow-600 dark:text-yellow-400">→</Text>
             </View>
           </Pressable>
         </View>

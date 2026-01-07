@@ -172,7 +172,7 @@ export default function ResistanceRatioChart({ relapses, activities }: Readonly<
             ✅ Healthy Balance! You\'re actively engaging in recovery.
           </Text>
           <Text className="text-[10px] text-center text-emerald-600 dark:text-emerald-400 leading-4">
-            A balanced approach with regular positive activities helps recovery. Keep logging actions—each one strengthens your new identity!
+            A balanced approach with regular positive activities helps recovery. Keep logging actions,each one strengthens your new identity!
           </Text>
         </View>
       )}

@@ -32,7 +32,7 @@ class ChartExportService {
   ): Promise<string | null> {
     try {
       if (!chartRef || !chartRef.current) {
-        console.warn(`[ChartExport] Chart ref not available for ${chartName}`);
+        if (__DEV__) console.warn(`[ChartExport] Chart ref not available for ${chartName}`);
         return null;
       }
 
@@ -42,10 +42,10 @@ class ChartExportService {
         result: 'tmpfile',
       });
 
-      console.log(`[ChartExport] Captured ${chartName}: ${uri}`);
+      if (__DEV__) console.log(`[ChartExport] Captured ${chartName}: ${uri}`);
       return uri;
     } catch (error) {
-      console.error(`[ChartExport] Error capturing ${chartName}:`, error);
+      if (__DEV__) console.error(`[ChartExport] Error capturing ${chartName}:`, error);
       return null;
     }
   }
@@ -128,10 +128,10 @@ class ChartExportService {
         }
       }
 
-      console.log(`[ChartExport] Captured ${capturedCharts.length} charts`);
+      if (__DEV__) console.log(`[ChartExport] Captured ${capturedCharts.length} charts`);
       return capturedCharts;
     } catch (error) {
-      console.error('[ChartExport] Error capturing multiple charts:', error);
+      if (__DEV__) console.error('[ChartExport] Error capturing multiple charts:', error);
       return capturedCharts; // Return what we managed to capture
     }
   }
@@ -142,14 +142,14 @@ class ChartExportService {
   async exportChartsAsImages(charts: CapturedChart[]): Promise<boolean> {
     try {
       if (charts.length === 0) {
-        console.log('[ChartExport] No charts to export');
+        if (__DEV__) console.log('[ChartExport] No charts to export');
         return false;
       }
 
       // Check if sharing is available
       const isAvailable = await Sharing.isAvailableAsync();
       if (!isAvailable) {
-        console.log('[ChartExport] Sharing not available on this device');
+        if (__DEV__) console.log('[ChartExport] Sharing not available on this device');
         return false;
       }
 
@@ -164,7 +164,7 @@ class ChartExportService {
 
       // For multiple charts, we'll need to share them one by one or create a zip
       // For now, let's share the first chart and inform about others
-      // TODO: Implement zip file creation for multiple charts
+      // Note: Multiple chart export currently shares first chart only
       await Sharing.shareAsync(charts[0].uri, {
         mimeType: 'image/png',
         dialogTitle: 'Export Charts',
@@ -172,7 +172,7 @@ class ChartExportService {
 
       return true;
     } catch (error) {
-      console.error('[ChartExport] Error exporting charts:', error);
+      if (__DEV__) console.error('[ChartExport] Error exporting charts:', error);
       return false;
     }
   }
@@ -227,7 +227,7 @@ class ChartExportService {
 
       return true;
     } catch (error) {
-      console.error('[ChartExport] Error bundling export:', error);
+      if (__DEV__) console.error('[ChartExport] Error bundling export:', error);
       return false;
     }
   }
@@ -241,14 +241,14 @@ class ChartExportService {
         try {
           const file = new File('', chart.uri);
           await file.delete();
-          console.log(`[ChartExport] Cleaned up ${chart.filename}`);
+          if (__DEV__) console.log(`[ChartExport] Cleaned up ${chart.filename}`);
         } catch (error) {
           // Ignore individual cleanup errors
-          console.warn(`[ChartExport] Could not clean up ${chart.filename}:`, error);
+          if (__DEV__) console.warn(`[ChartExport] Could not clean up ${chart.filename}:`, error);
         }
       }
     } catch (error) {
-      console.error('[ChartExport] Error during cleanup:', error);
+      if (__DEV__) console.error('[ChartExport] Error during cleanup:', error);
     }
   }
 }

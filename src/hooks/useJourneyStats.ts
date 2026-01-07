@@ -39,11 +39,11 @@ export function useJourneyStats() {
 
       // Check if growth stage or checkpoint has changed
       // Only log and update if we have a previous value (skip initial render)
-      if (previousGrowthStageRef.current !== null && 
+      if (previousGrowthStageRef.current !== null &&
           (previousGrowthStageRef.current !== currentGrowthStageId ||
            previousCheckpointRef.current !== currentCheckpointId)) {
-        console.log('🎯 Milestone crossed! Growth:', previousGrowthStageRef.current, '→', currentGrowthStageId, 'Checkpoint:', previousCheckpointRef.current, '→', currentCheckpointId);
-        
+        if (__DEV__) console.log('🎯 Milestone crossed! Growth:', previousGrowthStageRef.current, '→', currentGrowthStageId, 'Checkpoint:', previousCheckpointRef.current, '→', currentCheckpointId);
+
         // Trigger recalculation by updating state
         setMilestoneTrigger(prev => prev + 1);
       }

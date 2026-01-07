@@ -122,7 +122,7 @@ export default function RelapseModal({ onClose, existingRelapse }: RelapseModalP
         onClose();
       }, 300);
     } catch (error) {
-      console.error('Failed to save relapse:', error);
+      if (__DEV__) console.error('Failed to save relapse:', error);
       setIsSubmitting(false);
 
       // Show user-friendly error alert

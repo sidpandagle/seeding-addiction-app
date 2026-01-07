@@ -257,7 +257,7 @@ export default function ActivityModal({ onClose, preSelectedCategories = [] }: A
 
       // Badge celebration will be triggered automatically via useEffect watching celebrationQueue
     } catch (error) {
-      console.error('Failed to save activity:', error);
+      if (__DEV__) console.error('Failed to save activity:', error);
       setIsSubmitting(false);
 
       // Show user-friendly error alert

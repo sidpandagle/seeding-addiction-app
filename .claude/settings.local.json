@@ -55,7 +55,9 @@
       "Bash(src/components/common/AnimatedModal.tsx )",
       "Bash(src/components/home/EducationalTips.tsx )",
       "Bash(src/components/home/GrowthIcon.tsx )",
-      "Bash(src/components/home/LiveTimer.tsx)"
+      "Bash(src/components/home/LiveTimer.tsx)",
+      "WebFetch(domain:googlefonts.github.io)",
+      "WebFetch(domain:gist.github.com)"
     ],
     "deny": [],
     "ask": []

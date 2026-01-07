@@ -3,6 +3,7 @@ import { View, Text, Modal, Pressable } from 'react-native';
 import Animated, { FadeIn, ZoomIn, ZoomOut, SlideInUp } from 'react-native-reanimated';
 import { Achievement } from '../../utils/growthStages';
 import * as Haptics from 'expo-haptics';
+import AnimatedEmoji from '../common/AnimatedEmoji';
 
 interface AchievementCelebrationProps {
   achievement: Achievement | null;
@@ -55,17 +56,22 @@ export default function AchievementCelebration({
               >
                 <View className="relative items-center justify-center">
                   {/* Glow Effect */}
-                  <View
-                    className="absolute bg-emerald-500/20 dark:bg-emerald-400/20 rounded-full"
+                  {/* <View
+                    className="absolute rounded-full bg-emerald-500/20 dark:bg-emerald-400/20"
                     style={{ width: 140, height: 140 }}
-                  />
+                  /> */}
 
                   {/* Badge Circle */}
                   <View
                     className="items-center justify-center bg-white rounded-full dark:bg-gray-800"
                     style={{ width: 120, height: 120 }}
                   >
-                    <Text style={{ fontSize: 56 }}>{achievement.emoji}</Text>
+                    <AnimatedEmoji
+                      emoji={achievement.emoji}
+                      size={120}
+                      behavior="loop"
+                      accessibilityLabel={achievement.title}
+                    />
                   </View>
                 </View>
               </Animated.View>

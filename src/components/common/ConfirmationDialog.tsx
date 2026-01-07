@@ -43,7 +43,7 @@ export default function ConfirmationDialog({
       await onConfirm();
       // Don't need to set loading false because component will unmount
     } catch (error) {
-      console.error('Confirmation action failed:', error);
+      if (__DEV__) console.error('Confirmation action failed:', error);
       setIsLoading(false);
     }
   };

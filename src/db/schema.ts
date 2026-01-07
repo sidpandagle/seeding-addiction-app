@@ -98,7 +98,7 @@ const checkNeedsBadgeMigration = async (db: SQLite.SQLiteDatabase): Promise<bool
  * Migrate earned_badges table to add UNIQUE constraint on badge_id
  */
 const migrateBadgesTableToV2 = async (db: SQLite.SQLiteDatabase): Promise<void> => {
-  console.log('[DB Migration] Starting badge table migration to add UNIQUE constraint...');
+  if (__DEV__) console.log('[DB Migration] Starting badge table migration to add UNIQUE constraint...');
 
   try {
     await db.execAsync(`
@@ -131,9 +131,9 @@ const migrateBadgesTableToV2 = async (db: SQLite.SQLiteDatabase): Promise<void> 
       ['badge_schema_version', '2']
     );
 
-    console.log('[DB Migration] Badge table migration completed successfully');
+    if (__DEV__) console.log('[DB Migration] Badge table migration completed successfully');
   } catch (error) {
-    console.error('[DB Migration] Badge table migration failed:', error);
+    if (__DEV__) console.error('[DB Migration] Badge table migration failed:', error);
     throw error;
   }
 };

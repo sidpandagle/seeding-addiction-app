@@ -17,7 +17,7 @@ const PHYSICAL_RESET_BULLETS = [
   'Go for a quick walk or short jog',
   "Turn that urge into movement, don't waste it",
   "Do jumping jacks until you're out of breath",
-  'Stretch for 5 minutes — release the tension',
+  'Stretch for 5 minutes , release the tension',
   'Drop and hold a plank for 30 seconds',
   'Splash cold water on your face',
   'Dance to your favorite song',
@@ -28,7 +28,7 @@ const PHYSICAL_RESET_BULLETS = [
 const BREATHE_BULLETS = [
   'Inhale 4 sec → hold 4 → exhale 4',
   'Repeat 5 times (or more if needed)',
-  'Lock in on the breath — nothing else',
+  'Lock in on the breath , nothing else',
   'Try 4-7-8: inhale 4, hold 7, exhale 8',
   'Breathe deeply into your belly, not chest',
   'Count backwards from 10 with each exhale',
@@ -61,7 +61,7 @@ const REMEMBER_WHY_BULLETS = [
   'List 3 reasons you started this journey',
   'Imagine telling your future self you won',
   'Think of someone you want to make proud',
-  'Picture your best self — act like them now',
+  'Picture your best self , act like them now',
 ];
 
 /**
@@ -106,7 +106,7 @@ export const QUICK_ACTIONS: QuickAction[] = [
 const REDIRECT_ENERGY_BULLETS = [
   'Tidy your room or do quick chores',
   'Play a short game or solve a challenge',
-  'Create something — write, draw, build, code',
+  'Create something , write, draw, build, code',
   'Organize your desk or closet',
   'Start a puzzle or brain teaser',
   'Build something with your hands',
@@ -118,19 +118,19 @@ const REDIRECT_ENERGY_BULLETS = [
 
 const FUEL_BRAIN_BULLETS = [
   'Drink a glass of water slowly',
-  'Eat fruits or nuts — something real, not processed',
+  'Eat fruits or nuts , something real, not processed',
   'Stretch or take a mindful pause',
   'Make yourself a healthy snack',
   'Have some dark chocolate mindfully',
   'Prepare a cup of tea or coffee',
   'Eat something crunchy like carrots',
-  'Hydrate — your brain needs water',
+  'Hydrate , your brain needs water',
   'Chew gum to redirect oral fixation',
   'Snack on seeds or dried fruit',
 ];
 
 const WRITE_IT_OUT_BULLETS = [
-  'Write what you feel — anger, boredom, shame, hope',
+  'Write what you feel , anger, boredom, shame, hope',
   "Don't edit. Don't judge. Just release.",
   "Revisit it later to see how far you've come",
   'Journal about what triggered this moment',
@@ -139,15 +139,15 @@ const WRITE_IT_OUT_BULLETS = [
   "Describe the urge like you're observing it",
   'Write about who you want to become',
   'Make a list of your wins this week',
-  'Scribble your thoughts — messy is fine',
+  'Scribble your thoughts , messy is fine',
 ];
 
 const CHANGE_SOUNDTRACK_BULLETS = [
-  'Play your power song — something that lifts you',
-  'Move to the rhythm — even a head nod counts',
+  'Play your power song , something that lifts you',
+  'Move to the rhythm , even a head nod counts',
   'Let the music guide your mood to higher ground',
   'Listen to an upbeat playlist',
-  'Sing along loudly — release the energy',
+  'Sing along loudly , release the energy',
   'Play calming instrumental music',
   'Find a song that reminds you of strength',
   'Create a "resist urge" playlist',

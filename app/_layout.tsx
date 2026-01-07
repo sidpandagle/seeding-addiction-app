@@ -1,6 +1,6 @@
 import { Stack } from 'expo-router';
 import { useEffect, useState, useMemo } from 'react';
-import { View, LogBox, Alert } from 'react-native';
+import { View, LogBox } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { enableScreens } from 'react-native-screens';
 import { useRelapseStore } from '../src/stores/relapseStore';
@@ -17,6 +17,8 @@ import { useColorScheme } from 'nativewind';
 import * as SplashScreen from 'expo-splash-screen';
 import Animated, { FadeIn } from 'react-native-reanimated';
 import { useReducedMotion, ANIMATION_PRESETS } from '../src/hooks/useReducedMotion';
+import BadgeCelebration from '../src/components/badges/BadgeCelebration';
+import { Badge } from '../src/db/schema';
 import "../global.css";
 
 // Suppress deprecation warnings from third-party libraries
@@ -55,6 +57,7 @@ export default function RootLayout() {
   const celebrationQueue = useBadgeStore((state) => state.celebrationQueue);
   const dequeueCelebration = useBadgeStore((state) => state.dequeueCelebration);
   const [isShowingBadgeAlert, setIsShowingBadgeAlert] = useState(false);
+  const [celebratingBadge, setCelebratingBadge] = useState<Badge | null>(null);
 
   const [fontsLoaded] = useFonts({
     Poppins_400Regular,
@@ -88,7 +91,7 @@ export default function RootLayout() {
         // Mark as ready after all critical data is loaded
         setIsReady(true);
       } catch (err) {
-        console.error('Initialization error:', err);
+        if (__DEV__) console.error('Initialization error:', err);
         setError(err instanceof Error ? err.message : 'Failed to initialize app');
         // Still set ready to true to show error screen instead of hanging
         setIsReady(true);
@@ -106,28 +109,7 @@ export default function RootLayout() {
     if (celebrationQueue.length > 0) {
       setIsShowingBadgeAlert(true);
       const badge = celebrationQueue[0];
-
-      Alert.alert(
-        `🎉 Badge Unlocked!`,
-        `${badge.emoji}\n\n${badge.title}\n\n${badge.description}${badge.tier ? `\n\n✨ ${badge.tier.toUpperCase()} TIER` : ''}`,
-        [
-          {
-            text: '🎊 Awesome!',
-            style: 'default',
-            onPress: () => {
-              dequeueCelebration();
-              setIsShowingBadgeAlert(false); // Allow next alert to show
-            },
-          },
-        ],
-        {
-          cancelable: false,
-          onDismiss: () => {
-            // Fallback for Android back button (shouldn't happen with cancelable: false)
-            setIsShowingBadgeAlert(false);
-          },
-        }
-      );
+      setCelebratingBadge(badge);
     }
   }, [celebrationQueue.length, isReady]); // CRITICAL: Only depend on length, not content
 
@@ -194,6 +176,17 @@ export default function RootLayout() {
             <ThemeTransitionOverlay />
           </Animated.View>
         </AppLock>
+
+        {/* Badge Celebration Modal */}
+        <BadgeCelebration
+          badge={celebratingBadge}
+          visible={isShowingBadgeAlert}
+          onClose={() => {
+            dequeueCelebration();
+            setIsShowingBadgeAlert(false);
+            setCelebratingBadge(null);
+          }}
+        />
       </SafeAreaProvider>
     </ErrorBoundary>
   );
