@@ -23,9 +23,9 @@ interface NotificationState {
 
 export const useNotificationStore = create<NotificationState>((set, get) => ({
   isInitialized: false,
-  isEnabled: false,
+  isEnabled: true, // Default to enabled for new users
   dailyReminderTime: null,
-  randomNotificationsEnabled: false,
+  randomNotificationsEnabled: true, // Default to enabled for new users
   milestoneNotificationsEnabled: true,
   isLoading: false,
 
@@ -183,9 +183,9 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
       await notificationService.resetNotificationService();
       set({
         isInitialized: false,
-        isEnabled: false,
+        isEnabled: true, // Reset to default (enabled)
         dailyReminderTime: null,
-        randomNotificationsEnabled: false,
+        randomNotificationsEnabled: true, // Reset to default (enabled)
         milestoneNotificationsEnabled: true, // Reset to default
         isLoading: false,
       });

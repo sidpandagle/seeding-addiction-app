@@ -135,16 +135,28 @@ export default function HistoryList({ entries }: HistoryListProps) {
         </View>
       }
       ListEmptyComponent={
-        <View className="items-center justify-center px-6 py-20">
-          <View className="items-center justify-center w-24 h-24 mb-5 bg-blue-50 dark:bg-blue-900/30 rounded-xl">
-            <Text className="text-5xl">✨</Text>
+        <View className="items-center justify-center px-6 py-16">
+          <View className="items-center justify-center w-24 h-24 mb-6 bg-blue-50 dark:bg-blue-900/30 rounded-2xl">
+            <Text className="text-5xl">{selectedTag ? '🔍' : '✨'}</Text>
           </View>
-          <Text className="mb-2 text-xl font-bold text-gray-900 dark:text-white">
-            {selectedTag ? 'No matches found' : 'No entries recorded'}
+          <Text className="mb-3 text-xl font-bold text-center text-gray-900 dark:text-white">
+            {selectedTag ? 'No matches found' : 'Your journey starts here'}
           </Text>
-          <Text className="text-sm text-center text-gray-500 dark:text-gray-400">
-            {selectedTag ? 'Try adjusting your filters' : 'Start your journey by tracking events'}
+          <Text className="max-w-sm mb-6 text-sm leading-6 text-center text-gray-600 dark:text-gray-400">
+            {selectedTag
+              ? 'No entries match this filter. Try selecting a different tag or view all entries.'
+              : 'Track activities and relapses to see your complete journey timeline. Every step matters!'}
           </Text>
+          {!selectedTag && (
+            <View className="w-full max-w-sm p-4 border bg-emerald-50 dark:bg-emerald-950/30 border-emerald-200 dark:border-emerald-800 rounded-xl">
+              <Text className="mb-2 text-sm font-bold text-center text-emerald-700 dark:text-emerald-300">
+                💡 Quick Tip
+              </Text>
+              <Text className="text-xs leading-5 text-center text-emerald-700 dark:text-emerald-400">
+                Go to the Home tab and tap "Track Your Growth" to log your first activity
+              </Text>
+            </View>
+          )}
         </View>
       }
       ListFooterComponent={null}

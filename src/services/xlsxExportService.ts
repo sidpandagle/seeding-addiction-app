@@ -126,7 +126,9 @@ class XLSXExportService {
       // Share file
       const isAvailable = await Sharing.isAvailableAsync();
       if (!isAvailable) {
-        console.log('[XLSX Export] Sharing not available on this device');
+        if (__DEV__) {
+          console.log('[XLSX Export] Sharing not available on this device');
+        }
         return false;
       }
 

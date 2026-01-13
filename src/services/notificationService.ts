@@ -153,7 +153,7 @@ class NotificationService {
    */
   async areNotificationsEnabled(): Promise<boolean> {
     const setting = await getAppSetting(NOTIFICATIONS_ENABLED_KEY);
-    return setting === 'true';
+    return setting !== 'false'; // Default to true for new users
   }
 
   /**
@@ -234,7 +234,7 @@ class NotificationService {
    */
   async areRandomNotificationsEnabled(): Promise<boolean> {
     const setting = await getAppSetting(RANDOM_NOTIFICATIONS_KEY);
-    return setting === 'true';
+    return setting !== 'false'; // Default to true for new users
   }
 
   /**

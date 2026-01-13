@@ -31,3 +31,9 @@ android/
 
 aab.bat
 apk.bat
+
+# Claude Code settings
+.claude/settings.local.json
+
+# Store metadata (optional - can commit if needed for reference)
+# store-metadata/

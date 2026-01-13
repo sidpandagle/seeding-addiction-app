@@ -1,4 +1,4 @@
-import { View, Text, Pressable, ScrollView, Switch, Modal, Linking } from 'react-native';
+import { View, Text, Pressable, ScrollView, Switch, Modal, Linking, ActivityIndicator } from 'react-native';
 import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -39,6 +39,7 @@ export default function SettingsScreen() {
   const [showHowToUseModal, setShowHowToUseModal] = useState(false);
   const [showAboutModal, setShowAboutModal] = useState(false);
   const [showTimePicker, setShowTimePicker] = useState(false);
+  const [isRatingInProgress, setIsRatingInProgress] = useState(false);
 
   // Notification state
   const {
@@ -265,14 +266,9 @@ export default function SettingsScreen() {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     const success = await exportService.exportToXLSX();
 
-    if (success) {
-      showAlert({
-        type: 'success',
-        title: 'Excel Export Ready',
-        message: 'Your complete journey data has been exported to Excel with charts and insights.',
-        buttons: [{ text: 'OK', onPress: hideAlert }],
-      });
-    } else {
+    // Only show error alert if export failed
+    // Don't show success alert since the share sheet itself provides feedback
+    if (!success) {
       showAlert({
         type: 'error',
         title: 'Export Failed',
@@ -283,23 +279,54 @@ export default function SettingsScreen() {
   };
 
   const handleRateApp = async () => {
+    // Prevent multiple simultaneous calls
+    if (isRatingInProgress) {
+      if (__DEV__) console.log('Rating already in progress, ignoring tap');
+      return;
+    }
+
     try {
+      setIsRatingInProgress(true);
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
 
+      if (__DEV__) console.log('Checking if store review is available...');
+
+      // Check if the in-app review is available
       const isAvailable = await StoreReview.isAvailableAsync();
+      if (__DEV__) console.log('Store review available:', isAvailable);
 
       if (isAvailable) {
+        // Request the in-app review
+        if (__DEV__) console.log('Requesting in-app review...');
         await StoreReview.requestReview();
+        if (__DEV__) console.log('Review request completed');
       } else {
-        // Fallback: Open store page directly
-        const storeUrl = await StoreReview.storeUrl();
-        if (storeUrl) {
-          await Linking.openURL(storeUrl);
-        } else {
+        // Fallback: Try to open the store page directly
+        if (__DEV__) console.log('In-app review not available, trying store URL...');
+
+        try {
+          const storeUrl = await StoreReview.storeUrl();
+          if (__DEV__) console.log('Store URL:', storeUrl);
+
+          if (storeUrl) {
+            const canOpen = await Linking.canOpenURL(storeUrl);
+            if (__DEV__) console.log('Can open store URL:', canOpen);
+
+            if (canOpen) {
+              await Linking.openURL(storeUrl);
+            } else {
+              throw new Error('Cannot open store URL');
+            }
+          } else {
+            throw new Error('Store URL not available');
+          }
+        } catch (fallbackError) {
+          // Final fallback: Show a helpful message
+          if (__DEV__) console.log('Store URL fallback failed:', fallbackError);
           showAlert({
             type: 'info',
             title: 'Rate Seeding',
-            message: 'Thank you for your support! Please visit your app store to rate Seeding.',
+            message: 'Thank you for your support! Please visit your app store to rate Seeding.\n\nSearch for "Seeding" in the App Store or Play Store.',
             buttons: [{ text: 'OK', onPress: hideAlert }],
           });
         }
@@ -308,10 +335,15 @@ export default function SettingsScreen() {
       console.error('Error opening rating:', error);
       showAlert({
         type: 'error',
-        title: 'Error',
-        message: 'Could not open app rating. Please try again later.',
+        title: 'Unable to Open Rating',
+        message: 'Could not open the app store. This feature may not be available in development builds. Please try again after installing from the store.',
         buttons: [{ text: 'OK', onPress: hideAlert }],
       });
+    } finally {
+      // Reset the flag after a delay to prevent rapid re-tapping
+      setTimeout(() => {
+        setIsRatingInProgress(false);
+      }, 2000);
     }
   };
 
@@ -688,23 +720,30 @@ export default function SettingsScreen() {
 
           <Pressable
             onPress={handleRateApp}
-            className="p-5 bg-white border border-gray-200 dark:bg-gray-900 dark:border-gray-800 rounded-2xl active:opacity-70"
+            disabled={isRatingInProgress}
+            className={`p-5 bg-white border border-gray-200 dark:bg-gray-900 dark:border-gray-800 rounded-2xl active:opacity-70 ${isRatingInProgress ? 'opacity-50' : ''}`}
           >
             <View className="flex-row items-center justify-between">
               <View className="flex-row items-center flex-1">
                 <View className="items-center justify-center w-10 h-10 mr-3 rounded-full bg-yellow-50 dark:bg-yellow-900/30">
-                  <Star size={20} color="#fbbf24" strokeWidth={2.5} />
+                  {isRatingInProgress ? (
+                    <ActivityIndicator size="small" color="#fbbf24" />
+                  ) : (
+                    <Star size={20} color="#fbbf24" strokeWidth={2.5} />
+                  )}
                 </View>
                 <View className="flex-1">
                   <Text className="text-base font-bold text-gray-900 dark:text-white">
                     Rate This App
                   </Text>
                   <Text className="mt-0.5 text-sm text-gray-500 dark:text-gray-400">
-                    Share your feedback on the app store
+                    {isRatingInProgress ? 'Opening...' : 'Share your feedback on the app store'}
                   </Text>
                 </View>
               </View>
-              <Text className="text-xl font-medium text-yellow-600 dark:text-yellow-400">→</Text>
+              {!isRatingInProgress && (
+                <Text className="text-xl font-medium text-yellow-600 dark:text-yellow-400">→</Text>
+              )}
             </View>
           </Pressable>
         </View>

@@ -4,7 +4,10 @@
     "slug": "seeding",
     "scheme": "seeding",
     "version": "1.0.0",
-    "platforms": ["ios", "android"],
+    "platforms": [
+      "ios",
+      "android"
+    ],
     "orientation": "portrait",
     "icon": "./assets/app-icon.png",
     "userInterfaceStyle": "light",
@@ -26,9 +29,7 @@
       },
       "package": "com.seeding.app",
       "versionCode": 3,
-      "jsEngine": "hermes",
-      "enableProguardInReleaseBuilds": true,
-      "enableShrinkResourcesInReleaseBuilds": true
+      "jsEngine": "hermes"
     },
     "web": {
       "favicon": "./assets/app-icon.png"
@@ -52,7 +53,10 @@
           },
           "imageWidth": 350
         }
-      ]
+      ],
+      "expo-router",
+      "expo-secure-store",
+      "expo-sqlite"
     ]
   }
 }

@@ -1,17 +1,15 @@
-import { View, Text, Pressable, ActivityIndicator, ScrollView, Platform, KeyboardAvoidingView, Image } from 'react-native';
+import { View, Text, Pressable, ActivityIndicator, ScrollView, Image } from 'react-native';
 import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useState } from 'react';
 import Animated, { FadeInDown, SlideInRight, SlideOutLeft, SlideInLeft, SlideOutRight } from 'react-native-reanimated';
-import DateTimePicker from '@react-native-community/datetimepicker';
 import * as Haptics from 'expo-haptics';
 import { setJourneyStart, getJourneyStart } from '../src/db/helpers';
 import { useColorScheme } from '../src/stores/themeStore';
-import { Shield, Lock, TrendingUp, Heart, ChevronRight, ChevronLeft, Calendar, Clock } from 'lucide-react-native';
+import { Shield, Lock, TrendingUp, Heart, ChevronRight, ChevronLeft } from 'lucide-react-native';
 
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
-type JourneyStartMode = 'now' | 'custom';
 type NavigationDirection = 'forward' | 'backward';
 
 // Progress Dots Component
@@ -40,10 +38,6 @@ export default function OnboardingScreen() {
 
   // Journey setup state
   const [isLoading, setIsLoading] = useState(false);
-  const [startMode, setStartMode] = useState<JourneyStartMode>('now');
-  const [customStartDate, setCustomStartDate] = useState(new Date());
-  const [showDatePicker, setShowDatePicker] = useState(false);
-  const [showTimePicker, setShowTimePicker] = useState(false);
 
   const totalSteps = 3;
 
@@ -90,11 +84,8 @@ export default function OnboardingScreen() {
       const existingJourneyStart = await getJourneyStart();
 
       if (!existingJourneyStart) {
-        // First time user - set journey start timestamp based on mode
-        const journeyStartTimestamp = startMode === 'now'
-          ? new Date().toISOString()
-          : customStartDate.toISOString();
-
+        // First time user - set journey start timestamp to now
+        const journeyStartTimestamp = new Date().toISOString();
         await setJourneyStart(journeyStartTimestamp);
       }
 
@@ -112,45 +103,6 @@ export default function OnboardingScreen() {
     }
   };
 
-  // Date/Time picker handlers
-  const onDateChange = (event: any, selectedDate?: Date) => {
-    setShowDatePicker(Platform.OS === 'ios');
-    if (selectedDate) {
-      setCustomStartDate(selectedDate);
-    }
-  };
-
-  const onTimeChange = (event: any, selectedTime?: Date) => {
-    setShowTimePicker(Platform.OS === 'ios');
-    if (selectedTime) {
-      const newDateTime = new Date(customStartDate);
-      newDateTime.setHours(selectedTime.getHours());
-      newDateTime.setMinutes(selectedTime.getMinutes());
-      newDateTime.setSeconds(0);
-      setCustomStartDate(newDateTime);
-    }
-  };
-
-  const formatDate = (date: Date) => {
-    return date.toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric'
-    });
-  };
-
-  const formatTime = (date: Date) => {
-    return date.toLocaleTimeString('en-US', {
-      hour: 'numeric',
-      minute: '2-digit',
-      hour12: true
-    });
-  };
-
-  const handleStartModeChange = async (mode: JourneyStartMode) => {
-    await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    setStartMode(mode);
-  };
 
   // Features data
   const features = [
@@ -313,203 +265,51 @@ export default function OnboardingScreen() {
       key="step-setup"
       entering={enteringAnimation}
       exiting={exitingAnimation}
-      className="flex-1"
+      className="items-center justify-center flex-1 px-6"
     >
-      <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        className="flex-1"
+      <Text className="mb-3 text-3xl font-bold text-center text-gray-900 dark:text-white">
+        Ready to start{'\n'}your journey?
+      </Text>
+
+      <Text className="mb-8 text-base text-center text-gray-600 dark:text-gray-400 font-regular">
+        Your recovery journey begins from this moment
+      </Text>
+
+      {/* Encouraging Message */}
+      <Animated.View
+        entering={FadeInDown.duration(400)}
+        className="w-full p-6 mb-6 border bg-emerald-50 dark:bg-emerald-950/30 border-emerald-200 dark:border-emerald-800 rounded-2xl"
       >
-        <ScrollView
-          className="flex-1"
-          showsVerticalScrollIndicator={false}
-          contentContainerClassName="px-6 pb-8"
-        >
-          <Text className="mb-3 text-3xl font-bold text-center text-gray-900 dark:text-white">
-            When did you start{'\n'}your recovery journey?
+        <Text className="mb-2 text-xl font-bold text-center text-emerald-700 dark:text-emerald-300">
+          Your journey begins today
+        </Text>
+        <Text className="text-base font-semibold text-center text-emerald-600 dark:text-emerald-400">
+          {new Date().toLocaleDateString('en-US', {
+            weekday: 'long',
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+          })}
+        </Text>
+        <Text className="mt-4 text-sm text-center text-emerald-700 dark:text-emerald-400 font-regular">
+          Every journey starts with a single step. You're taking that step right now.
+        </Text>
+      </Animated.View>
+
+      {/* Privacy Note Card */}
+      <View
+        className="w-full p-5 border bg-emerald-50 dark:bg-emerald-950/20 border-emerald-200 dark:border-emerald-800 rounded-2xl"
+      >
+        <View className="flex-row items-center justify-center mb-2">
+          <Shield size={20} color="#10b981" strokeWidth={2.5} />
+          <Text className="ml-2 text-base font-bold text-emerald-700 dark:text-emerald-300">
+            100% Private & Secure
           </Text>
-
-          <Text className="mb-6 text-sm text-center text-gray-600 dark:text-gray-400 font-regular">
-            Setting your start date helps us calculate your progress accurately
-          </Text>
-
-          {/* Mode Selection Buttons */}
-          <View className="flex-row gap-3 mb-6">
-            <Pressable
-              onPress={() => handleStartModeChange('now')}
-              className="flex-1"
-            >
-              <View
-                style={{
-                  backgroundColor: startMode === 'now'
-                    ? '#10b981'
-                    : (colorScheme === 'dark' ? 'rgba(16, 185, 129, 0.1)' : 'rgba(16, 185, 129, 0.05)'),
-                  borderWidth: 2,
-                  borderColor: startMode === 'now' ? '#10b981' : (colorScheme === 'dark' ? 'rgba(16, 185, 129, 0.3)' : 'rgba(16, 185, 129, 0.2)')
-                }}
-                className="p-4 rounded-xl"
-              >
-                <Text
-                  className="text-sm font-bold text-center"
-                  style={{
-                    color: startMode === 'now'
-                      ? '#ffffff'
-                      : (colorScheme === 'dark' ? '#6ee7b7' : '#059669')
-                  }}
-                >
-                  Just now
-                </Text>
-              </View>
-            </Pressable>
-
-            <Pressable
-              onPress={() => handleStartModeChange('custom')}
-              className="flex-1"
-            >
-              <View
-                style={{
-                  backgroundColor: startMode === 'custom'
-                    ? '#10b981'
-                    : (colorScheme === 'dark' ? 'rgba(16, 185, 129, 0.1)' : 'rgba(16, 185, 129, 0.05)'),
-                  borderWidth: 2,
-                  borderColor: startMode === 'custom' ? '#10b981' : (colorScheme === 'dark' ? 'rgba(16, 185, 129, 0.3)' : 'rgba(16, 185, 129, 0.2)')
-                }}
-                className="p-4 rounded-xl"
-              >
-                <Text
-                  className="text-sm font-bold text-center"
-                  style={{
-                    color: startMode === 'custom'
-                      ? '#ffffff'
-                      : (colorScheme === 'dark' ? '#6ee7b7' : '#059669')
-                  }}
-                >
-                  I already started
-                </Text>
-              </View>
-            </Pressable>
-          </View>
-
-          {/* Encouraging Message for "Just now" */}
-          {startMode === 'now' && (
-            <Animated.View
-              entering={FadeInDown.duration(400)}
-              className="p-5 mb-6 border bg-emerald-50 dark:bg-emerald-950/30 border-emerald-200 dark:border-emerald-800 rounded-2xl"
-            >
-              <Text className="mb-2 text-lg font-bold text-center text-emerald-700 dark:text-emerald-300">
-                Great! Your journey begins today
-              </Text>
-              <Text className="text-base font-semibold text-center text-emerald-600 dark:text-emerald-400">
-                {new Date().toLocaleDateString('en-US', {
-                  weekday: 'long',
-                  year: 'numeric',
-                  month: 'long',
-                  day: 'numeric'
-                })}
-              </Text>
-              <Text className="mt-3 text-sm text-center text-emerald-700 dark:text-emerald-400 font-regular">
-                Every journey starts with a single step. You're taking that step right now.
-              </Text>
-            </Animated.View>
-          )}
-
-          {/* Custom Date/Time Pickers */}
-          {startMode === 'custom' && (
-            <Animated.View
-              entering={FadeInDown.duration(400)}
-              className="gap-3 mb-6"
-            >
-              {/* Date Picker Button */}
-              <Pressable
-                onPress={() => setShowDatePicker(true)}
-                style={{ backgroundColor: colorScheme === 'dark' ? '#1f2937' : '#ffffff' }}
-                className="flex-row items-center justify-between p-4 border border-gray-200 dark:border-gray-700 rounded-xl"
-              >
-                <View className="flex-row items-center flex-1">
-                  <View
-                    style={{ backgroundColor: colorScheme === 'dark' ? 'rgba(59, 130, 246, 0.15)' : '#dbeafe' }}
-                    className="items-center justify-center w-10 h-10 mr-3 rounded-lg"
-                  >
-                    <Calendar size={20} color="#3b82f6" strokeWidth={2.5} />
-                  </View>
-                  <View className="flex-1">
-                    <Text className="text-xs text-gray-500 dark:text-gray-400 font-regular">
-                      Date
-                    </Text>
-                    <Text className="text-sm font-bold text-gray-900 dark:text-white">
-                      {formatDate(customStartDate)}
-                    </Text>
-                  </View>
-                </View>
-                <ChevronRight size={20} color={colorScheme === 'dark' ? '#9ca3af' : '#6b7280'} />
-              </Pressable>
-
-              {/* Time Picker Button */}
-              <Pressable
-                onPress={() => setShowTimePicker(true)}
-                style={{ backgroundColor: colorScheme === 'dark' ? '#1f2937' : '#ffffff' }}
-                className="flex-row items-center justify-between p-4 border border-gray-200 dark:border-gray-700 rounded-xl"
-              >
-                <View className="flex-row items-center flex-1">
-                  <View
-                    style={{ backgroundColor: colorScheme === 'dark' ? 'rgba(139, 92, 246, 0.15)' : '#ede9fe' }}
-                    className="items-center justify-center w-10 h-10 mr-3 rounded-lg"
-                  >
-                    <Clock size={20} color="#8b5cf6" strokeWidth={2.5} />
-                  </View>
-                  <View className="flex-1">
-                    <Text className="text-xs text-gray-500 dark:text-gray-400 font-regular">
-                      Time
-                    </Text>
-                    <Text className="text-sm font-bold text-gray-900 dark:text-white">
-                      {formatTime(customStartDate)}
-                    </Text>
-                  </View>
-                </View>
-                <ChevronRight size={20} color={colorScheme === 'dark' ? '#9ca3af' : '#6b7280'} />
-              </Pressable>
-
-              {/* Date Picker Modal */}
-              {showDatePicker && (
-                <DateTimePicker
-                  value={customStartDate}
-                  mode="date"
-                  display={Platform.OS === 'ios' ? 'spinner' : 'default'}
-                  onChange={onDateChange}
-                  maximumDate={new Date()}
-                  minimumDate={new Date('2000-01-01')}
-                  themeVariant={colorScheme}
-                />
-              )}
-
-              {/* Time Picker Modal */}
-              {showTimePicker && (
-                <DateTimePicker
-                  value={customStartDate}
-                  mode="time"
-                  display={Platform.OS === 'ios' ? 'spinner' : 'default'}
-                  onChange={onTimeChange}
-                  themeVariant={colorScheme}
-                />
-              )}
-            </Animated.View>
-          )}
-
-          {/* Privacy Note Card */}
-          <View
-            className="p-4 mt-0 border bg-emerald-50 dark:bg-emerald-950/20 border-emerald-200 dark:border-emerald-800 rounded-2xl"
-          >
-            <View className="flex-row items-center justify-center mb-2">
-              <Shield size={20} color="#10b981" strokeWidth={2.5} />
-              <Text className="ml-2 text-base font-bold text-emerald-700 dark:text-emerald-300">
-                100% Private & Secure
-              </Text>
-            </View>
-            <Text className="text-sm text-center text-emerald-700 dark:text-emerald-400 font-regular">
-              Your data stays secure on your device.{'\n'}No account required.
-            </Text>
-          </View>
-        </ScrollView>
-      </KeyboardAvoidingView>
+        </View>
+        <Text className="text-sm text-center text-emerald-700 dark:text-emerald-400 font-regular">
+          Your data stays secure on your device.{'\n'}No account required.
+        </Text>
+      </View>
     </Animated.View>
   );
 
