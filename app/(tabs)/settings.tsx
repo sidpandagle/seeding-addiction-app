@@ -1,4 +1,4 @@
-import { View, Text, Pressable, ScrollView, Switch, Modal, Linking, ActivityIndicator } from 'react-native';
+import { View, Text, Pressable, ScrollView, Switch, Modal, Linking, ActivityIndicator, Platform } from 'react-native';
 import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -296,17 +296,55 @@ export default function SettingsScreen() {
       if (__DEV__) console.log('Store review available:', isAvailable);
 
       if (isAvailable) {
-        // Request the in-app review
+        // Request the in-app review (works only in production builds from store)
         if (__DEV__) console.log('Requesting in-app review...');
         await StoreReview.requestReview();
         if (__DEV__) console.log('Review request completed');
+        
+        // Show success message after attempting review
+        showAlert({
+          type: 'success',
+          title: 'Thank You!',
+          message: 'We appreciate your feedback! If the rating dialog didn\'t appear, please check back later or rate us directly in the store.',
+          buttons: [{ text: 'OK', onPress: hideAlert }],
+        });
       } else {
         // Fallback: Try to open the store page directly
         if (__DEV__) console.log('In-app review not available, trying store URL...');
 
         try {
-          const storeUrl = await StoreReview.storeUrl();
-          if (__DEV__) console.log('Store URL:', storeUrl);
+          let storeUrl = '';
+          
+          if (Platform.OS === 'android') {
+            // Try to get the store URL from expo-store-review first
+            try {
+              storeUrl = await StoreReview.storeUrl() || '';
+            } catch (e) {
+              console.log('Could not get store URL from expo-store-review:', e);
+            }
+            
+            // Fallback to Play Store URL
+            if (!storeUrl) {
+              storeUrl = 'market://details?id=com.seeding.app';
+            }
+            
+            if (__DEV__) console.log('Android Store URL:', storeUrl);
+          } else if (Platform.OS === 'ios') {
+            // Try to get the store URL from expo-store-review first
+            try {
+              storeUrl = await StoreReview.storeUrl() || '';
+            } catch (e) {
+              console.log('Could not get store URL from expo-store-review:', e);
+            }
+            
+            // Fallback to App Store URL (you'll need to replace YOUR_APP_ID with actual ID)
+            if (!storeUrl) {
+              // Use generic App Store search until app is published
+              storeUrl = 'https://apps.apple.com/app/seeding';
+            }
+            
+            if (__DEV__) console.log('iOS Store URL:', storeUrl);
+          }
 
           if (storeUrl) {
             const canOpen = await Linking.canOpenURL(storeUrl);
@@ -315,6 +353,16 @@ export default function SettingsScreen() {
             if (canOpen) {
               await Linking.openURL(storeUrl);
             } else {
+              // Try https fallback for Android
+              if (Platform.OS === 'android' && storeUrl.startsWith('market://')) {
+                const httpsUrl = storeUrl.replace('market://details?id=', 'https://play.google.com/store/apps/details?id=');
+                if (__DEV__) console.log('Trying HTTPS fallback:', httpsUrl);
+                const canOpenHttps = await Linking.canOpenURL(httpsUrl);
+                if (canOpenHttps) {
+                  await Linking.openURL(httpsUrl);
+                  return;
+                }
+              }
               throw new Error('Cannot open store URL');
             }
           } else {
@@ -323,21 +371,29 @@ export default function SettingsScreen() {
         } catch (fallbackError) {
           // Final fallback: Show a helpful message
           if (__DEV__) console.log('Store URL fallback failed:', fallbackError);
+          const storeName = Platform.OS === 'android' ? 'Play Store' : 'App Store';
+          
           showAlert({
             type: 'info',
             title: 'Rate Seeding',
-            message: 'Thank you for your support! Please visit your app store to rate Seeding.\n\nSearch for "Seeding" in the App Store or Play Store.',
-            buttons: [{ text: 'OK', onPress: hideAlert }],
+            message: `Thank you for your support!\n\nThis feature only works when the app is installed from the ${storeName}. If you're using a development or test build, please install from the ${storeName} to rate the app.\n\nSearch for "Seeding" in the ${storeName}.`,
+            buttons: [
+              { text: 'OK', onPress: hideAlert }
+            ],
+            dismissOnBackdrop: true,
           });
         }
       }
     } catch (error) {
       console.error('Error opening rating:', error);
+      const storeName = Platform.OS === 'android' ? 'Play Store' : 'App Store';
+      
       showAlert({
-        type: 'error',
-        title: 'Unable to Open Rating',
-        message: 'Could not open the app store. This feature may not be available in development builds. Please try again after installing from the store.',
-        buttons: [{ text: 'OK', onPress: hideAlert }],
+        type: 'info',
+        title: 'Rating Not Available',
+        message: `The in-app rating feature is only available when the app is installed from the ${storeName}.\n\nIf you'd like to rate Seeding:\n1. Install the app from the ${storeName}\n2. Come back to Settings\n3. Tap "Rate This App"`,
+        buttons: [{ text: 'Got it', onPress: hideAlert }],
+        dismissOnBackdrop: true,
       });
     } finally {
       // Reset the flag after a delay to prevent rapid re-tapping
