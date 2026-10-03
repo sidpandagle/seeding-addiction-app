@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import type { ColorValue } from 'react-native';
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -9,7 +10,7 @@ import type { LucideIcon } from 'lucide-react-native';
 
 interface AnimatedTabBarIconProps {
   Icon: LucideIcon;
-  color: string;
+  color: ColorValue;
   focused: boolean;
   size?: number;
 }

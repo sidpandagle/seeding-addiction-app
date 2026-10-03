@@ -1,8 +1,23 @@
-import * as Notifications from 'expo-notifications';
+import type * as NotificationsModule from 'expo-notifications';
 import * as Device from 'expo-device';
+import Constants, { ExecutionEnvironment } from 'expo-constants';
 import { Platform } from 'react-native';
 import { getAppSetting, setAppSetting } from '../db/helpers';
 import { GROWTH_STAGES } from '../utils/growthStages';
+
+// Expo Go on Android dropped support for expo-notifications (SDK 53+). Merely
+// *importing* the module throws "Android Push notifications ... removed from
+// Expo Go" - it has a module-scope side effect (push token auto-registration)
+// that fires on load, before any of our code runs. A `require` guarded by a
+// runtime check (instead of a static `import`, which Metro always evaluates)
+// keeps that module out of the graph entirely in that environment.
+const isUnsupportedInExpoGo =
+  Platform.OS === 'android' &&
+  Constants.executionEnvironment === ExecutionEnvironment.StoreClient;
+
+const Notifications: typeof NotificationsModule = isUnsupportedInExpoGo
+  ? ({} as typeof NotificationsModule)
+  : require('expo-notifications');
 
 // Notification settings keys
 const NOTIFICATIONS_ENABLED_KEY = 'notifications_enabled';
@@ -16,14 +31,16 @@ const ALMOST_THERE_PROGRESS_THRESHOLD = 0.75; // 75% progress triggers "Almost T
 const SHORT_MILESTONE_THRESHOLD_MS = ONE_HOUR_MS; // Milestones under this skip "Almost There"
 
 // Configure notification handler
-Notifications.setNotificationHandler({
-  handleNotification: async () => ({
-    shouldShowBanner: true,
-    shouldShowList: true,
-    shouldPlaySound: true,
-    shouldSetBadge: false,
-  }),
-});
+if (!isUnsupportedInExpoGo) {
+  Notifications.setNotificationHandler({
+    handleNotification: async () => ({
+      shouldShowBanner: true,
+      shouldShowList: true,
+      shouldPlaySound: true,
+      shouldSetBadge: false,
+    }),
+  });
+}
 
 // Daily check-in reminder messages
 export const DAILY_REMINDER_MESSAGES = [
@@ -86,6 +103,11 @@ class NotificationService {
    */
   async initialize(): Promise<boolean> {
     if (this.initialized) return true;
+
+    if (isUnsupportedInExpoGo) {
+      if (__DEV__) console.log('[Notifications] Not supported in Expo Go on Android; use a development build');
+      return false;
+    }
 
     try {
       // Check if device supports notifications
@@ -161,6 +183,7 @@ class NotificationService {
    */
   async setNotificationsEnabled(enabled: boolean): Promise<void> {
     await setAppSetting(NOTIFICATIONS_ENABLED_KEY, enabled ? 'true' : 'false');
+    if (isUnsupportedInExpoGo) return;
 
     if (!enabled) {
       // Cancel all scheduled notifications
@@ -196,6 +219,7 @@ class NotificationService {
    */
   async clearDailyReminder(): Promise<void> {
     await setAppSetting(DAILY_REMINDER_TIME_KEY, '');
+    if (isUnsupportedInExpoGo) return;
     await Notifications.cancelScheduledNotificationAsync('daily-reminder');
   }
 
@@ -203,6 +227,8 @@ class NotificationService {
    * Schedule daily check-in reminder with rotating messages
    */
   async scheduleDailyReminder(hour: number, minute: number): Promise<void> {
+    if (isUnsupportedInExpoGo) return;
+
     // Cancel existing daily reminder
     await Notifications.cancelScheduledNotificationAsync('daily-reminder');
 
@@ -242,6 +268,7 @@ class NotificationService {
    */
   async setRandomNotificationsEnabled(enabled: boolean): Promise<void> {
     await setAppSetting(RANDOM_NOTIFICATIONS_KEY, enabled ? 'true' : 'false');
+    if (isUnsupportedInExpoGo) return;
 
     if (enabled) {
       await this.scheduleRandomNotifications();
@@ -260,6 +287,8 @@ class NotificationService {
    * Uses fixed times to prevent duplicate/inconsistent scheduling
    */
   async scheduleRandomNotifications(): Promise<void> {
+    if (isUnsupportedInExpoGo) return;
+
     // Cancel existing random notifications first (in parallel for performance)
     const scheduled = await Notifications.getAllScheduledNotificationsAsync();
     const randomNotifications = scheduled.filter(n => n.identifier.startsWith('random-'));
@@ -315,6 +344,7 @@ class NotificationService {
    */
   async setMilestoneNotificationsEnabled(enabled: boolean): Promise<void> {
     await setAppSetting(MILESTONE_NOTIFICATIONS_KEY, enabled ? 'true' : 'false');
+    if (isUnsupportedInExpoGo) return;
 
     if (!enabled) {
       // Cancel all milestone notifications when disabled
@@ -326,6 +356,7 @@ class NotificationService {
    * Cancel all scheduled milestone notifications (both "Almost There" and "Achieved")
    */
   async cancelMilestoneNotifications(): Promise<void> {
+    if (isUnsupportedInExpoGo) return;
     const scheduled = await Notifications.getAllScheduledNotificationsAsync();
     let cancelledCount = 0;
 
@@ -349,7 +380,7 @@ class NotificationService {
     stageIndex: number,
     targetDate: Date
   ): Promise<void> {
-    if (stageIndex >= GROWTH_STAGES.length) return;
+    if (stageIndex >= GROWTH_STAGES.length || isUnsupportedInExpoGo) return;
 
     const stage = GROWTH_STAGES[stageIndex];
     const now = new Date();
@@ -395,7 +426,7 @@ class NotificationService {
     milestoneDurationMs: number,
     milestoneStartTime: number
   ): Promise<void> {
-    if (stageIndex >= GROWTH_STAGES.length) return;
+    if (stageIndex >= GROWTH_STAGES.length || isUnsupportedInExpoGo) return;
 
     const stage = GROWTH_STAGES[stageIndex];
     const now = Date.now();
@@ -497,6 +528,7 @@ class NotificationService {
     body: string,
     channelId: string = 'default'
   ): Promise<void> {
+    if (isUnsupportedInExpoGo) return;
     await Notifications.scheduleNotificationAsync({
       content: {
         title,
@@ -512,6 +544,7 @@ class NotificationService {
    * Cancel all scheduled notifications
    */
   async cancelAllNotifications(): Promise<void> {
+    if (isUnsupportedInExpoGo) return;
     await Notifications.cancelAllScheduledNotificationsAsync();
   }
 
@@ -522,7 +555,9 @@ class NotificationService {
   async resetNotificationService(): Promise<void> {
     try {
       // Cancel all scheduled notifications from OS
-      await Notifications.cancelAllScheduledNotificationsAsync();
+      if (!isUnsupportedInExpoGo) {
+        await Notifications.cancelAllScheduledNotificationsAsync();
+      }
 
       // Reset initialized flag to allow fresh initialization
       this.initialized = false;
@@ -538,6 +573,7 @@ class NotificationService {
    * Get all scheduled notifications (for debugging)
    */
   async getScheduledNotifications() {
+    if (isUnsupportedInExpoGo) return [];
     return Notifications.getAllScheduledNotificationsAsync();
   }
 }

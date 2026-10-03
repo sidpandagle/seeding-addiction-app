@@ -105,7 +105,7 @@ export default function AboutModal({
               Seeding
             </Text>
             <Text className="mt-1 text-base font-medium text-gray-500 dark:text-gray-400">
-              Version 1.0.0
+              Version 2.0.0
             </Text>
             <Text className="mt-4 text-sm leading-6 text-center text-gray-600 dark:text-gray-400">
               Think of Seeding like a calm, private pocket journal. Track what helps, notice patterns,

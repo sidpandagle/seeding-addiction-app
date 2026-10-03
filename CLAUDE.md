@@ -19,15 +19,15 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ```bash
 # Start development server
-npm start
+bun start
 
 # Platform-specific development
-npm run android
-npm run ios
-npm run web
+bun run android
+bun run ios
+bun run web
 
 # Run tests
-npm test
+bun test
 ```
 
 ## Build & Deploy (EAS)
