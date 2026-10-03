@@ -34,17 +34,3 @@ export const sortHistoryEntries = (entries: HistoryEntry[]): HistoryEntry[] => {
     return timeB - timeA; // Descending order (newest first)
   });
 };
-
-/**
- * Get timestamp from any history entry
- */
-export const getEntryTimestamp = (entry: HistoryEntry): string => {
-  return entry.data.timestamp;
-};
-
-/**
- * Get ID from any history entry
- */
-export const getEntryId = (entry: HistoryEntry): string => {
-  return entry.data.id;
-};

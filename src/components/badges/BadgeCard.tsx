@@ -1,5 +1,5 @@
 import { View, Text, Pressable } from 'react-native';
-import { Lock, Sparkles } from 'lucide-react-native';
+import { Lock } from 'lucide-react-native';
 import { Badge } from '../../db/schema';
 import { useColorScheme } from '../../stores/themeStore';
 import * as Haptics from 'expo-haptics';

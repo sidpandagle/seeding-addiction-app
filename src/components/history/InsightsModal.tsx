@@ -1,6 +1,6 @@
 import React, { useMemo, useEffect, useState } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, Pressable } from 'react-native';
-import { ChevronLeft, TrendingUp, TrendingDown, Calendar, Target, X } from 'lucide-react-native';
+import { View, Text, ScrollView, Pressable } from 'react-native';
+import { X } from 'lucide-react-native';
 import { useRelapses } from '../../stores/relapseStore';
 import { useActivityStore } from '../../stores/activityStore';
 import { useColorScheme } from '../../stores/themeStore';

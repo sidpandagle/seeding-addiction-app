@@ -398,31 +398,3 @@ export const BADGE_DEFINITIONS: Badge[] = [
     },
   },
 ];
-
-/**
- * Get badge by ID
- */
-export const getBadgeById = (id: string): Badge | undefined => {
-  return BADGE_DEFINITIONS.find((badge) => badge.id === id);
-};
-
-/**
- * Get badges by category
- */
-export const getBadgesByCategory = (category: string): Badge[] => {
-  return BADGE_DEFINITIONS.filter((badge) => badge.category === category);
-};
-
-/**
- * Get all visible badges (non-hidden)
- */
-export const getVisibleBadges = (): Badge[] => {
-  return BADGE_DEFINITIONS.filter((badge) => !badge.isHidden);
-};
-
-/**
- * Get total badge count
- */
-export const getTotalBadgeCount = (): number => {
-  return BADGE_DEFINITIONS.length;
-};

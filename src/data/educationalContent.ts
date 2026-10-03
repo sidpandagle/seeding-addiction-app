@@ -304,12 +304,3 @@ export const PHYSICAL_SHOCK_ACTIONS = [
   { icon: "✍️", action: "Write 3 things you're grateful for" },
   { icon: "🪥", action: "Brush your teeth with cold water" },
 ];
-
-// Environment Change Tips
-export const ENVIRONMENT_TIPS = [
-  "Leave the room you're in",
-  "Go where others can see you",
-  "Step outside , fresh air resets the brain",
-  "Turn on ALL the lights",
-  "Change your body position",
-];

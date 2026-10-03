@@ -19,8 +19,7 @@ import {
   Heart,
   Star,
   Crown,
-  Gem,
-  RefreshCw
+  Gem
 } from 'lucide-react-native';
 import { useColorScheme } from '../../stores/themeStore';
 import { getRandomTeaching, type StoicTeaching } from '../../data/stoicTeachings';

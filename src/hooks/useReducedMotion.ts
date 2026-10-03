@@ -60,17 +60,6 @@ export function useReducedMotion(): boolean {
 }
 
 /**
- * Helper to get animation config based on reduced motion preference
- * Returns undefined for entering/exiting animations when reduced motion is enabled
- */
-export function getEnteringAnimation<T>(
-  reducedMotion: boolean,
-  animation: T
-): T | undefined {
-  return reducedMotion ? undefined : animation;
-}
-
-/**
  * Helper to calculate staggered delay with a maximum cap
  * Prevents excessively long delays for large lists
  */

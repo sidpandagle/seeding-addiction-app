@@ -1,7 +1,7 @@
 import { View, Text, ScrollView, Modal, Pressable } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { useState, useEffect, memo, useMemo } from 'react';
-import { History, BarChart3, Lock } from 'lucide-react-native';
+import { History, BarChart3 } from 'lucide-react-native';
 import { useRelapseStore } from '../../src/stores/relapseStore';
 import { useActivityStore } from '../../src/stores/activityStore';
 import { useColorScheme } from '../../src/stores/themeStore';

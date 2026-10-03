@@ -168,38 +168,6 @@ export const BULLET_POOLS: Record<string, string[]> = {
 };
 
 
-export const EMERGENCY_ACTIONS: QuickAction[] = [
-  ...QUICK_ACTIONS,
-  {
-    id: 'redirect-energy',
-    icon: '🎮',
-    title: 'Redirect the Energy',
-    bulletPoints: getRandomBulletPoints(REDIRECT_ENERGY_BULLETS),
-    colorScheme: 'purple',
-  },
-  {
-    id: 'fuel-brain',
-    icon: '🍎',
-    title: 'Fuel Your Brain',
-    bulletPoints: getRandomBulletPoints(FUEL_BRAIN_BULLETS),
-    colorScheme: 'rose',
-  },
-  {
-    id: 'write-it-out',
-    icon: '📝',
-    title: 'Write It Out',
-    bulletPoints: getRandomBulletPoints(WRITE_IT_OUT_BULLETS),
-    colorScheme: 'indigo',
-  },
-  {
-    id: 'change-soundtrack',
-    icon: '🎵',
-    title: 'Change the Soundtrack',
-    bulletPoints: getRandomBulletPoints(CHANGE_SOUNDTRACK_BULLETS),
-    colorScheme: 'teal',
-  },
-];
-
 /**
  * Get Tailwind color classes for a given color scheme
  */
@@ -216,24 +184,6 @@ export function getActionColorClasses(colorScheme: QuickAction['colorScheme']) {
   };
 
   return colorMap[colorScheme];
-}
-
-/**
- * Get border color classes for the divider between bullets and supportive message
- */
-export function getActionDividerBorderColor(colorScheme: QuickAction['colorScheme']) {
-  const borderColorMap = {
-    blue: 'border-blue-300 dark:border-blue-700',
-    cyan: 'border-cyan-300 dark:border-cyan-700',
-    emerald: 'border-emerald-300 dark:border-emerald-700',
-    amber: 'border-amber-300 dark:border-amber-700',
-    purple: 'border-purple-300 dark:border-purple-700',
-    rose: 'border-rose-300 dark:border-rose-700',
-    indigo: 'border-indigo-300 dark:border-indigo-700',
-    teal: 'border-teal-300 dark:border-teal-700',
-  };
-
-  return borderColorMap[colorScheme];
 }
 
 /**

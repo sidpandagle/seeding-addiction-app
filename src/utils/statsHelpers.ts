@@ -109,14 +109,3 @@ function calculateBestStreak(sortedRelapses: Relapse[], journeyStart: string): n
   // Return the maximum streak
   return Math.max(...streaks);
 }
-
-/**
- * Format a number of days into a human-readable string
- * @param days - Number of days
- * @returns Formatted string (e.g., "15 days", "1 day")
- */
-export function formatDays(days: number): string {
-  if (days === 0) return '0 days';
-  if (days === 1) return '1 day';
-  return `${days} days`;
-}

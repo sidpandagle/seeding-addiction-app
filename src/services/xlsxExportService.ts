@@ -8,7 +8,7 @@ import { useBadgeStore } from '../stores/badgeStore';
 import { BADGE_DEFINITIONS } from '../data/badgeDefinitions';
 import { calculateWeeklyPattern, calculateTimeOfDayPattern, calculateMonthlyTrend } from '../utils/chartHelpers';
 import { ACTIVITY_CATEGORIES } from '../constants/tags';
-import type { Relapse, Activity, Badge } from '../db/schema';
+import type { Relapse, Activity } from '../db/schema';
 
 interface ExportOptions {
   includeRelapses?: boolean;

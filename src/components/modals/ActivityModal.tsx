@@ -6,7 +6,7 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 import { useActivityStore } from '../../stores/activityStore';
 import { useColorScheme } from '../../stores/themeStore';
 import { useCustomActivityTagsStore, formatActivityTag, SUGGESTED_EMOJIS, CustomActivityTag } from '../../stores/customActivityTagsStore';
-import { Sprout, CheckCircle, Plus, X, Trash2, Smile } from 'lucide-react-native';
+import { Sprout, CheckCircle, Plus, X } from 'lucide-react-native';
 import { getRandomTip, type EducationalTip } from '../../data/educationalContent';
 import { ACTIVITY_CATEGORIES } from '../../constants/tags';
 import CustomAlert from '../common/CustomAlert';

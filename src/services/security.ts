@@ -51,18 +51,6 @@ export const initializeEncryptionKey = async (): Promise<string> => {
 };
 
 /**
- * Get the stored encryption key
- */
-export const getEncryptionKey = async (): Promise<string | null> => {
-  try {
-    return await getItem(ENCRYPTION_KEY);
-  } catch (error) {
-    console.error('Failed to get encryption key:', error);
-    return null;
-  }
-};
-
-/**
  * Check if biometric authentication is available on the device
  */
 export const isBiometricAvailable = async (): Promise<boolean> => {

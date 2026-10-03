@@ -51,33 +51,3 @@ export const EMOJI_TO_CODEPOINT: Record<string, string> = {
   '🍀': '1f340', // Four Leaf Clover
   '🍃': '1f343', // Leaf Fluttering in Wind
 };
-
-/**
- * Check if an emoji has a Lottie animation available
- */
-export function hasLottieAnimation(emoji: string): boolean {
-  return emoji in EMOJI_TO_CODEPOINT;
-}
-
-/**
- * Get all available animated emojis
- */
-export function getAvailableAnimatedEmojis(): string[] {
-  return Object.keys(EMOJI_TO_CODEPOINT);
-}
-
-/**
- * Get statistics about emoji coverage
- */
-export function getEmojiCoverageStats() {
-  const totalEmojis = 39; // Total unique emojis in app (badges + growth stages)
-  const availableCount = Object.keys(EMOJI_TO_CODEPOINT).length;
-  const coveragePercentage = ((availableCount / totalEmojis) * 100).toFixed(1);
-
-  return {
-    total: totalEmojis,
-    available: availableCount,
-    missing: totalEmojis - availableCount,
-    coverage: `${coveragePercentage}%`,
-  };
-}

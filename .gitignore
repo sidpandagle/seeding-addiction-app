@@ -37,3 +37,8 @@ apk.bat
 
 # Store metadata (optional - can commit if needed for reference)
 # store-metadata/
+
+# Build artifacts
+aab/
+*.aab
+*.apk

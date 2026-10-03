@@ -748,7 +748,3 @@ export const getRandomTeaching = (): StoicTeaching => {
   const randomIndex = Math.floor(Math.random() * stoicTeachings.length);
   return stoicTeachings[randomIndex];
 };
-
-export const getTeachingsByCategory = (category: StoicTeaching['category']): StoicTeaching[] => {
-  return stoicTeachings.filter((teaching) => teaching.category === category);
-};

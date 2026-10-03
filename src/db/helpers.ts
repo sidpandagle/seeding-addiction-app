@@ -9,8 +9,6 @@ import {
   validateCategory,
   validateJourneyStartDate
 } from '../utils/validation';
-import { checkAllBadges } from '../utils/badgeChecker';
-import { useBadgeStore } from '../stores/badgeStore';
 
 /**
  * Generate a cryptographically secure UUID v4
@@ -283,17 +281,6 @@ export const getRelapsesCount = async (): Promise<number> => {
 };
 
 /**
- * Get total count of activity records
- */
-export const getActivitiesCount = async (): Promise<number> => {
-  const db = await getDatabase();
-  const result = await db.getFirstAsync<{ count: number }>(
-    'SELECT COUNT(*) as count FROM activity'
-  );
-  return result?.count || 0;
-};
-
-/**
  * Get a generic app setting value by key
  */
 export const getAppSetting = async (key: string): Promise<string | null> => {
@@ -314,25 +301,6 @@ export const setAppSetting = async (key: string, value: string): Promise<void> =
     'INSERT OR REPLACE INTO app_settings (key, value) VALUES (?, ?)',
     [key, value]
   );
-};
-
-/**
- * Delete an app setting by key
- */
-export const deleteAppSetting = async (key: string): Promise<void> => {
-  const db = await getDatabase();
-  await db.runAsync('DELETE FROM app_settings WHERE key = ?', [key]);
-};
-
-/**
- * Get the timestamp of the most recent relapse
- */
-export const getLastRelapseTime = async (): Promise<number | null> => {
-  const db = await getDatabase();
-  const result = await db.getFirstAsync<{ timestamp: string }>(
-    'SELECT timestamp FROM relapse ORDER BY timestamp DESC LIMIT 1'
-  );
-  return result ? new Date(result.timestamp).getTime() : null;
 };
 
 // ===== BADGE HELPERS =====
@@ -430,74 +398,4 @@ export const getEarnedBadgeById = async (badgeId: string): Promise<EarnedBadge |
     [badgeId]
   );
   return result || null;
-};
-
-/**
- * Delete all earned badges (for testing/reset)
- */
-export const deleteAllBadges = async (): Promise<void> => {
-  const db = await getDatabase();
-  await db.runAsync('DELETE FROM earned_badges');
-};
-
-/**
- * Clean slate migration: Delete all earned badges and re-award based on current data
- * This ensures badge consistency by recalculating which badges should be earned
- */
-export const cleanSlateRebadge = async (): Promise<number> => {
-  const db = await getDatabase();
-
-  await db.execAsync('BEGIN TRANSACTION;');
-
-  try {
-    // 1. Clear all earned badges
-    await db.execAsync('DELETE FROM earned_badges;');
-    if (__DEV__) console.log('[Migration] Cleared all existing badges');
-
-    // 2. Load all data needed for badge checking
-    const [activities, relapses, journeyStart] = await Promise.all([
-      getActivities(1000),
-      getRelapses(100),
-      getJourneyStart(),
-    ]);
-
-    if (__DEV__) console.log(`[Migration] Loaded ${activities.length} activities, ${relapses.length} relapses`);
-
-    // 3. Check which badges should be earned based on current data
-    const { newlyUnlocked } = await checkAllBadges(
-      activities,
-      [], // No earned badges yet - fresh start
-      relapses,
-      journeyStart || undefined
-    );
-
-    if (__DEV__) console.log(`[Migration] Found ${newlyUnlocked.length} badges to award`);
-
-    // 4. Insert all earned badges using batch insert (much faster than individual inserts)
-    if (newlyUnlocked.length > 0) {
-      const unlockedAt = new Date().toISOString();
-      const values = newlyUnlocked.map(badge => {
-        const id = generateUUID();
-        return `('${id}', '${badge.id}', '${unlockedAt}')`;
-      }).join(', ');
-
-      await db.execAsync(
-        `INSERT INTO earned_badges (id, badge_id, unlocked_at) VALUES ${values}`
-      );
-    }
-
-    await db.execAsync('COMMIT;');
-    if (__DEV__) console.log('[Migration] Successfully committed badge migration');
-
-    // 5. Sync to Zustand store
-    const earnedBadges = await getEarnedBadges();
-    useBadgeStore.getState().setEarnedBadges(earnedBadges);
-    if (__DEV__) console.log(`[Migration] Synced ${earnedBadges.length} badges to store`);
-
-    return earnedBadges.length;
-  } catch (error) {
-    await db.execAsync('ROLLBACK;');
-    if (__DEV__) console.error('[Migration] Badge migration failed, rolled back:', error);
-    throw error;
-  }
 };

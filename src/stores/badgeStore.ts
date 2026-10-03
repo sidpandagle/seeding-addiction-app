@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { EarnedBadge, BadgeWithStatus, Badge } from '../db/schema';
+import { EarnedBadge, Badge } from '../db/schema';
 
 interface BadgeProgress {
   badgeId: string;
@@ -187,11 +187,3 @@ export const useBadgeStore = create<BadgeStore>()(
     }
   )
 );
-
-// Selector hooks for better performance
-export const useEarnedBadges = () => useBadgeStore((state) => state.earnedBadges);
-export const useBadgeProgress = () => useBadgeStore((state) => state.badgeProgress);
-export const useIsBadgeEarned = (badgeId: string) =>
-  useBadgeStore((state) => state.isBadgeEarned(badgeId));
-export const useRecentBadges = (limit?: number) =>
-  useBadgeStore((state) => state.getRecentBadges(limit));

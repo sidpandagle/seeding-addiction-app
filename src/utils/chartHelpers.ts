@@ -1,4 +1,4 @@
-import type { Relapse, Activity } from '../db/schema';
+import type { Relapse } from '../db/schema';
 
 export interface WeeklyPatternData {
   day: string;
@@ -124,60 +124,6 @@ export function calculateMonthlyTrend(relapses: Relapse[], months: number = 6): 
   });
 
   return monthsData;
-}
-
-/**
- * Get the maximum value from an array for chart scaling
- */
-export function getMaxValue(data: number[]): number {
-  const max = Math.max(...data);
-  return max === 0 ? 1 : max; // Avoid division by zero
-}
-
-/**
- * Format a date as "MMM DD"
- */
-export function formatShortDate(timestamp: string): string {
-  const date = new Date(timestamp);
-  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-  return `${months[date.getMonth()]} ${date.getDate()}`;
-}
-
-/**
- * Calculate resistance ratio data
- * Shows balance between healthy activities and relapses
- *
- * Research-based interpretation thresholds:
- * - 80%+: Exceptional recovery progress (top tier)
- * - 60-79%: Above average, exceeding healthy baseline
- * - 40-59%: Normal/healthy recovery range (baseline per NIDA research)
- * - <40%: Early recovery or challenging period (brain rewiring in progress)
- *
- * Note: A 40-60% success rate is considered normal in addiction recovery.
- * Progress is measured by increasing gaps between relapses over time,
- * not absolute perfection. Studies show success rates improve significantly
- * over 5 years (from 15% in year 1 to 85% by year 5).
- */
-export function calculateResistanceRatio(relapses: Relapse[], activities: Activity[]): ResistanceRatioData {
-  const activityCount = activities.length;
-  const relapseCount = relapses.length;
-  const totalEvents = activityCount + relapseCount;
-
-  // Calculate percentages
-  const activityPercentage = totalEvents > 0 ? Math.round((activityCount / totalEvents) * 100) : 0;
-  const relapsePercentage = totalEvents > 0 ? Math.round((relapseCount / totalEvents) * 100) : 0;
-
-  // Success rate is the same as activity percentage
-  const successRate = activityPercentage;
-
-  return {
-    activityCount,
-    relapseCount,
-    totalEvents,
-    activityPercentage,
-    relapsePercentage,
-    successRate,
-  };
 }
 
 /**

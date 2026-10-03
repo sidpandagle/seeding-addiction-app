@@ -4,7 +4,7 @@
  * Represents the complete recovery journey from 0 minutes to 365 days (1 year)
  */
 
-import { MS_PER_DAY, millisecondsToDays, daysToMilliseconds } from '../constants/timeUnits';
+import { millisecondsToDays, daysToMilliseconds } from '../constants/timeUnits';
 
 // ============================================================================
 // TYPE DEFINITIONS
@@ -257,44 +257,6 @@ export function getNextStage(currentStage: string): GrowthStageConfig | null {
   return GROWTH_STAGES[currentIndex + 1];
 }
 
-/**
- * Calculate progress towards the next growth stage (0 to 1)
- * @param elapsedTime - Time elapsed in milliseconds
- * @returns Progress value between 0 and 1, or 1 if at final stage
- */
-export function getStageProgress(elapsedTime: number): number {
-  const currentStage = getGrowthStage(elapsedTime);
-  const nextStage = getNextStage(currentStage.id);
-
-  if (!nextStage) {
-    return 1; // At final stage
-  }
-
-  const days = millisecondsToDays(elapsedTime);
-  const daysInCurrentStage = days - currentStage.minDays;
-  const totalDaysInStage = nextStage.minDays - currentStage.minDays;
-
-  return Math.min(Math.max(daysInCurrentStage / totalDaysInStage, 0), 1);
-}
-
-/**
- * Get time until the next growth stage
- * @param elapsedTime - Time elapsed in milliseconds
- * @returns Time remaining in milliseconds, or null if at final stage
- */
-export function getTimeUntilNextStage(elapsedTime: number): number | null {
-  const currentStage = getGrowthStage(elapsedTime);
-  const nextStage = getNextStage(currentStage.id);
-
-  if (!nextStage) {
-    return null; // At final stage
-  }
-
-  const days = millisecondsToDays(elapsedTime);
-  const daysRemaining = nextStage.minDays - days;
-  return daysRemaining * MS_PER_DAY;
-}
-
 // ============================================================================
 // ACHIEVEMENT FUNCTIONS (Migrated from achievements.ts)
 // ============================================================================
@@ -374,29 +336,6 @@ export function getNewlyUnlockedAchievements(
   }));
 }
 
-/**
- * Get the next achievement to unlock
- * @param elapsedTime - Time elapsed in milliseconds
- * @returns Next achievement or null if all unlocked
- */
-export function getNextAchievement(elapsedTime: number): Achievement | null {
-  const nextStage = GROWTH_STAGES.find(
-    (stage) => elapsedTime < daysToMilliseconds(stage.minDays)
-  );
-
-  return nextStage
-    ? {
-        id: nextStage.id,
-        title: nextStage.achievementTitle,
-        description: nextStage.achievementDescription,
-        emoji: nextStage.emoji,
-        threshold: daysToMilliseconds(nextStage.minDays),
-        shortLabel: nextStage.shortLabel,
-        isUnlocked: false,
-      }
-    : null;
-}
-
 // ============================================================================
 // CHECKPOINT FUNCTIONS (Migrated from checkpointHelpers.ts)
 // ============================================================================
@@ -470,43 +409,6 @@ export function getCheckpointProgress(elapsedTime: number): CheckpointProgress {
     progress,
     isCompleted: false,
   };
-}
-
-/**
- * Format time remaining until next checkpoint
- * @param remainingTime - Time remaining in milliseconds
- * @returns Formatted string (e.g., "2h 30m 15s", "1d 5h", "45m 30s")
- */
-export function formatTimeRemaining(remainingTime: number): string {
-  if (remainingTime <= 0) {
-    return '0s';
-  }
-
-  const { days, hours, minutes, seconds } = millisecondsToTimeBreakdown(remainingTime);
-  const parts: string[] = [];
-
-  if (days > 0) {
-    parts.push(`${days}d`);
-    if (hours > 0) parts.push(`${hours}h`);
-    // For days, only show days and hours
-    return parts.join(' ');
-  }
-
-  if (hours > 0) {
-    parts.push(`${hours}h`);
-    if (minutes > 0) parts.push(`${minutes}m`);
-    // For hours, only show hours and minutes
-    return parts.join(' ');
-  }
-
-  if (minutes > 0) {
-    parts.push(`${minutes}m`);
-    if (seconds > 0) parts.push(`${seconds}s`);
-    return parts.join(' ');
-  }
-
-  // Less than a minute
-  return `${seconds}s`;
 }
 
 // ============================================================================
