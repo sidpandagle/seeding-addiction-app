@@ -2,7 +2,8 @@ import React, { useMemo, useState } from 'react';
 import { View, Text, Pressable } from 'react-native';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 import { TrendingUp, TrendingDown, Minus, Activity, AlertCircle, Info, X } from 'lucide-react-native';
-import { useColorScheme } from '../../stores/themeStore';
+import { InsightCallout } from './InsightCallout';
+import { useThemeColors, useCardShadow } from '../../hooks/useThemeColors';
 import { useReducedMotion, ANIMATION_PRESETS } from '../../hooks/useReducedMotion';
 import type { Relapse } from '../../db/schema';
 import type { Activity as ActivityType } from '../../db/schema';
@@ -15,7 +16,6 @@ interface ComparativeStatsCardProps {
 interface PeriodStats {
   relapses: number;
   activities: number;
-  successRate: number;
 }
 
 interface Comparison {
@@ -30,9 +30,9 @@ const ComparativeStatsCard: React.FC<ComparativeStatsCardProps> = ({
   relapses,
   activities,
 }) => {
-  const colorScheme = useColorScheme();
+  const colors = useThemeColors();
+  const cardShadow = useCardShadow();
   const reducedMotion = useReducedMotion();
-  const isDark = colorScheme === 'dark';
   const [showInfo, setShowInfo] = useState(false);
 
   // Calculate all periods at once
@@ -51,10 +51,7 @@ const ComparativeStatsCard: React.FC<ComparativeStatsCardProps> = ({
         return date >= startDate && date < endDate;
       }).length;
 
-      const total = periodRelapses + periodActivities;
-      const successRate = total > 0 ? (periodActivities / total) * 100 : 100;
-
-      return { relapses: periodRelapses, activities: periodActivities, successRate };
+      return { relapses: periodRelapses, activities: periodActivities };
     };
 
     // Calculate all three periods
@@ -102,15 +99,15 @@ const ComparativeStatsCard: React.FC<ComparativeStatsCardProps> = ({
 
   const getTrendIcon = (current: number, previous: number, isLowerBetter: boolean) => {
     if (current === previous) {
-      return <Minus size={16} color="#6B7280" strokeWidth={2.5} />;
+      return <Minus size={16} color={colors.muted} strokeWidth={2.5} />;
     }
 
     const isImproving = isLowerBetter ? current < previous : current > previous;
 
     if (isImproving) {
-      return <TrendingUp size={16} color="#10b981" strokeWidth={2.5} />;
+      return <TrendingUp size={16} color={colors.primary} strokeWidth={2.5} />;
     }
-    return <TrendingDown size={16} color="#ef4444" strokeWidth={2.5} />;
+    return <TrendingDown size={16} color={colors.urge} strokeWidth={2.5} />;
   };
 
   const getChangeText = (current: number, previous: number, isLowerBetter: boolean) => {
@@ -127,26 +124,27 @@ const ComparativeStatsCard: React.FC<ComparativeStatsCardProps> = ({
   };
 
   const getChangeColor = (current: number, previous: number, isLowerBetter: boolean) => {
-    if (current === previous) return 'text-gray-500 dark:text-gray-400';
+    if (current === previous) return 'text-muted';
     const isImproving = isLowerBetter ? current < previous : current > previous;
-    return isImproving ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400';
+    return isImproving ? 'text-primary' : 'text-urge';
   };
 
   if (relapses.length === 0 && activities.length === 0) {
     return (
       <Animated.View
         entering={reducedMotion ? undefined : FadeInDown.duration(ANIMATION_PRESETS.card.duration)}
-        className="p-5 mb-4 bg-white border border-gray-200 dark:bg-gray-900 dark:border-gray-800 rounded-2xl"
+        style={cardShadow}
+          className="p-5 mb-4 bg-surface border border-border rounded-[20px]"
       >
         <View className="flex-row items-center mb-3">
-          <View className="items-center justify-center w-10 h-10 mr-3 rounded-full bg-blue-100 dark:bg-blue-900/40">
-            <Activity size={20} color="#3b82f6" />
+          <View className="items-center justify-center w-10 h-10 mr-3 rounded-full bg-info-soft">
+            <Activity size={20} color={colors.info} />
           </View>
-          <Text className="text-lg font-bold text-gray-900 dark:text-white">
+          <Text className="text-lg font-bold text-fg">
             Comparative Stats
           </Text>
         </View>
-        <Text className="text-sm text-gray-500 dark:text-gray-400 text-center py-4">
+        <Text className="font-regular text-sm text-muted text-center py-4">
           Start tracking to see comparisons over time
         </Text>
       </Animated.View>
@@ -156,62 +154,61 @@ const ComparativeStatsCard: React.FC<ComparativeStatsCardProps> = ({
   return (
     <Animated.View
       entering={reducedMotion ? undefined : FadeInDown.duration(ANIMATION_PRESETS.card.duration)}
-      className="p-5 mb-4 bg-white border border-gray-200 dark:bg-gray-900 dark:border-gray-800 rounded-2xl"
+      style={cardShadow}
+          className="p-5 mb-4 bg-surface border border-border rounded-[20px]"
     >
       {/* Header */}
       <View className="flex-row items-center justify-between mb-4">
         <View className="flex-row items-center flex-1">
-          <View className="items-center justify-center w-10 h-10 mr-3 rounded-full bg-blue-100 dark:bg-blue-900/40">
-            <Activity size={20} color="#3b82f6" />
+          <View className="items-center justify-center w-10 h-10 mr-3 rounded-full bg-info-soft">
+            <Activity size={20} color={colors.info} />
           </View>
           <View>
-            <Text className="text-lg font-bold text-gray-900 dark:text-white">
+            <Text className="text-lg font-bold text-fg">
               Comparative Stats
             </Text>
-            <Text className="text-xs text-gray-500 dark:text-gray-400">
+            <Text className="font-regular text-xs text-muted">
               Track your progress over time
             </Text>
           </View>
         </View>
         <Pressable
           onPress={() => setShowInfo(!showInfo)}
-          className="items-center justify-center w-8 h-8 rounded-full bg-gray-100 dark:bg-gray-800"
+          className="items-center justify-center w-8 h-8 rounded-full bg-subtle"
         >
           {showInfo ? (
-            <X size={16} color={isDark ? '#9CA3AF' : '#6B7280'} />
+            <X size={16} color={colors.muted} />
           ) : (
-            <Info size={16} color={isDark ? '#9CA3AF' : '#6B7280'} />
+            <Info size={16} color={colors.muted} />
           )}
         </Pressable>
       </View>
 
       {/* Info Card */}
       {showInfo && (
-        <View className="p-3 mb-4 rounded-xl bg-blue-100 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800">
-          <Text className="text-xs font-medium text-blue-800 dark:text-blue-200 leading-4">
-            Compare your progress across different time periods. Green arrows mean improvement (fewer relapses or more activities). Track weekly and monthly trends to see your growth!
-          </Text>
-        </View>
+        <InsightCallout icon={Info} className="mb-4">
+          Compare your progress across different time periods. Green arrows mean improvement (fewer relapses or more activities). Track weekly and monthly trends to see your growth!
+        </InsightCallout>
       )}
 
       {/* Show all comparisons */}
       {comparisons.map((comparison, index) => (
         <View
           key={comparison.label}
-          className={`${index < comparisons.length - 1 ? 'pb-4 mb-4 border-b border-gray-100 dark:border-gray-800' : ''}`}
+          className={`${index < comparisons.length - 1 ? 'pb-4 mb-4 border-b border-border' : ''}`}
         >
-          <Text className="text-sm font-bold text-gray-700 dark:text-gray-300 mb-3">
+          <Text className="text-sm font-bold text-body mb-3">
             {comparison.label} Comparison
           </Text>
 
           {/* Relapses Row */}
           <View className="flex-row items-center justify-between mb-2">
             <View className="flex-row items-center">
-              <AlertCircle size={14} color="#ef4444" strokeWidth={2.5} />
-              <Text className="ml-2 text-sm text-gray-600 dark:text-gray-400">Relapses</Text>
+              <AlertCircle size={14} color={colors.urge} strokeWidth={2.5} />
+              <Text className="font-regular ml-2 text-sm text-muted">Relapses</Text>
             </View>
             <View className="flex-row items-center gap-2">
-              <Text className="text-sm font-semibold text-gray-900 dark:text-white">
+              <Text className="text-sm font-semibold text-fg">
                 {comparison.current.relapses} vs {comparison.previous.relapses}
               </Text>
               {getTrendIcon(comparison.current.relapses, comparison.previous.relapses, true)}
@@ -221,31 +218,20 @@ const ComparativeStatsCard: React.FC<ComparativeStatsCardProps> = ({
             </View>
           </View>
 
-          {/* Activities Row */}
-          <View className="flex-row items-center justify-between mb-2">
+          {/* Activities Row (the wins vs relapses ratio lives in the Engagement Ratio chart) */}
+          <View className="flex-row items-center justify-between">
             <View className="flex-row items-center">
-              <Activity size={14} color="#10b981" strokeWidth={2.5} />
-              <Text className="ml-2 text-sm text-gray-600 dark:text-gray-400">Activities</Text>
+              <Activity size={14} color={colors.primary} strokeWidth={2.5} />
+              <Text className="font-regular ml-2 text-sm text-muted">Activities</Text>
             </View>
             <View className="flex-row items-center gap-2">
-              <Text className="text-sm font-semibold text-gray-900 dark:text-white">
+              <Text className="text-sm font-semibold text-fg">
                 {comparison.current.activities} vs {comparison.previous.activities}
               </Text>
               {getTrendIcon(comparison.current.activities, comparison.previous.activities, false)}
               <Text className={`text-xs font-medium ${getChangeColor(comparison.current.activities, comparison.previous.activities, false)}`}>
                 {getChangeText(comparison.current.activities, comparison.previous.activities, false)}
               </Text>
-            </View>
-          </View>
-
-          {/* Success Rate Row */}
-          <View className="flex-row items-center justify-between">
-            <Text className="text-sm text-gray-600 dark:text-gray-400">Success Rate</Text>
-            <View className="flex-row items-center gap-2">
-              <Text className="text-sm font-semibold text-gray-900 dark:text-white">
-                {comparison.current.successRate.toFixed(0)}% vs {comparison.previous.successRate.toFixed(0)}%
-              </Text>
-              {getTrendIcon(comparison.current.successRate, comparison.previous.successRate, false)}
             </View>
           </View>
         </View>

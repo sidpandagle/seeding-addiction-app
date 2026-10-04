@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, Modal, Pressable, ScrollView } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { useColorScheme } from '../../stores/themeStore';
+import { useThemeColors } from '../../hooks/useThemeColors';
 import { Achievement } from '../../utils/growthStages';
 import { X } from 'lucide-react-native';
 import AnimatedEmoji from '../common/AnimatedEmoji';
@@ -24,6 +25,7 @@ export default function AchievementDetailModal({
   required,
 }: Readonly<AchievementDetailModalProps>) {
   const colorScheme = useColorScheme();
+  const colors = useThemeColors();
 
   if (!achievement) return null;
 
@@ -72,16 +74,16 @@ export default function AchievementDetailModal({
     >
       <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'} />
       <View className="items-center justify-center flex-1 px-6 bg-black/50">
-        <View className="w-full max-w-md overflow-hidden bg-white shadow-2xl dark:bg-gray-800 rounded-3xl">
+        <View className="w-full max-w-md overflow-hidden bg-surface shadow-2xl rounded-3xl">
           {/* Header */}
           <View className="relative">
             {achievement.isUnlocked ? (
-              <View className="px-6 pt-8 pb-6 bg-emerald-600 dark:bg-emerald-800">
+              <View className="px-6 pt-8 pb-6 bg-primary">
                 <Pressable
                   onPress={onClose}
-                  className="absolute items-center justify-center w-10 h-10 rounded-full top-4 right-4 bg-black/10 active:bg-black/20"
+                  className="absolute items-center justify-center w-10 h-10 rounded-full top-4 right-4 bg-primary-on/15 active:bg-primary-on/25"
                 >
-                  <X size={24} color="#FFFFFF" />
+                  <X size={24} color={colors.onPrimary} />
                 </Pressable>
                 <View className="items-center">
                   <AnimatedEmoji
@@ -90,21 +92,21 @@ export default function AchievementDetailModal({
                     behavior="loop"
                     accessibilityLabel={achievement.title}
                   />
-                  <Text className="mt-3 text-2xl font-bold text-center text-white">
+                  <Text className="mt-3 text-2xl font-bold text-center text-primary-on">
                     {achievement.title}
                   </Text>
-                  <View className="px-3 py-1 mt-2 rounded-full bg-white/20">
-                    <Text className="text-sm font-semibold text-white">Unlocked</Text>
+                  <View className="px-3 py-1 mt-2 rounded-full bg-primary-on/15">
+                    <Text className="text-sm font-semibold text-primary-on">Unlocked</Text>
                   </View>
                 </View>
               </View>
             ) : (
-              <View className="px-6 pt-8 pb-6 bg-gray-100 dark:bg-gray-700">
+              <View className="px-6 pt-8 pb-6 bg-subtle">
                 <Pressable
                   onPress={onClose}
-                  className="absolute items-center justify-center w-10 h-10 rounded-full top-4 right-4 bg-black/10 dark:bg-white/10 active:bg-black/20 dark:active:bg-white/20"
+                  className="absolute items-center justify-center w-10 h-10 rounded-full top-4 right-4 bg-fg/10 active:bg-fg/20"
                 >
-                  <X size={24} color={colorScheme === 'dark' ? '#FFFFFF' : '#000000'} />
+                  <X size={24} color={colors.fg} />
                 </Pressable>
                 <View className="items-center">
                   <View className="relative" style={{ opacity: 0.3 }}>
@@ -118,11 +120,11 @@ export default function AchievementDetailModal({
                       <Text style={{ fontSize: 40 }}>🔒</Text>
                     </View>
                   </View>
-                  <Text className="mt-3 text-2xl font-bold text-center text-gray-600 dark:text-gray-300">
+                  <Text className="mt-3 text-2xl font-bold text-center text-body">
                     {achievement.title}
                   </Text>
-                  <View className="px-3 py-1 mt-2 bg-gray-300 rounded-full dark:bg-gray-600">
-                    <Text className="text-sm font-semibold text-gray-700 dark:text-gray-300">Locked</Text>
+                  <View className="px-3 py-1 mt-2 bg-border-strong rounded-full">
+                    <Text className="text-sm font-semibold text-body">Locked</Text>
                   </View>
                 </View>
               </View>
@@ -133,20 +135,20 @@ export default function AchievementDetailModal({
           <ScrollView className="px-6 py-6 max-h-80">
             {/* Requirement */}
             <View className="mb-6">
-              <Text className="mb-2 text-sm font-medium tracking-wide text-gray-500 uppercase dark:text-gray-400">
+              <Text className="mb-2 text-sm font-medium tracking-wide text-muted uppercase">
                 Requirement
               </Text>
-              <Text className="text-base text-gray-900 dark:text-white">
+              <Text className="font-regular text-base text-fg">
                 {achievement.description}
               </Text>
             </View>
 
             {/* Requirement */}
             {/* <View className="mb-6">
-              <Text className="mb-2 text-sm font-medium tracking-wide text-gray-500 uppercase dark:text-gray-400">
+              <Text className="mb-2 text-sm font-medium tracking-wide text-muted uppercase">
                 Requirement
               </Text>
-              <Text className="text-base text-gray-900 dark:text-white">
+              <Text className="font-regular text-base text-fg">
                 {achievement.threshold ? `Maintain a streak of ${achievement.shortLabel}` : 'Start your journey to unlock this achievement!'}
               </Text>
             </View> */}
@@ -154,10 +156,10 @@ export default function AchievementDetailModal({
             {/* Unlocked Date (if unlocked) */}
             {achievement.isUnlocked && achievement.unlockedAt && (
               <View className="mb-6">
-                <Text className="mb-2 text-sm font-medium tracking-wide text-gray-500 uppercase dark:text-gray-400">
+                <Text className="mb-2 text-sm font-medium tracking-wide text-muted uppercase">
                   Unlocked On
                 </Text>
-                <Text className="text-base text-gray-900 dark:text-white">
+                <Text className="font-regular text-base text-fg">
                   {new Date(achievement.unlockedAt).toLocaleDateString('en-US', {
                     month: 'long',
                     day: 'numeric',
@@ -172,13 +174,13 @@ export default function AchievementDetailModal({
             {/* Motivational Message */}
             <View className={`p-4 rounded-xl ${
               achievement.isUnlocked
-                ? 'bg-emerald-50 dark:bg-emerald-900/20'
-                : 'bg-gray-100 dark:bg-gray-700'
+                ? 'bg-primary-soft'
+                : 'bg-subtle'
             }`}>
-              <Text className={`text-sm text-center ${
+              <Text className={`font-regular text-sm text-center ${
                 achievement.isUnlocked
-                  ? 'text-emerald-900 dark:text-emerald-200'
-                  : 'text-gray-600 dark:text-gray-300'
+                  ? 'text-primary-ink'
+                  : 'text-body'
               }`}>
                 {motivationalMessage}
               </Text>
@@ -191,11 +193,11 @@ export default function AchievementDetailModal({
               onPress={onClose}
               className={`w-full py-4 rounded-2xl ${
                 achievement.isUnlocked
-                  ? 'bg-emerald-600 dark:bg-emerald-700 active:bg-emerald-700 dark:active:bg-emerald-800'
-                  : 'bg-gray-600 dark:bg-gray-700 active:bg-gray-700 dark:active:bg-gray-800'
+                  ? 'bg-primary active:bg-primary-ink'
+                  : 'bg-muted active:bg-body'
               }`}
             >
-              <Text className="text-lg font-semibold text-center text-white">
+              <Text className={`text-lg font-semibold text-center ${achievement.isUnlocked ? 'text-primary-on' : 'text-bg'}`}>
                 Close
               </Text>
             </Pressable>

@@ -1,12 +1,14 @@
 import { View, Text, Pressable, ScrollView, KeyboardAvoidingView, Platform } from 'react-native';
-import { useState, useMemo } from 'react';
-import { useColorScheme } from '../../stores/themeStore';
-import { useRelapseStore } from '../../stores/relapseStore';
+import { useState } from 'react';
+import { useThemeColors, useCardShadow } from '../../hooks/useThemeColors';
+import { useActivityStore } from '../../stores/activityStore';
+import { useToastStore } from '../../stores/toastStore';
+import { RideTheWave } from '../home/RideTheWave';
 import {
   TAPE_FORWARD,
   PHYSICAL_SHOCK_ACTIONS,
 } from '../../data/educationalContent';
-import { X } from 'lucide-react-native';
+import { X, CircleX, CircleCheck } from 'lucide-react-native';
 
 const POWER_AFFIRMATIONS = [
   "Okay. This urge is LOUD, but it's not the boss. It's just your brain asking for the old shortcut. Breathe for 10 seconds and watch it like a notification,no need to click.",
@@ -45,8 +47,10 @@ interface EmergencyHelpModalProps {
 export default function EmergencyHelpModal({
   onClose,
 }: Readonly<EmergencyHelpModalProps>) {
-  const colorScheme = useColorScheme();
-  const relapses = useRelapseStore((state) => state.relapses);
+  const colors = useThemeColors();
+  const cardShadow = useCardShadow();
+  const addActivity = useActivityStore((state) => state.addActivity);
+  const showToast = useToastStore((state) => state.showToast);
 
   // Random selections - initialized once on modal open
   const [randomGiveIn] = useState(() => getRandomItems(TAPE_FORWARD.giveIn, 4));
@@ -56,56 +60,56 @@ export default function EmergencyHelpModal({
     POWER_AFFIRMATIONS[Math.floor(Math.random() * POWER_AFFIRMATIONS.length)]
   );
 
-  // Calculate current streak (days since last relapse)
-  const streakDays = useMemo(() => {
-    if (relapses.length === 0) {
-      return 0;
+  // Finishing the urge timer can be saved as a win
+  const handleLogWaveWin = async (minutes: number) => {
+    try {
+      await addActivity({ categories: ['🧘 Mindfulness'], note: `Rode out an urge with the ${minutes}-minute timer` });
+      showToast('✨ Win logged');
+    } catch (error) {
+      showToast("Couldn't log the win. Try again.");
+      throw error;
     }
-
-    const lastRelapse = relapses.at(-1);
-    if (!lastRelapse) {
-      return 0;
-    }
-
-    const lastRelapseTime = new Date(lastRelapse.timestamp).getTime();
-    const now = Date.now();
-    const daysPassed = Math.floor((now - lastRelapseTime) / (1000 * 60 * 60 * 24));
-    return daysPassed;
-  }, [relapses]);
+  };
 
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      className="flex-1 bg-gray-50 dark:bg-gray-950"
+      className="flex-1 bg-bg"
     >
       <ScrollView className="flex-1">
         {/* Header - Empathetic acknowledgment */}
         <View className="px-6 pt-16 pb-6">
           <View className="flex-row items-center justify-between">
             <View className="flex-1">
-              <Text className="text-3xl font-semibold tracking-wide text-gray-900 dark:text-white">
+              <Text className="text-3xl font-semibold tracking-wide text-fg">
                 This is hard.
               </Text>
-              <Text className="text-sm font-medium text-emerald-700 dark:text-emerald-400">
+              <Text className="text-sm font-medium text-primary-ink">
                 But you've felt this before and survived. You'll survive this too.
               </Text>
             </View>
             <Pressable
               onPress={onClose}
-              className="items-center justify-center w-12 h-12 bg-white rounded-2xl dark:bg-gray-800 active:bg-gray-50 dark:active:bg-gray-700"
+              className="items-center justify-center w-12 h-12 bg-surface rounded-2xl active:bg-bg"
               accessibilityLabel="Close"
               accessibilityHint="Closes the emergency help modal"
               accessibilityRole="button"
             >
-              <X size={20} color={colorScheme === 'dark' ? '#FFFFFF' : '#000000'} strokeWidth={2.5} />
+              <X size={20} color={colors.fg} strokeWidth={2.5} />
             </Pressable>
           </View>
         </View>
 
+        {/* SECTION: Ride the wave - 10-minute urge timer */}
+        <View className="px-5 pb-5">
+          <RideTheWave onLogWin={handleLogWaveWin} />
+        </View>
+
         {/* SECTION: Reality Check - Power Affirmation */}
         <View className="px-5 pb-5">
-          <View className="relative p-5 bg-gray-900 dark:bg-gray-800 rounded-xl">
-            <Text className="text-xl font-bold leading-7 text-center text-white">
+          {/* Inverted card: dark on light mode; a raised card in dark mode, so it isn't a bright block at night */}
+          <View className="relative p-5 bg-fg dark:bg-subtle rounded-xl">
+            <Text className="text-xl font-bold leading-7 text-center text-bg dark:text-fg">
               {randomAffirmation}
             </Text>
           </View>
@@ -115,30 +119,34 @@ export default function EmergencyHelpModal({
 
         {/* SECTION 2: Play the Tape Forward */}
         <View className="px-5 pb-5">
-          <Text className="mb-3 text-xs font-bold tracking-wider text-gray-600 uppercase dark:text-gray-400">
+          <Text className="mb-3 text-xs font-bold tracking-wider text-muted uppercase">
             Fast Forward 30 Minutes
           </Text>
           <View className="flex-row gap-3">
             {/* Give In Column */}
-            <View className="flex-1 p-4 bg-red-100 border border-red-100 dark:bg-red-950/30 dark:border-red-700 rounded-xl">
-              <Text className="mb-3 text-sm font-bold text-center text-red-700 dark:text-red-400">
-                If you give in:
-              </Text>
+            <View style={cardShadow} className="flex-1 p-4 border bg-surface border-border rounded-2xl">
+              <View className="flex-row items-center gap-1.5 mb-2.5">
+                <CircleX size={16} color={colors.urge} strokeWidth={2.5} />
+                <Text className="text-sm font-bold text-urge">If you give in</Text>
+              </View>
               {randomGiveIn.map((item, index) => (
-                <Text key={`givein-${index}-${item.slice(0, 15)}`} className="mb-1.5 text-sm text-red-700 dark:text-red-300">
-                  - {item}
-                </Text>
+                <View key={`givein-${index}-${item.slice(0, 15)}`} className="flex-row items-start gap-2 mb-1.5">
+                  <View className="w-1.5 h-1.5 mt-2 rounded-full bg-urge" />
+                  <Text className="font-regular flex-1 text-sm text-body">{item}</Text>
+                </View>
               ))}
             </View>
             {/* Resist Column */}
-            <View className="flex-1 p-4 border bg-emerald-100 dark:bg-emerald-950/30 border-emerald-100 dark:border-emerald-700 rounded-xl">
-              <Text className="mb-3 text-sm font-bold text-center text-emerald-800 dark:text-emerald-200">
-                If you resist:
-              </Text>
+            <View style={cardShadow} className="flex-1 p-4 border bg-surface border-border rounded-2xl">
+              <View className="flex-row items-center gap-1.5 mb-2.5">
+                <CircleCheck size={16} color={colors.primary} strokeWidth={2.5} />
+                <Text className="text-sm font-bold text-primary-ink">If you resist</Text>
+              </View>
               {randomResist.map((item, index) => (
-                <Text key={`resist-${index}-${item.slice(0, 15)}`} className="text-sm text-emerald-700 dark:text-emerald-300">
-                  - {item}
-                </Text>
+                <View key={`resist-${index}-${item.slice(0, 15)}`} className="flex-row items-start gap-2 mb-1.5">
+                  <View className="w-1.5 h-1.5 mt-2 rounded-full bg-primary" />
+                  <Text className="font-regular flex-1 text-sm text-body">{item}</Text>
+                </View>
               ))}
             </View>
           </View>
@@ -146,24 +154,27 @@ export default function EmergencyHelpModal({
 
         {/* SECTION 4: Physical Shock Actions */}
         <View className="px-5 pb-5">
-          <Text className="mb-3 text-xs font-bold tracking-wider text-gray-600 uppercase dark:text-gray-400">
-            Shock Your System , Pick One Now
+          <Text className="mb-3 text-xs font-bold tracking-wider text-muted uppercase">
+            Shock Your System, Pick One Now
           </Text>
           <View className="flex-row flex-wrap gap-2">
             {randomShockActions.map((action, index) => (
               <View
                 key={`shock-${index}-${action.action.slice(0, 10)}`}
-                className="flex-row items-center px-3 py-2.5 border bg-indigo-100 dark:bg-indigo-950/30 border-indigo-100 dark:border-indigo-700 rounded-lg"
-                style={{ width: '48%' }}
+                className="relative px-3.5 py-3 overflow-hidden border bg-surface border-border rounded-2xl min-h-[72px]"
+                style={[cardShadow, { width: '48%' }]}
               >
-                <Text className="mr-2 text-lg">{action.icon}</Text>
-                <Text className="flex-1 text-xs font-medium text-indigo-900 dark:text-white">
+                {/* Emoji as a faint corner mark, so the text gets the full width */}
+                <Text className="font-regular absolute text-4xl -bottom-2 -right-1 opacity-20" accessible={false}>
+                  {action.icon}
+                </Text>
+                <Text className="text-sm font-semibold text-fg">
                   {action.action}
                 </Text>
               </View>
             ))}
           </View>
-          <Text className="mt-3 text-xs text-center text-gray-500 dark:text-gray-500">
+          <Text className="font-regular mt-3 text-sm text-center text-muted">
             Physical discomfort interrupts the craving circuit.
           </Text>
         </View>

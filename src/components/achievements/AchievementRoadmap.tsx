@@ -1,6 +1,8 @@
 import React from 'react';
 import { View, Text, Pressable } from 'react-native';
+import { useThemeColors } from '../../hooks/useThemeColors';
 import { useColorScheme } from '../../stores/themeStore';
+import { mixHex } from '../../constants/palette';
 import { Achievement } from '../../utils/growthStages';
 import { MapPin, Lock, CheckCircle2, Calendar } from 'lucide-react-native';
 
@@ -8,14 +10,19 @@ interface AchievementRoadmapProps {
   achievements: Achievement[];
   onAchievementPress: (achievement: Achievement) => void;
   referenceTime?: number | null; // Time reference for calculating predicted dates
+  /** Stage the best finished streak reached, shown as a "Your best" chip on that card */
+  bestMarker?: { stageId: string; label: string };
 }
 
 /**
  * Visual roadmap display for achievements
  * Shows a vertical journey path with nodes for each achievement
  */
-export default function AchievementRoadmap({ achievements, onAchievementPress, referenceTime }: AchievementRoadmapProps) {
+export default function AchievementRoadmap({ achievements, onAchievementPress, referenceTime, bestMarker }: AchievementRoadmapProps) {
+  const colors = useThemeColors();
   const colorScheme = useColorScheme();
+  // Next Up card: a light gold wash over the card surface, softer than the gold chips
+  const nextCardStyle = { backgroundColor: mixHex(colors.gold, colorScheme === 'dark' ? 12 : 10, colors.surface) };
 
   // Find the current achievement (last unlocked or first locked)
   const currentIndex = achievements.findIndex((a) => !a.isUnlocked);
@@ -102,8 +109,8 @@ export default function AchievementRoadmap({ achievements, onAchievementPress, r
                 <View
                   className={`w-full h-full ${
                     isUnlocked
-                      ? 'bg-emerald-500 dark:bg-emerald-600'
-                      : 'bg-gray-200 dark:bg-gray-800'
+                      ? 'bg-primary'
+                      : 'bg-border'
                   }`}
                 />
               </View>
@@ -120,31 +127,31 @@ export default function AchievementRoadmap({ achievements, onAchievementPress, r
                 <View
                   className={`w-16 h-16 rounded-full items-center justify-center ${
                     isUnlocked
-                      ? 'bg-emerald-500 dark:bg-emerald-600'
+                      ? 'bg-primary'
                       : isCurrent
-                      ? 'bg-amber-500 dark:bg-amber-600'
-                      : 'bg-gray-200 dark:bg-gray-800'
+                      ? 'bg-gold'
+                      : 'bg-border'
                   }`}
                 >
                   {isUnlocked ? (
-                    <CheckCircle2 size={28} color="#FFFFFF" strokeWidth={2.5} />
+                    <CheckCircle2 size={28} color={colors.onPrimary} strokeWidth={2.5} />
                   ) : isCurrent ? (
-                    <MapPin size={28} color="#FFFFFF" strokeWidth={2.5} />
+                    <MapPin size={28} color={colors.onPrimary} strokeWidth={2.5} />
                   ) : (
-                    <Lock size={24} color={colorScheme === 'dark' ? '#4b5563' : '#9ca3af'} strokeWidth={2} />
+                    <Lock size={24} color={colors.muted} strokeWidth={2} />
                   )}
                 </View>
 
                 {/* Pulse Animation for Current */}
                 {isCurrent && !isUnlocked && (
                   <View className="absolute inset-0 items-center justify-center">
-                    <View className="w-20 h-20 rounded-full bg-amber-500/20 dark:bg-amber-600/20" />
+                    <View className="w-20 h-20 rounded-full bg-gold/20" />
                   </View>
                 )}
 
                 {/* Timeline Label */}
                 <View className="absolute -left-1 -bottom-6">
-                  <Text className="text-xs font-semibold text-gray-500 dark:text-gray-400">
+                  <Text className="text-xs font-semibold text-muted">
                     {formatDuration(achievement.threshold)}
                   </Text>
                 </View>
@@ -152,26 +159,36 @@ export default function AchievementRoadmap({ achievements, onAchievementPress, r
 
               {/* Achievement Card */}
               <View
+                style={!isUnlocked && isCurrent ? nextCardStyle : undefined}
                 className={`flex-1 p-4 rounded-2xl ${
                   isUnlocked
-                    ? 'bg-white dark:bg-gray-900 border border-emerald-200 dark:border-emerald-900/50'
+                    ? 'bg-surface border border-primary/30'
                     : isCurrent
-                    ? 'bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-900/50'
-                    : 'bg-gray-100 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700'
+                    ? 'border border-gold/40'
+                    : 'bg-border/45 border border-border'
                 }`}
               >
                 <View className="flex-row items-center justify-between mb-2">
-                  <Text className="text-2xl">{achievement.emoji}</Text>
+                  <View className="flex-row items-center flex-1 gap-2">
+                    <Text className="font-regular text-2xl">{achievement.emoji}</Text>
+                    {bestMarker?.stageId === achievement.id && (
+                      <View className="px-2 py-0.5 border border-dashed rounded-full border-gold bg-gold-soft">
+                        <Text className="text-xs font-bold text-gold-ink">
+                          🏁 Your best · {bestMarker.label}
+                        </Text>
+                      </View>
+                    )}
+                  </View>
                   {isCurrent && !isUnlocked && (
-                    <View className="px-2 py-1 rounded-full bg-amber-500/20 dark:bg-amber-600/30">
-                      <Text className="text-xs font-bold text-amber-700 dark:text-amber-400">
+                    <View className="px-2 py-1 rounded-full bg-gold-soft">
+                      <Text className="text-xs font-bold text-gold-ink">
                         Next Up
                       </Text>
                     </View>
                   )}
                   {isUnlocked && (
-                    <View className="px-2 py-1 rounded-full bg-emerald-500/20 dark:bg-emerald-600/30">
-                      <Text className="text-xs font-bold text-emerald-700 dark:text-emerald-400">
+                    <View className="px-2 py-1 rounded-full bg-primary-soft">
+                      <Text className="text-xs font-bold text-primary-ink">
                         Unlocked
                       </Text>
                     </View>
@@ -181,25 +198,25 @@ export default function AchievementRoadmap({ achievements, onAchievementPress, r
                 <Text
                   className={`text-base font-bold mb-1 ${
                     isUnlocked || isCurrent
-                      ? 'text-gray-900 dark:text-white'
-                      : 'text-gray-400 dark:text-gray-600'
+                      ? 'text-fg'
+                      : 'text-faint'
                   }`}
                 >
                   {achievement.title}
                 </Text>
 
                 <Text
-                  className={`text-sm leading-5 ${
+                  className={`font-regular text-sm leading-5 ${
                     isUnlocked || isCurrent
-                      ? 'text-gray-600 dark:text-gray-400'
-                      : 'text-gray-400 dark:text-gray-600'
+                      ? 'text-muted'
+                      : 'text-faint'
                   }`}
                 >
                   {achievement.description}
                 </Text>
 
                 {achievement.unlockedAt && (
-                  <Text className="mt-2 text-xs font-medium text-emerald-600 dark:text-emerald-400">
+                  <Text className="mt-2 text-xs font-medium text-primary-ink">
                     Unlocked {new Date(achievement.unlockedAt).toLocaleDateString()}
                   </Text>
                 )}
@@ -211,11 +228,11 @@ export default function AchievementRoadmap({ achievements, onAchievementPress, r
 
                   return (
                     <View className="flex-row items-center mt-2 gap-1.5">
-                      <Calendar size={12} color={isCurrent ? '#f59e0b' : '#9ca3af'} strokeWidth={2} />
+                      <Calendar size={12} color={isCurrent ? colors.gold : colors.faint} strokeWidth={2} />
                       <Text className={`text-xs font-medium ${
                         isCurrent
-                          ? 'text-amber-600 dark:text-amber-400'
-                          : 'text-gray-400 dark:text-gray-500'
+                          ? 'text-gold-ink'
+                          : 'text-faint'
                       }`}>
                         {formatPredictedDate(prediction.date)} ({formatDaysUntil(prediction.daysUntil)})
                       </Text>
@@ -231,8 +248,8 @@ export default function AchievementRoadmap({ achievements, onAchievementPress, r
                 <View
                   className={`w-full h-full ${
                     isUnlocked
-                      ? 'bg-emerald-500 dark:bg-emerald-600'
-                      : 'bg-gray-200 dark:bg-gray-800'
+                      ? 'bg-primary'
+                      : 'bg-border'
                   }`}
                 />
               </View>

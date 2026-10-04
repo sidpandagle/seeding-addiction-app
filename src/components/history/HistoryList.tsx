@@ -1,19 +1,56 @@
-import { FlatList, View, Text, Pressable, ScrollView } from 'react-native';
-import { useState, useMemo } from 'react';
-import Animated, { FadeInUp, LinearTransition } from 'react-native-reanimated';
+import { SectionList, View, Text, Pressable, ScrollView } from 'react-native';
+import { useState, useMemo, useEffect, useCallback } from 'react';
+import Animated, { FadeInUp } from 'react-native-reanimated';
 import type { HistoryEntry } from '../../types/history';
-import { filterValidCategories } from '../../constants/tags';
+import type { Relapse } from '../../db/schema';
+import { filterValidCategories, formatRelapseTag } from '../../constants/tags';
 import { useReducedMotion, ANIMATION_PRESETS, getStaggerDelay } from '../../hooks/useReducedMotion';
 import { useCustomActivityTagsStore } from '../../stores/customActivityTagsStore';
+import { EntryCard } from './EntryCard';
 
 interface HistoryListProps {
   entries: HistoryEntry[];
+  /** Relapse id -> length of the streak it ended */
+  endedStreakMs?: Map<string, number>;
+  onEditRelapse?: (relapse: Relapse) => void;
 }
 
-export default function HistoryList({ entries }: HistoryListProps) {
+interface MonthSection {
+  key: string;
+  title: string;
+  data: HistoryEntry[];
+}
+
+// Only the first cards fade in, once, when the list opens
+const ANIMATED_ENTRIES = 8;
+const ENTRANCE_WINDOW_MS = 1000;
+
+function groupByMonth(entries: HistoryEntry[]): MonthSection[] {
+  const sections: MonthSection[] = [];
+  for (const entry of entries) {
+    const date = new Date(entry.data.timestamp);
+    const key = `${date.getFullYear()}-${date.getMonth()}`;
+    let section = sections[sections.length - 1];
+    if (!section || section.key !== key) {
+      section = { key, title: date.toLocaleDateString('en-US', { month: 'long', year: 'numeric' }), data: [] };
+      sections.push(section);
+    }
+    section.data.push(entry);
+  }
+  return sections;
+}
+
+export default function HistoryList({ entries, endedStreakMs, onEditRelapse }: HistoryListProps) {
   const [selectedTag, setSelectedTag] = useState<string | null>(null);
   const reducedMotion = useReducedMotion();
   const customTags = useCustomActivityTagsStore(state => state.customTags);
+
+  // Cards that remount while scrolling must not animate again
+  const [animateEntrance, setAnimateEntrance] = useState(!reducedMotion);
+  useEffect(() => {
+    const timer = setTimeout(() => setAnimateEntrance(false), ENTRANCE_WINDOW_MS);
+    return () => clearTimeout(timer);
+  }, []);
 
   // Get all unique tags/categories AND their counts in a single pass (O(n) instead of O(n²))
   const { allTags, tagCounts } = useMemo(() => {
@@ -44,64 +81,82 @@ export default function HistoryList({ entries }: HistoryListProps) {
   }, [entries, customTags]);
 
   const filteredEntries = useMemo(() => {
-    let filtered = entries;
-
-    // Filter by tag (applies to both relapses and activities)
-    if (selectedTag) {
-      filtered = filtered.filter(e => {
-        if (e.type === 'relapse') {
-          return e.data.tags?.includes(selectedTag);
-        } else if (e.type === 'activity' && e.data.categories) {
-          // Only match valid categories
-          const validCategories = filterValidCategories(e.data.categories, customTags);
-          return validCategories.includes(selectedTag);
-        }
-        return false;
-      });
-    }
-
-    return filtered;
+    if (!selectedTag) return entries;
+    return entries.filter(e => {
+      if (e.type === 'relapse') {
+        return e.data.tags?.includes(selectedTag);
+      }
+      // Only match valid categories
+      return e.data.categories ? filterValidCategories(e.data.categories, customTags).includes(selectedTag) : false;
+    });
   }, [entries, selectedTag, customTags]);
 
-  // Helper to get valid categories for an activity entry
-  const getValidCategories = (categories: string[] | undefined): string[] => {
-    if (!categories) return [];
-    return filterValidCategories(categories, customTags);
-  };
+  const sections = useMemo(() => groupByMonth(filteredEntries), [filteredEntries]);
+
+  const renderItem = useCallback(({ item, index, section }: { item: HistoryEntry; index: number; section: MonthSection }) => {
+    const animate = animateEntrance && section === sections[0] && index < ANIMATED_ENTRIES;
+    const categories = item.type === 'activity' && item.data.categories
+      ? filterValidCategories(item.data.categories, customTags)
+      : undefined;
+
+    return (
+      <Animated.View
+        entering={animate
+          ? FadeInUp.duration(ANIMATION_PRESETS.list.duration).delay(
+              getStaggerDelay(index, ANIMATION_PRESETS.list.staggerDelay, ANIMATION_PRESETS.list.maxStaggerDelay)
+            )
+          : undefined}
+        className="mx-6 mb-4"
+      >
+        <EntryCard
+          entry={item}
+          categories={categories}
+          endedStreakMs={item.type === 'relapse' ? endedStreakMs?.get(item.data.id) : undefined}
+          onEditRelapse={onEditRelapse}
+        />
+      </Animated.View>
+    );
+  }, [animateEntrance, sections, customTags, endedStreakMs, onEditRelapse]);
 
   return (
-    <FlatList
-      data={filteredEntries}
+    <SectionList
+      sections={sections}
       keyExtractor={(item) => item.data.id}
+      renderItem={renderItem}
+      stickySectionHeadersEnabled
       contentContainerClassName="pb-4"
-      // Performance optimizations
-      removeClippedSubviews={true}
+      // Virtualization: draw a screenful first, keep a few screens mounted.
+      // No getItemLayout: cards vary in height with notes and tags.
+      initialNumToRender={10}
       maxToRenderPerBatch={10}
       windowSize={5}
-      initialNumToRender={10}
-      updateCellsBatchingPeriod={50}
-      getItemLayout={(data, index) => ({
-        length: 120, // Approximate item height
-        offset: 120 * index,
-        index,
-      })}
+      renderSectionHeader={({ section }) => (
+        <View className="flex-row items-center justify-between px-6 pt-2 pb-3 bg-bg">
+          <Text className="text-xs font-bold tracking-wide text-muted uppercase">
+            {section.title}
+          </Text>
+          <Text className="text-xs font-medium text-faint">
+            {section.data.length} {section.data.length === 1 ? 'entry' : 'entries'}
+          </Text>
+        </View>
+      )}
       ListHeaderComponent={
         <View className="px-6 pt-4 pb-5 mb-2">
           {/* Tag/Category Filter */}
-          <Text className="mb-4 text-xs font-bold tracking-wide text-gray-500 uppercase dark:text-gray-400">
+          <Text className="mb-4 text-xs font-bold tracking-wide text-muted uppercase">
             Filter by Tag/Category
           </Text>
           <ScrollView horizontal showsHorizontalScrollIndicator={false}>
             <View className="flex-row gap-2.5">
               <Pressable
                 onPress={() => setSelectedTag(null)}
-                className={`px-5 py-3 rounded-xl ${selectedTag === null
-                    ? 'bg-blue-200 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-700'
-                    : 'bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700'
+                className={`px-5 py-3 rounded-full ${selectedTag === null
+                    ? 'bg-info-soft border border-info/30'
+                    : 'bg-surface border border-border'
                   }`}
               >
                 <Text
-                  className={`text-sm font-bold ${selectedTag === null ? 'text-blue-900 dark:text-blue-100' : 'text-gray-700 dark:text-gray-300'
+                  className={`text-sm font-bold ${selectedTag === null ? 'text-info' : 'text-body'
                     }`}
                 >
                   All
@@ -116,16 +171,16 @@ export default function HistoryList({ entries }: HistoryListProps) {
                   <Pressable
                     key={tag}
                     onPress={() => setSelectedTag(tag)}
-                    className={`px-5 py-3 rounded-xl ${selectedTag === tag
-                        ? 'bg-blue-200 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-700'
-                        : 'bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700'
+                    className={`px-5 py-3 rounded-full ${selectedTag === tag
+                        ? 'bg-info-soft border border-info/30'
+                        : 'bg-surface border border-border'
                       }`}
                   >
                     <Text
-                      className={`text-sm font-bold ${selectedTag === tag ? 'text-blue-900 dark:text-blue-100' : 'text-gray-700 dark:text-gray-300'
+                      className={`text-sm font-bold ${selectedTag === tag ? 'text-info' : 'text-body'
                         }`}
                     >
-                      {tag} {totalCount > 0 && `(${totalCount})`}
+                      {counts.relapse > 0 ? formatRelapseTag(tag) : tag} {totalCount > 0 && `(${totalCount})`}
                     </Text>
                   </Pressable>
                 );
@@ -136,123 +191,29 @@ export default function HistoryList({ entries }: HistoryListProps) {
       }
       ListEmptyComponent={
         <View className="items-center justify-center px-6 py-16">
-          <View className="items-center justify-center w-24 h-24 mb-6 bg-blue-50 dark:bg-blue-900/30 rounded-2xl">
-            <Text className="text-5xl">{selectedTag ? '🔍' : '✨'}</Text>
+          <View className="items-center justify-center w-24 h-24 mb-6 bg-info-soft rounded-2xl">
+            <Text className="font-regular text-5xl">{selectedTag ? '🔍' : '✨'}</Text>
           </View>
-          <Text className="mb-3 text-xl font-bold text-center text-gray-900 dark:text-white">
+          <Text className="mb-3 text-xl font-bold text-center text-fg">
             {selectedTag ? 'No matches found' : 'Your journey starts here'}
           </Text>
-          <Text className="max-w-sm mb-6 text-sm leading-6 text-center text-gray-600 dark:text-gray-400">
+          <Text className="max-w-sm mb-6 text-sm leading-6 text-center text-muted font-regular">
             {selectedTag
               ? 'No entries match this filter. Try selecting a different tag or view all entries.'
               : 'Track activities and relapses to see your complete journey timeline. Every step matters!'}
           </Text>
           {!selectedTag && (
-            <View className="w-full max-w-sm p-4 border bg-emerald-50 dark:bg-emerald-950/30 border-emerald-200 dark:border-emerald-800 rounded-xl">
-              <Text className="mb-2 text-sm font-bold text-center text-emerald-700 dark:text-emerald-300">
+            <View className="w-full max-w-sm p-4 border bg-primary-soft border-primary/30 rounded-xl">
+              <Text className="mb-2 text-sm font-bold text-center text-primary-ink">
                 💡 Quick Tip
               </Text>
-              <Text className="text-xs leading-5 text-center text-emerald-700 dark:text-emerald-400">
-                Go to the Home tab and tap "Track Your Growth" to log your first activity
+              <Text className="text-xs leading-5 text-center font-regular text-primary-ink">
+                Go to the Home tab and tap "Log a win" to log your first activity
               </Text>
             </View>
           )}
         </View>
       }
-      ListFooterComponent={null}
-      renderItem={({ item, index }) => {
-        const isRelapse = item.type === 'relapse';
-        const data = item.data;
-        
-        // Staggered entrance animation with capped delay
-        const enteringAnimation = reducedMotion 
-          ? undefined 
-          : FadeInUp.duration(ANIMATION_PRESETS.list.duration).delay(
-              getStaggerDelay(index, ANIMATION_PRESETS.list.staggerDelay, ANIMATION_PRESETS.list.maxStaggerDelay)
-            );
-
-        return (
-          <Animated.View
-            entering={enteringAnimation}
-            layout={reducedMotion ? undefined : LinearTransition.duration(200)}
-            className={`p-6 mx-6 mb-4 bg-white dark:bg-gray-900 rounded-xl border ${
-            isRelapse
-              ? 'border-red-200 dark:border-red-900/50'
-              : 'border-emerald-200 dark:border-emerald-900/50'
-          }`}>
-            <View className="flex-row items-start justify-between mb-3">
-              <View className="flex-1">
-                <View className="flex-row items-center gap-2 mb-1">
-                  <Text className="text-lg font-bold text-gray-900 dark:text-white">
-                    {new Date(data.timestamp).toLocaleDateString('en-US', {
-                      weekday: 'short',
-                      month: 'short',
-                      day: 'numeric',
-                      year: 'numeric',
-                    })}
-                  </Text>
-                </View>
-                <View className="flex-row items-center gap-2">
-                  <Text className="text-base">🕐</Text>
-                  <Text className="text-sm font-medium text-gray-500 dark:text-gray-400">
-                    {new Date(data.timestamp).toLocaleTimeString('en-US', {
-                      hour: 'numeric',
-                      minute: '2-digit',
-                    })}
-                  </Text>
-                </View>
-              </View>
-
-              {/* Entry type badge */}
-              <View className={`px-4 py-2 rounded-xl ${isRelapse ? 'bg-red-50 dark:bg-red-900/30' : 'bg-green-50 dark:bg-green-900/30'}`}>
-                <Text className={`text-xs font-bold ${isRelapse ? 'text-red-700 dark:text-red-300' : 'text-green-700 dark:text-green-300'}`}>
-                  {isRelapse ? '📍 Relapse' : '✨ Activity'}
-                </Text>
-              </View>
-            </View>
-
-            {data.note && (
-              <View className="p-4 mb-3 bg-gray-50 dark:bg-gray-800 rounded-xl">
-                <Text className="text-sm leading-6 text-gray-700 dark:text-gray-300">
-                  {data.note}
-                </Text>
-              </View>
-            )}
-
-            {/* Show tags for relapses or category for activities */}
-            {isRelapse && item.data.tags && item.data.tags.length > 0 && (
-              <View className="flex-row flex-wrap gap-2 mt-2">
-                {item.data.tags.map((tag: string) => (
-                  <View
-                    key={tag}
-                    className="px-4 py-2 bg-blue-50 dark:bg-blue-900/30 rounded-xl"
-                  >
-                    <Text className="text-xs font-bold text-blue-700 dark:text-blue-300">
-                      #{tag}
-                    </Text>
-                  </View>
-                ))}
-              </View>
-            )}
-
-            {!isRelapse && item.data.categories && (() => {
-              const validCats = getValidCategories(item.data.categories);
-              if (validCats.length === 0) return null;
-              return (
-                <View className="flex-row flex-wrap gap-2 mt-2">
-                  {validCats.map((category: string) => (
-                    <View key={category} className="px-4 py-2 bg-green-50 dark:bg-green-900/30 rounded-xl">
-                      <Text className="text-xs font-bold text-green-700 dark:text-green-300">
-                        {category}
-                      </Text>
-                    </View>
-                  ))}
-                </View>
-              );
-            })()}
-          </Animated.View>
-        );
-      }}
     />
   );
 }

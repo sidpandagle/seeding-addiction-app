@@ -8,6 +8,7 @@ import Animated, {
   runOnJS,
 } from 'react-native-reanimated';
 import { useThemeStore } from '../../stores/themeStore';
+import { palette } from '../../constants/palette';
 
 /**
  * ThemeTransitionOverlay
@@ -57,7 +58,7 @@ export function ThemeTransitionOverlay() {
       style={[
         styles.overlay,
         {
-          backgroundColor: colorScheme === 'dark' ? '#030712' : '#f9fafb',
+          backgroundColor: palette[colorScheme].bg,
         },
         animatedStyle,
       ]}

@@ -2,7 +2,8 @@ import { View, Text, Modal, Pressable } from 'react-native';
 import { useEffect } from 'react';
 import { CheckCircle, AlertCircle, AlertTriangle, Info } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
-import { useColorScheme } from '../../stores/themeStore';
+import { useThemeColors } from '../../hooks/useThemeColors';
+import type { TokenName } from '../../constants/palette';
 
 export type AlertType = 'success' | 'error' | 'warning' | 'info';
 export type AlertButtonStyle = 'default' | 'cancel' | 'destructive';
@@ -25,30 +26,30 @@ export interface CustomAlertProps {
 
 interface AlertConfig {
   icon: React.ComponentType<any>;
-  iconColor: string;
+  iconColor: TokenName;
   iconBg: string;
 }
 
 const ALERT_CONFIGS: Record<AlertType, AlertConfig> = {
   success: {
     icon: CheckCircle,
-    iconColor: '#10b981',
-    iconBg: 'bg-emerald-100 dark:bg-emerald-900/30',
+    iconColor: 'primary',
+    iconBg: 'bg-primary-soft',
   },
   error: {
     icon: AlertCircle,
-    iconColor: '#ef4444',
-    iconBg: 'bg-red-100 dark:bg-red-900/30',
+    iconColor: 'urge',
+    iconBg: 'bg-urge-soft',
   },
   warning: {
     icon: AlertTriangle,
-    iconColor: '#f59e0b',
-    iconBg: 'bg-amber-100 dark:bg-amber-900/30',
+    iconColor: 'gold',
+    iconBg: 'bg-gold-soft',
   },
   info: {
     icon: Info,
-    iconColor: '#3b82f6',
-    iconBg: 'bg-blue-100 dark:bg-blue-900/30',
+    iconColor: 'info',
+    iconBg: 'bg-info-soft',
   },
 };
 
@@ -61,7 +62,7 @@ export default function CustomAlert({
   onDismiss,
   dismissOnBackdrop = false,
 }: CustomAlertProps) {
-  const colorScheme = useColorScheme();
+  const colors = useThemeColors();
   const config = ALERT_CONFIGS[type];
   const Icon = config.icon;
 
@@ -120,24 +121,24 @@ export default function CustomAlert({
       >
         <Pressable
           onPress={(e) => e.stopPropagation()}
-          className="w-full max-w-[340px] bg-white dark:bg-gray-900 rounded-2xl overflow-hidden"
+          className="w-full max-w-[340px] bg-surface rounded-2xl overflow-hidden"
         >
           {/* Icon Circle */}
           <View className="items-center pt-8 pb-4">
             <View className={`w-16 h-16 rounded-full ${config.iconBg} items-center justify-center`}>
-              <Icon size={32} color={config.iconColor} strokeWidth={2.5} />
+              <Icon size={32} color={colors[config.iconColor]} strokeWidth={2.5} />
             </View>
           </View>
 
           {/* Content */}
           <View className="px-6 pb-6">
             {/* Title */}
-            <Text className="text-xl font-bold text-center mb-3 text-gray-900 dark:text-white">
+            <Text className="text-xl font-bold text-center mb-3 text-fg">
               {title}
             </Text>
 
             {/* Message */}
-            <Text className="text-base text-center text-gray-600 dark:text-gray-400 mb-6 font-regular">
+            <Text className="text-base text-center text-muted mb-6 font-regular">
               {message}
             </Text>
 
@@ -169,18 +170,18 @@ function AlertButton({
   const getButtonStyles = () => {
     switch (button.style) {
       case 'destructive':
-        return 'bg-red-600 dark:bg-red-700 active:bg-red-700 dark:active:bg-red-800';
+        return 'bg-urge active:bg-urge/85';
       case 'cancel':
-        return 'bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 active:bg-gray-50 dark:active:bg-gray-700';
+        return 'bg-surface border border-border active:bg-bg';
       default:
-        return 'bg-emerald-600 dark:bg-emerald-700 active:bg-emerald-700 dark:active:bg-emerald-800';
+        return 'bg-primary active:bg-primary-ink';
     }
   };
 
   const getTextStyles = () => {
     return button.style === 'cancel'
-      ? 'text-gray-700 dark:text-gray-300'
-      : 'text-white';
+      ? 'text-body'
+      : 'text-primary-on';
   };
 
   return (

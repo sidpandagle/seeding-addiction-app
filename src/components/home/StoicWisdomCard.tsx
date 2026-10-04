@@ -21,14 +21,9 @@ import {
   Crown,
   Gem
 } from 'lucide-react-native';
-import { useColorScheme } from '../../stores/themeStore';
+import { useThemeColors, useCardShadow } from '../../hooks/useThemeColors';
 import { getRandomTeaching, type StoicTeaching } from '../../data/stoicTeachings';
-import {
-  getCategoryBackgroundColor,
-  getCategoryTextColor,
-  getCategoryIcon,
-  getCategoryIconColor
-} from '../../constants/categoryColors';
+import { getCategoryIcon } from '../../constants/categoryColors';
 
 // Icon mapping for dynamic rendering
 const ICON_MAP: Record<string, React.ComponentType<any>> = {
@@ -53,11 +48,12 @@ const ICON_MAP: Record<string, React.ComponentType<any>> = {
 
 /**
  * Stoic Wisdom Card component for home page
- * Displays random stoic teaching with category-based color coding and background icon
+ * Displays a random stoic teaching on a neutral card, with a category chip and faint background icon
  * Auto-refreshes on component mount
  */
 const StoicWisdomCardComponent: React.FC = () => {
-  const colorScheme = useColorScheme();
+  const colors = useThemeColors();
+  const cardShadow = useCardShadow();
   const [currentTeaching, setCurrentTeaching] = useState<StoicTeaching>(getRandomTeaching());
 
   // Refresh teaching on mount (each time user visits home page)
@@ -68,7 +64,6 @@ const StoicWisdomCardComponent: React.FC = () => {
   // Get the icon component for the current category
   const iconName = getCategoryIcon(currentTeaching.category);
   const IconComponent = ICON_MAP[iconName];
-  const iconColor = getCategoryIconColor(currentTeaching.category);
 
   // Refresh quote handler
   const refreshQuote = () => {
@@ -80,25 +75,30 @@ const StoicWisdomCardComponent: React.FC = () => {
     <View className="px-6 pb-0">
       {/* Header */}
       <View className="flex-row items-center gap-2 mb-4">
-        <Brain size={24} color="#059669" strokeWidth={2} />
-        <Text className="text-lg font-bold text-gray-900 dark:text-white">
+        <Brain size={24} color={colors.primary} strokeWidth={2} />
+        <Text className="text-lg font-bold text-fg">
           Boosters for the Mind
         </Text>
       </View>
 
       {/* Quote Card - Tap to refresh */}
-      <Pressable onPress={refreshQuote}>
-        <View className={`relative overflow-hidden p-6 rounded-2xl ${getCategoryBackgroundColor(currentTeaching.category)}`}>
+      <Pressable onPress={refreshQuote} style={cardShadow} className="rounded-[20px]">
+        <View className="relative items-start p-5 overflow-hidden border bg-surface border-border rounded-[20px]">
           {/* Background Icon */}
           {IconComponent && (
-            <View className="absolute bottom-[-12px] right-[-12px] opacity-15 dark:opacity-15">
-              <IconComponent size={100} color={iconColor} strokeWidth={1.5} />
+            <View className="absolute bottom-[-14px] right-[-14px] opacity-10">
+              <IconComponent size={110} color={colors.primary} strokeWidth={1.5} />
             </View>
           )}
-          <Text className={`text-lg font-bold leading-7 mb-4 ${getCategoryTextColor(currentTeaching.category)}`}>
+          <View className="px-2.5 py-1 mb-3 rounded-full bg-primary-soft">
+            <Text className="text-xs font-bold tracking-wider uppercase text-primary-ink">
+              {currentTeaching.category}
+            </Text>
+          </View>
+          <Text className="mb-3 text-lg font-bold text-fg">
             "{currentTeaching.quote}"
           </Text>
-          <Text className="text-base font-semibold dark:text-white">
+          <Text className="text-base font-semibold text-muted">
             — {currentTeaching.author}
           </Text>
         </View>

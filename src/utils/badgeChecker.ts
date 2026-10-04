@@ -1,5 +1,6 @@
 import { Activity, Relapse, Badge, EarnedBadge } from '../db/schema';
 import { BADGE_DEFINITIONS } from '../data/badgeDefinitions';
+import { isBuiltInCategory } from '../constants/tags';
 
 interface BadgeProgress {
   badgeId: string;
@@ -158,29 +159,32 @@ const checkStreakDays = (
     };
   }
 
-  // Sort activities by timestamp (newest first)
-  const sorted = [...activities].sort(
-    (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
-  );
-
   // Calculate current streak
   let currentStreak = 0;
-  let currentDate = new Date();
-  currentDate.setHours(0, 0, 0, 0);
 
-  // Check if there's an activity today or yesterday
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   const yesterday = new Date(today);
   yesterday.setDate(yesterday.getDate() - 1);
 
-  const hasRecentActivity = sorted.some((a) => {
-    const activityDate = new Date(a.timestamp);
-    activityDate.setHours(0, 0, 0, 0);
-    return activityDate.getTime() >= yesterday.getTime();
-  });
+  // Unique local days with at least one activity
+  const uniqueDays = new Set(
+    activities.map((a) => {
+      const d = new Date(a.timestamp);
+      d.setHours(0, 0, 0, 0);
+      return d.getTime();
+    })
+  );
 
-  if (!hasRecentActivity) {
+  // A streak is still alive if the last log was today or yesterday.
+  // Count back from today, or from yesterday while today is still open.
+  const anchor = uniqueDays.has(today.getTime())
+    ? today
+    : uniqueDays.has(yesterday.getTime())
+      ? yesterday
+      : null;
+
+  if (!anchor) {
     // Streak is broken
     return {
       unlocked: false,
@@ -193,27 +197,14 @@ const checkStreakDays = (
     };
   }
 
-  // Count consecutive days
-  const uniqueDays = new Set(
-    sorted.map((a) => {
-      const d = new Date(a.timestamp);
-      d.setHours(0, 0, 0, 0);
-      return d.getTime();
-    })
-  );
-
-  const sortedDays = Array.from(uniqueDays).sort((a, b) => b - a);
-
-  for (let i = 0; i < sortedDays.length; i++) {
-    const expectedDate = new Date(today);
-    expectedDate.setDate(today.getDate() - i);
+  // Count consecutive days back from the anchor
+  for (let i = 0; ; i++) {
+    const expectedDate = new Date(anchor);
+    expectedDate.setDate(anchor.getDate() - i);
     expectedDate.setHours(0, 0, 0, 0);
 
-    if (sortedDays[i] === expectedDate.getTime()) {
-      currentStreak++;
-    } else {
-      break;
-    }
+    if (!uniqueDays.has(expectedDate.getTime())) break;
+    currentStreak++;
   }
 
   const unlocked = currentStreak >= threshold;
@@ -241,9 +232,10 @@ const checkCategoryDiversity = (
 ): { unlocked: boolean; progressData?: BadgeProgress } => {
   const uniqueCategories = new Set<string>();
 
+  // Only built-in categories count; custom tags aren't part of "all 14"
   activities.forEach((activity) => {
     activity.categories?.forEach((category) => {
-      uniqueCategories.add(category);
+      if (isBuiltInCategory(category)) uniqueCategories.add(category);
     });
   });
 

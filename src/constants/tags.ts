@@ -17,6 +17,27 @@ export const RELAPSE_TAGS = [
 ] as const;
 
 /**
+ * Emoji shown next to each built-in relapse tag. Display only:
+ * stored tag values stay plain ("Stress", "Social", ...).
+ */
+const RELAPSE_TAG_EMOJI: Record<string, string> = {
+  Stress: '😣',
+  Trigger: '⚡',
+  Social: '👥',
+  Boredom: '🥱',
+  Craving: '🔥',
+  Other: '✏️',
+};
+
+/**
+ * Label for a relapse tag, with its emoji when it's a built-in tag
+ */
+export const formatRelapseTag = (tag: string): string => {
+  const emoji = RELAPSE_TAG_EMOJI[tag];
+  return emoji ? `${emoji} ${tag}` : tag;
+};
+
+/**
  * Category options for positive activities
  * Used in: ActivityModal, HistoryList
  */

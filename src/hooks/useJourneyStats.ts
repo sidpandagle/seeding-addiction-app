@@ -1,14 +1,13 @@
-import { useMemo, useState, useEffect, useRef } from 'react';
-import { getCheckpointProgress } from '../utils/growthStages';
-import { getGrowthStage } from '../utils/growthStages';
+import { useMemo } from 'react';
+import { getCheckpointProgress, getGrowthStage } from '../utils/growthStages';
 import { useLatestRelapseTimestamp } from '../stores/relapseStore';
 import { useJourneyStartLoader } from './useJourneyStartLoader';
+import { useStageTick } from './useClock';
 
 /**
  * Shared hook for journey statistics
- * Optimized to avoid unnecessary re-renders and database calls
- * Updates when the latest relapse timestamp changes OR when milestones are crossed
- * LiveTimer component handles its own second-by-second updates independently
+ * Re-renders only when the latest relapse changes or the streak reaches a new growth stage
+ * (one scheduled timeout instead of polling). The timer card keeps its own minute tick.
  */
 export function useJourneyStats() {
   // Use optimized selector that only updates when latest timestamp changes
@@ -17,60 +16,19 @@ export function useJourneyStats() {
   // Use centralized journey start loader
   const { journeyStart, isLoading } = useJourneyStartLoader();
 
-  // State to trigger updates when milestones are crossed
-  const [, setMilestoneTrigger] = useState(0);
+  // Current streak starts at the most recent relapse, or the journey start
+  const startTime = latestRelapseTimestamp || journeyStart;
+  const startMs = startTime ? new Date(startTime).getTime() : null;
 
-  // Track previous growth stage and checkpoint to detect changes
-  const previousGrowthStageRef = useRef<string | null>(null);
-  const previousCheckpointRef = useRef<string | null>(null);
+  // Time of the last stage change (or refocus), so stage values stay correct
+  const now = useStageTick(startMs);
 
-  // Monitor for milestone changes every 60 seconds
-  useEffect(() => {
-    const startTime = latestRelapseTimestamp || journeyStart;
-    if (!startTime) return;
-
-    const checkMilestones = () => {
-      const elapsed = Math.max(0, Date.now() - new Date(startTime).getTime());
-      const currentGrowthStage = getGrowthStage(elapsed);
-      const currentCheckpoint = getCheckpointProgress(elapsed);
-
-      const currentGrowthStageId = currentGrowthStage.id;
-      const currentCheckpointId = currentCheckpoint.nextCheckpoint?.id ?? 'completed';
-
-      // Check if growth stage or checkpoint has changed
-      // Only log and update if we have a previous value (skip initial render)
-      if (previousGrowthStageRef.current !== null &&
-          (previousGrowthStageRef.current !== currentGrowthStageId ||
-           previousCheckpointRef.current !== currentCheckpointId)) {
-        if (__DEV__) console.log('🎯 Milestone crossed! Growth:', previousGrowthStageRef.current, '→', currentGrowthStageId, 'Checkpoint:', previousCheckpointRef.current, '→', currentCheckpointId);
-
-        // Trigger recalculation by updating state
-        setMilestoneTrigger(prev => prev + 1);
-      }
-      
-      // Always update refs after check
-      previousGrowthStageRef.current = currentGrowthStageId;
-      previousCheckpointRef.current = currentCheckpointId;
-    };
-
-    // Initial check (will set refs but not log)
-    checkMilestones();
-
-    // Check every 5 seconds for milestone changes
-    const interval = setInterval(checkMilestones, 5000);
-
-    return () => clearInterval(interval);
-  }, [latestRelapseTimestamp, journeyStart]);
-
-  // Calculate stats based on current time when milestones change or relapses change
-  // This provides updated values when growth stages or checkpoints are crossed
-  const stats = useMemo(() => {
-    // Determine start time (most recent relapse or journey start)
-    const startTime = latestRelapseTimestamp || journeyStart;
-
-    if (!startTime) {
+  return useMemo(() => {
+    if (!startTime || startMs === null) {
       return {
         startTime: null,
+        journeyStart,
+        now,
         checkpointProgress: null,
         growthStage: getGrowthStage(0),
         hasStarted: false,
@@ -78,17 +36,16 @@ export function useJourneyStats() {
       };
     }
 
-    // Calculate elapsed time (updates when milestones are crossed)
-    const elapsedTime = Math.max(0, Date.now() - new Date(startTime).getTime());
+    const elapsedTime = Math.max(0, now - startMs);
 
     return {
       startTime,
+      journeyStart,
+      now,
       checkpointProgress: getCheckpointProgress(elapsedTime),
       growthStage: getGrowthStage(elapsedTime),
       hasStarted: true,
       isLoading,
     };
-  }, [latestRelapseTimestamp, journeyStart, isLoading, previousGrowthStageRef.current, previousCheckpointRef.current]);
-
-  return stats;
+  }, [startTime, startMs, journeyStart, now, isLoading]);
 }

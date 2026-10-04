@@ -4,6 +4,8 @@ import Constants, { ExecutionEnvironment } from 'expo-constants';
 import { Platform } from 'react-native';
 import { getAppSetting, setAppSetting } from '../db/helpers';
 import { GROWTH_STAGES } from '../utils/growthStages';
+import { formatTimeLeftLong } from '../utils/formatDuration';
+import { palette } from '../constants/palette';
 
 // Expo Go on Android dropped support for expo-notifications (SDK 53+). Merely
 // *importing* the module throws "Android Push notifications ... removed from
@@ -29,16 +31,25 @@ const MILESTONE_NOTIFICATIONS_KEY = 'milestone_notifications_enabled';
 const ONE_HOUR_MS = 60 * 60 * 1000;
 const ALMOST_THERE_PROGRESS_THRESHOLD = 0.75; // 75% progress triggers "Almost There"
 const SHORT_MILESTONE_THRESHOLD_MS = ONE_HOUR_MS; // Milestones under this skip "Almost There"
+const ONE_DAY_MS = 24 * ONE_HOUR_MS;
+const TOMORROW_MIN_SEGMENT_MS = 2 * ONE_DAY_MS; // Stages at least this far apart get a "Tomorrow" heads-up
+
+// Identifier of the "urge timer finished" notification (Ride the wave)
+export const URGE_TIMER_NOTIFICATION_ID = 'urge-timer-done';
 
 // Configure notification handler
 if (!isUnsupportedInExpoGo) {
   Notifications.setNotificationHandler({
-    handleNotification: async () => ({
-      shouldShowBanner: true,
-      shouldShowList: true,
-      shouldPlaySound: true,
-      shouldSetBadge: false,
-    }),
+    // The urge timer plays its own tone while the app is open, so its notification stays quiet then
+    handleNotification: async (notification) => {
+      const isUrgeTimer = notification.request.identifier === URGE_TIMER_NOTIFICATION_ID;
+      return {
+        shouldShowBanner: !isUrgeTimer,
+        shouldShowList: !isUrgeTimer,
+        shouldPlaySound: !isUrgeTimer,
+        shouldSetBadge: false,
+      };
+    },
   });
 }
 
@@ -136,28 +147,28 @@ class NotificationService {
           name: 'Default',
           importance: Notifications.AndroidImportance.HIGH,
           vibrationPattern: [0, 250, 250, 250],
-          lightColor: '#10b981',
+          lightColor: palette.light.primary,
         });
 
         await Notifications.setNotificationChannelAsync('reminders', {
           name: 'Daily Reminders',
           importance: Notifications.AndroidImportance.HIGH,
           vibrationPattern: [0, 250, 250, 250],
-          lightColor: '#3b82f6',
+          lightColor: palette.light.info,
         });
 
         await Notifications.setNotificationChannelAsync('milestones', {
           name: 'Milestone Alerts',
           importance: Notifications.AndroidImportance.HIGH,
           vibrationPattern: [0, 500, 250, 500],
-          lightColor: '#f59e0b',
+          lightColor: palette.light.gold,
         });
 
         await Notifications.setNotificationChannelAsync('motivation', {
           name: 'Motivational Messages',
           importance: Notifications.AndroidImportance.DEFAULT,
           vibrationPattern: [0, 250],
-          lightColor: '#a855f7',
+          lightColor: palette.light.plum,
         });
       }
 
@@ -221,6 +232,39 @@ class NotificationService {
     await setAppSetting(DAILY_REMINDER_TIME_KEY, '');
     if (isUnsupportedInExpoGo) return;
     await Notifications.cancelScheduledNotificationAsync('daily-reminder');
+  }
+
+  /**
+   * Notify when the Ride the wave timer ends, in case the app is in the background by then.
+   * Started by the person, so it ignores the reminder toggles, but never asks for permission itself.
+   */
+  async scheduleUrgeTimerEnd(endsAt: Date): Promise<void> {
+    if (isUnsupportedInExpoGo) return;
+    try {
+      const { status } = await Notifications.getPermissionsAsync();
+      if (status !== 'granted') return;
+      await Notifications.scheduleNotificationAsync({
+        identifier: URGE_TIMER_NOTIFICATION_ID,
+        content: {
+          title: '🌊 You rode the wave',
+          body: 'The timer is done. Open Seeding to log it as a win.',
+          sound: true,
+          ...(Platform.OS === 'android' && { channelId: 'default' }),
+        },
+        trigger: { type: Notifications.SchedulableTriggerInputTypes.DATE, date: endsAt },
+      });
+    } catch (error) {
+      if (__DEV__) console.error('[Notifications] Urge timer schedule error:', error);
+    }
+  }
+
+  async cancelUrgeTimerEnd(): Promise<void> {
+    if (isUnsupportedInExpoGo) return;
+    try {
+      await Notifications.cancelScheduledNotificationAsync(URGE_TIMER_NOTIFICATION_ID);
+    } catch {
+      // Nothing scheduled
+    }
   }
 
   /**
@@ -393,6 +437,10 @@ class NotificationService {
     if (targetDate > sevenDaysFromNow) return;
 
     const identifier = `milestone-achieved-${stageIndex}`;
+    const next = GROWTH_STAGES[stageIndex + 1];
+    const body = next
+      ? `You reached ${stage.label}. Next up: ${next.emoji} ${next.label} in ${formatTimeLeftLong((next.minDays - stage.minDays) * ONE_DAY_MS)}.`
+      : `A full year of growth. ${stage.achievementDescription}`;
 
     // Cancel existing notification for this milestone
     await Notifications.cancelScheduledNotificationAsync(identifier);
@@ -401,7 +449,7 @@ class NotificationService {
       identifier,
       content: {
         title: `${stage.emoji} ${stage.achievementTitle}!`,
-        body: `Congratulations! You've reached "${stage.label}"! Keep growing stronger!`,
+        body,
         sound: true,
         ...(Platform.OS === 'android' && { channelId: 'milestones' }),
       },
@@ -449,6 +497,8 @@ class NotificationService {
     if (almostThereTime > sevenDaysFromNow) return;
 
     const identifier = `milestone-almost-${stageIndex}`;
+    const previous = GROWTH_STAGES[stageIndex - 1];
+    const timeLeft = formatTimeLeftLong(milestoneDurationMs * (1 - ALMOST_THERE_PROGRESS_THRESHOLD));
 
     // Cancel existing notification for this milestone
     await Notifications.cancelScheduledNotificationAsync(identifier);
@@ -456,8 +506,8 @@ class NotificationService {
     await Notifications.scheduleNotificationAsync({
       identifier,
       content: {
-        title: `${stage.emoji} Almost There!`,
-        body: `You're 75% of the way to "${stage.label}"! Keep going, you're so close!`,
+        title: previous ? `${previous.emoji} → ${stage.emoji} in ${timeLeft}` : `${stage.emoji} Almost there`,
+        body: `You're 75% of the way to ${stage.label}. Keep going.`,
         sound: true,
         ...(Platform.OS === 'android' && { channelId: 'milestones' }),
       },
@@ -471,6 +521,37 @@ class NotificationService {
   }
 
   /**
+   * Schedule a "Tomorrow: <stage>" heads-up one day before a milestone
+   * @param stageIndex - Index of the milestone stage
+   * @param date - When to send it (24 hours before the milestone)
+   */
+  async scheduleTomorrowNotification(stageIndex: number, date: Date): Promise<void> {
+    if (stageIndex >= GROWTH_STAGES.length || isUnsupportedInExpoGo) return;
+    if (date.getTime() <= Date.now()) return;
+
+    const stage = GROWTH_STAGES[stageIndex];
+    const identifier = `milestone-tomorrow-${stageIndex}`;
+
+    await Notifications.cancelScheduledNotificationAsync(identifier);
+
+    await Notifications.scheduleNotificationAsync({
+      identifier,
+      content: {
+        title: `Tomorrow: ${stage.emoji} ${stage.label}`,
+        body: `One more day and you reach ${stage.achievementTitle}.`,
+        sound: true,
+        ...(Platform.OS === 'android' && { channelId: 'milestones' }),
+      },
+      trigger: {
+        type: Notifications.SchedulableTriggerInputTypes.DATE,
+        date,
+      },
+    });
+
+    if (__DEV__) console.log(`[Notifications] Tomorrow notification scheduled for stage ${stageIndex} (${stage.label}) at ${date.toISOString()}`);
+  }
+
+  /**
    * Schedule upcoming milestone notifications based on current progress
    * Schedules both "Almost There" (at 75%) and "Achieved" notifications
    */
@@ -480,6 +561,10 @@ class NotificationService {
   ): Promise<void> {
     const enabled = await this.areMilestoneNotificationsEnabled();
     if (!enabled) return;
+
+    // Clear the previous streak's milestones first; after a relapse (or undo/edit)
+    // some of them would otherwise still fire for a streak that no longer exists
+    await this.cancelMilestoneNotifications();
 
     const referenceTime = lastRelapseTime || journeyStartTime;
     const now = Date.now();
@@ -510,6 +595,11 @@ class NotificationService {
           // Schedule "Almost There" notification (skipped for short milestones)
           const segmentStartTime = referenceTime + previousMilestoneMs;
           await this.scheduleAlmostThereNotification(i, milestoneDurationMs, segmentStartTime);
+
+          // A day-ahead heads-up for stages that take days to reach
+          if (milestoneDurationMs >= TOMORROW_MIN_SEGMENT_MS) {
+            await this.scheduleTomorrowNotification(i, new Date(targetTime - ONE_DAY_MS));
+          }
         }
       }
 

@@ -1,11 +1,8 @@
 import { View, Text, Pressable, ScrollView, Switch, Modal, Linking, ActivityIndicator, Platform } from 'react-native';
 import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { LinearGradient } from 'expo-linear-gradient';
-import { useState, useEffect } from 'react';
-import Animated, { useSharedValue, useAnimatedStyle, withSpring } from 'react-native-reanimated';
+import { useState, useEffect, type ReactNode } from 'react';
 import * as Haptics from 'expo-haptics';
-import * as StoreReview from 'expo-store-review';
 import {
   isBiometricAvailable,
   isAppLockEnabled,
@@ -17,8 +14,13 @@ import { useRelapseStore } from '../../src/stores/relapseStore';
 import { useColorScheme, useThemeStore } from '../../src/stores/themeStore';
 import { useNotificationStore } from '../../src/stores/notificationStore';
 import { useReducedMotion } from '../../src/hooks/useReducedMotion';
-import { Settings2, Palette, Lock, Database, Sun, Moon, Shield, Trash2, Info, Brain, Coffee, BookOpen, Bell, Clock, Sparkles, Trophy, Download, Sheet, Star } from 'lucide-react-native';
+import { useThemeColors, useCardShadow } from '../../src/hooks/useThemeColors';
+import { STAGE_TINT_FAMILIES } from '../../src/constants/palette';
+import { Settings2, Lock, Sun, Moon, Trash2, Brain, Coffee, BookOpen, Bell, Clock, Sparkles, Trophy, Sheet, Star, Leaf, ChevronRight, type LucideIcon } from 'lucide-react-native';
 import { exportService } from '../../src/services/exportService';
+import { rateApp } from '../../src/services/rateApp';
+import { APP_VERSION } from '../../src/constants/appInfo';
+import AppIcon from '../../src/components/common/AppIcon';
 import RecoveryEducationModal from '../../src/components/modals/RecoveryEducationModal';
 import CustomAlert from '../../src/components/common/CustomAlert';
 import ConfirmationDialog from '../../src/components/common/ConfirmationDialog';
@@ -27,9 +29,71 @@ import HowToUseModal from '../../src/components/modals/HowToUseModal';
 import AboutModal from '../../src/components/modals/AboutModal';
 import DateTimePicker from '@react-native-community/datetimepicker';
 
+// Light thumb on the off track, in both modes
+const SWITCH_THUMB_OFF = '#EBEFE6';
+
+/** A titled card that holds a group of rows */
+function SettingsGroup({ title, children }: { title: string; children: ReactNode }) {
+  const cardShadow = useCardShadow();
+  return (
+    <View className="px-6 mt-6">
+      <Text className="mb-2 ml-1 text-xs font-bold tracking-widest uppercase text-muted">{title}</Text>
+      <View style={cardShadow} className="rounded-[20px]">
+        <View className="overflow-hidden border bg-surface border-border rounded-[20px]">{children}</View>
+      </View>
+    </View>
+  );
+}
+
+interface SettingsRowProps {
+  icon: LucideIcon;
+  title: string;
+  subtitle?: string;
+  /** Switch or other control on the right; rows with onPress and no right show a chevron */
+  right?: ReactNode;
+  onPress?: () => void;
+  danger?: boolean;
+  /** First row in its group: no divider above */
+  first?: boolean;
+  disabled?: boolean;
+  children?: ReactNode;
+}
+
+/** One settings row: sage icon circle, title, subtitle and a switch or chevron */
+function SettingsRow({ icon: Icon, title, subtitle, right, onPress, danger, first, disabled, children }: SettingsRowProps) {
+  const colors = useThemeColors();
+  const content = (
+    <>
+      <View className={`items-center justify-center w-9 h-9 rounded-full ${danger ? 'bg-urge-soft' : 'bg-primary-soft'}`}>
+        <Icon size={19} color={danger ? colors.urge : colors.primary} strokeWidth={2.25} />
+      </View>
+      <View className="flex-1">
+        <Text className={`text-base font-bold ${danger ? 'text-urge' : 'text-fg'}`}>{title}</Text>
+        {subtitle ? <Text className="font-regular text-sm text-muted">{subtitle}</Text> : null}
+        {children}
+      </View>
+      {right ?? (onPress ? <ChevronRight size={18} color={danger ? colors.urge : colors.faint} strokeWidth={2.5} /> : null)}
+    </>
+  );
+  const rowClass = `flex-row items-center gap-3 px-4 py-3 min-h-[64px] ${first ? '' : 'border-t border-border'} ${disabled ? 'opacity-50' : ''}`;
+
+  if (onPress) {
+    return (
+      <Pressable onPress={onPress} disabled={disabled} accessibilityRole="button" className={`${rowClass} active:bg-subtle`}>
+        {content}
+      </Pressable>
+    );
+  }
+  return <View className={rowClass}>{content}</View>;
+}
+
 export default function SettingsScreen() {
   const router = useRouter();
   const colorScheme = useColorScheme();
+  const colors = useThemeColors();
+  const cardShadow = useCardShadow();
+  const stageTint = useThemeStore((state) => state.stageTint);
+  const setStageTint = useThemeStore((state) => state.setStageTint);
   const reducedMotion = useReducedMotion();
   const resetAllData = useRelapseStore((state) => state.resetAllData);
   const [appLockEnabled, setAppLockEnabledState] = useState(false);
@@ -60,30 +124,14 @@ export default function SettingsScreen() {
   const { alertState, showAlert, hideAlert } = useAlert();
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
 
-  // Animation values for theme buttons
-  const lightButtonScale = useSharedValue(1);
-  const darkButtonScale = useSharedValue(1);
+  const switchColors = (on: boolean) => ({
+    trackColor: { false: colors.borderStrong, true: colors.primary },
+    thumbColor: on ? '#FFFFFF' : SWITCH_THUMB_OFF,
+  });
 
-  // Animated styles for theme buttons
-  const lightButtonStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: lightButtonScale.value }],
-  }));
-
-  const darkButtonStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: darkButtonScale.value }],
-  }));
-
-  // Handle theme change with haptic feedback and animation
   const handleThemeChange = (theme: 'light' | 'dark') => {
-    // Immediate haptic feedback
+    if (theme === colorScheme) return;
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-
-    // Scale animation on pressed button
-    const scaleValue = theme === 'light' ? lightButtonScale : darkButtonScale;
-    scaleValue.value = withSpring(0.95, { damping: 15, stiffness: 300 }, () => {
-      scaleValue.value = withSpring(1, { damping: 10, stiffness: 200 });
-    });
-
     // Change theme (triggers transition overlay)
     useThemeStore.getState().setColorScheme(theme);
   };
@@ -279,133 +327,32 @@ export default function SettingsScreen() {
   };
 
   const handleRateApp = async () => {
-    // Prevent multiple simultaneous calls
-    if (isRatingInProgress) {
-      if (__DEV__) console.log('Rating already in progress, ignoring tap');
-      return;
-    }
+    if (isRatingInProgress) return;
+
+    setIsRatingInProgress(true);
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
 
     try {
-      setIsRatingInProgress(true);
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-
-      if (__DEV__) console.log('Checking if store review is available...');
-
-      // Check if the in-app review is available
-      const isAvailable = await StoreReview.isAvailableAsync();
-      if (__DEV__) console.log('Store review available:', isAvailable);
-
-      if (isAvailable) {
-        // Request the in-app review (works only in production builds from store)
-        if (__DEV__) console.log('Requesting in-app review...');
-        await StoreReview.requestReview();
-        if (__DEV__) console.log('Review request completed');
-        
-        // Show success message after attempting review
+      const opened = await rateApp();
+      if (!opened) {
+        const storeName = Platform.OS === 'android' ? 'Play Store' : 'App Store';
         showAlert({
-          type: 'success',
-          title: 'Thank You!',
-          message: 'We appreciate your feedback! If the rating dialog didn\'t appear, please check back later or rate us directly in the store.',
-          buttons: [{ text: 'OK', onPress: hideAlert }],
+          type: 'info',
+          title: 'Rating Not Available',
+          message: `Couldn't open the ${storeName}. You can rate Seeding by searching for it in the ${storeName}.`,
+          buttons: [{ text: 'Got it', onPress: hideAlert }],
+          dismissOnBackdrop: true,
         });
-      } else {
-        // Fallback: Try to open the store page directly
-        if (__DEV__) console.log('In-app review not available, trying store URL...');
-
-        try {
-          let storeUrl = '';
-          
-          if (Platform.OS === 'android') {
-            // Try to get the store URL from expo-store-review first
-            try {
-              storeUrl = await StoreReview.storeUrl() || '';
-            } catch (e) {
-              console.log('Could not get store URL from expo-store-review:', e);
-            }
-            
-            // Fallback to Play Store URL
-            if (!storeUrl) {
-              storeUrl = 'market://details?id=com.seeding.app';
-            }
-            
-            if (__DEV__) console.log('Android Store URL:', storeUrl);
-          } else if (Platform.OS === 'ios') {
-            // Try to get the store URL from expo-store-review first
-            try {
-              storeUrl = await StoreReview.storeUrl() || '';
-            } catch (e) {
-              console.log('Could not get store URL from expo-store-review:', e);
-            }
-            
-            // Fallback to App Store URL (you'll need to replace YOUR_APP_ID with actual ID)
-            if (!storeUrl) {
-              // Use generic App Store search until app is published
-              storeUrl = 'https://apps.apple.com/app/seeding';
-            }
-            
-            if (__DEV__) console.log('iOS Store URL:', storeUrl);
-          }
-
-          if (storeUrl) {
-            const canOpen = await Linking.canOpenURL(storeUrl);
-            if (__DEV__) console.log('Can open store URL:', canOpen);
-
-            if (canOpen) {
-              await Linking.openURL(storeUrl);
-            } else {
-              // Try https fallback for Android
-              if (Platform.OS === 'android' && storeUrl.startsWith('market://')) {
-                const httpsUrl = storeUrl.replace('market://details?id=', 'https://play.google.com/store/apps/details?id=');
-                if (__DEV__) console.log('Trying HTTPS fallback:', httpsUrl);
-                const canOpenHttps = await Linking.canOpenURL(httpsUrl);
-                if (canOpenHttps) {
-                  await Linking.openURL(httpsUrl);
-                  return;
-                }
-              }
-              throw new Error('Cannot open store URL');
-            }
-          } else {
-            throw new Error('Store URL not available');
-          }
-        } catch (fallbackError) {
-          // Final fallback: Show a helpful message
-          if (__DEV__) console.log('Store URL fallback failed:', fallbackError);
-          const storeName = Platform.OS === 'android' ? 'Play Store' : 'App Store';
-          
-          showAlert({
-            type: 'info',
-            title: 'Rate Seeding',
-            message: `Thank you for your support!\n\nThis feature only works when the app is installed from the ${storeName}. If you're using a development or test build, please install from the ${storeName} to rate the app.\n\nSearch for "Seeding" in the ${storeName}.`,
-            buttons: [
-              { text: 'OK', onPress: hideAlert }
-            ],
-            dismissOnBackdrop: true,
-          });
-        }
       }
-    } catch (error) {
-      console.error('Error opening rating:', error);
-      const storeName = Platform.OS === 'android' ? 'Play Store' : 'App Store';
-      
-      showAlert({
-        type: 'info',
-        title: 'Rating Not Available',
-        message: `The in-app rating feature is only available when the app is installed from the ${storeName}.\n\nIf you'd like to rate Seeding:\n1. Install the app from the ${storeName}\n2. Come back to Settings\n3. Tap "Rate This App"`,
-        buttons: [{ text: 'Got it', onPress: hideAlert }],
-        dismissOnBackdrop: true,
-      });
     } finally {
-      // Reset the flag after a delay to prevent rapid re-tapping
-      setTimeout(() => {
-        setIsRatingInProgress(false);
-      }, 2000);
+      // Brief lockout so a double tap doesn't open the store twice
+      setTimeout(() => setIsRatingInProgress(false), 1500);
     }
   };
 
 
   return (
-    <View className="flex-1 bg-gray-50 dark:bg-gray-950">
+    <View className="flex-1 bg-bg">
       <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'} />
 
       {/* Elegant Header */}
@@ -413,15 +360,15 @@ export default function SettingsScreen() {
         <View className="px-6">
           <View className="flex-row items-center justify-between">
             <View className="flex-1">
-              <Text className="text-3xl font-semibold tracking-wide text-gray-900 dark:text-white">
+              <Text className="text-3xl font-semibold tracking-wide text-fg">
                 Settings
               </Text>
-              <Text className="mt-1 text-sm font-medium tracking-wide text-purple-700 dark:text-purple-400">
+              <Text className="mt-1 text-sm font-medium tracking-wide text-muted">
                 Customize your experience
               </Text>
             </View>
-            <View className="items-center justify-center bg-purple-100 w-14 h-14 dark:bg-purple-900/30 rounded-2xl">
-              <Settings2 size={26} color="#a855f7" strokeWidth={2.5} />
+            <View className="items-center justify-center bg-plum-soft w-14 h-14 rounded-2xl">
+              <Settings2 size={26} color={colors.plum} strokeWidth={2.5} />
             </View>
           </View>
         </View>
@@ -432,440 +379,198 @@ export default function SettingsScreen() {
         showsVerticalScrollIndicator={false}
         contentContainerClassName="pb-8"
       >
-        {/* Appearance Section */}
-        <View className="px-6 mt-6">
-          <View className="flex-row items-center gap-2 mb-3">
-            <Palette size={18} color={colorScheme === 'dark' ? '#a855f7' : '#9333ea'} strokeWidth={2.5} />
-            <Text className="text-sm font-bold tracking-wider text-gray-600 uppercase dark:text-gray-400">
-              Appearance
-            </Text>
+        <SettingsGroup title="Appearance">
+          <View className="gap-3 px-4 pt-3.5 pb-3">
+            <Text className="text-base font-bold text-fg">Theme</Text>
+            <View className="flex-row gap-1 p-1 rounded-2xl bg-subtle" accessibilityRole="radiogroup">
+              {([
+                { value: 'light', label: 'Light', Icon: Sun },
+                { value: 'dark', label: 'Dark', Icon: Moon },
+              ] as const).map(({ value, label, Icon }) => {
+                const selected = colorScheme === value;
+                return (
+                  <Pressable
+                    key={value}
+                    onPress={() => handleThemeChange(value)}
+                    accessibilityRole="radio"
+                    accessibilityState={{ selected }}
+                    style={selected ? cardShadow : undefined}
+                    className={`flex-row items-center justify-center flex-1 h-11 gap-2 rounded-xl ${selected ? 'bg-surface' : ''}`}
+                  >
+                    <Icon size={18} color={selected ? colors.primary : colors.muted} strokeWidth={2.5} />
+                    <Text className={`text-base ${selected ? 'font-bold text-fg' : 'font-semibold text-muted'}`}>{label}</Text>
+                  </Pressable>
+                );
+              })}
+            </View>
           </View>
+          {/* Stage colors: tints the Home timer card with the current growth stage */}
+          <SettingsRow
+            icon={Leaf}
+            title="Stage colors"
+            subtitle="Tint the timer card with your growth stage"
+            right={
+              <Switch
+                value={stageTint}
+                onValueChange={setStageTint}
+                accessibilityLabel="Stage colors"
+                {...switchColors(stageTint)}
+              />
+            }
+          >
+            <View className="flex-row gap-1 mt-1.5">
+              {STAGE_TINT_FAMILIES.map((family) => (
+                <View
+                  key={family.name}
+                  style={{ width: 22, height: 8, borderRadius: 4, backgroundColor: family.color }}
+                />
+              ))}
+            </View>
+          </SettingsRow>
+        </SettingsGroup>
 
-          <View className="p-5 bg-white border border-gray-200 dark:bg-gray-900 dark:border-gray-800 rounded-2xl">
-            <Text className="mb-4 text-base font-bold text-gray-900 dark:text-white">
-              Theme
-            </Text>
-
-            {/* Light Theme Option */}
-            <Animated.View style={lightButtonStyle}>
-              <Pressable
-                onPress={() => handleThemeChange('light')}
-                className="flex-row items-center p-3 mb-2 rounded-xl bg-gray-50 dark:bg-gray-800/50"
-              >
-                <View className="items-center justify-center w-10 h-10 mr-3 bg-white border border-gray-200 rounded-full dark:bg-gray-800 dark:border-gray-700">
-                  <Sun size={20} color="#f59e0b" strokeWidth={2.5} />
-                </View>
-                <Text className="flex-1 text-base font-semibold text-gray-900 dark:text-white">
-                  Light Mode
-                </Text>
-                <View className={`w-6 h-6 rounded-full border-2 items-center justify-center ${colorScheme === 'light' ? 'border-emerald-500' : 'border-gray-300 dark:border-gray-600'
-                  }`}>
-                  {colorScheme === 'light' && (
-                    <View className="w-3 h-3 rounded-full bg-emerald-500" />
-                  )}
-                </View>
-              </Pressable>
-            </Animated.View>
-
-            {/* Dark Theme Option */}
-            <Animated.View style={darkButtonStyle}>
-              <Pressable
-                onPress={() => handleThemeChange('dark')}
-                className="flex-row items-center p-3 rounded-xl bg-gray-50 dark:bg-gray-800/50"
-              >
-                <View className="items-center justify-center w-10 h-10 mr-3 bg-white border border-gray-200 rounded-full dark:bg-gray-800 dark:border-gray-700">
-                  <Moon size={20} color="#6366f1" strokeWidth={2.5} />
-                </View>
-                <Text className="flex-1 text-base font-semibold text-gray-900 dark:text-white">
-                  Dark Mode
-                </Text>
-                <View className={`w-6 h-6 rounded-full border-2 items-center justify-center ${colorScheme === 'dark' ? 'border-emerald-500' : 'border-gray-300 dark:border-gray-600'
-                  }`}>
-                  {colorScheme === 'dark' && (
-                    <View className="w-3 h-3 rounded-full bg-emerald-500" />
-                  )}
-                </View>
-              </Pressable>
-            </Animated.View>
-          </View>
-        </View>
-
-
-        {/* Notifications Section */}
-        <View className="px-6 mt-6">
-          <View className="flex-row items-center gap-2 mb-3">
-            <Bell size={18} color={colorScheme === 'dark' ? '#10b981' : '#059669'} strokeWidth={2.5} />
-            <Text className="text-sm font-bold tracking-wider text-gray-600 uppercase dark:text-gray-400">
-              Notifications
-            </Text>
-          </View>
-
-          <View className="p-5 bg-white border border-gray-200 dark:bg-gray-900 dark:border-gray-800 rounded-2xl">
-            {/* Master Toggle */}
-            <View className="flex-row items-center justify-between pb-4 mb-4 border-b border-gray-100 dark:border-gray-800">
-              <View className="flex-row items-center flex-1">
-                <View className="items-center justify-center w-10 h-10 mr-3 rounded-full bg-emerald-50 dark:bg-emerald-900/30">
-                  <Bell size={20} color="#10b981" strokeWidth={2.5} />
-                </View>
-                <View className="flex-1">
-                  <Text className="text-base font-bold text-gray-900 dark:text-white">
-                    Enable Notifications
-                  </Text>
-                  <Text className="mt-0.5 text-sm text-gray-500 dark:text-gray-400">
-                    {notificationsInitialized ? 'Reminders & motivation' : 'Setting up...'}
-                  </Text>
-                </View>
-              </View>
+        <SettingsGroup title="Notifications">
+          <SettingsRow
+            first
+            icon={Bell}
+            title="Notifications"
+            subtitle={notificationsInitialized ? 'Reminders & motivation' : 'Setting up...'}
+            right={
               <Switch
                 value={notificationsEnabled}
                 onValueChange={handleNotificationsToggle}
                 disabled={!notificationsInitialized}
-                trackColor={{ false: '#d1d5db', true: '#10b981' }}
-                thumbColor={notificationsEnabled ? '#ffffff' : '#f3f4f6'}
+                accessibilityLabel="Notifications"
+                {...switchColors(notificationsEnabled)}
               />
-            </View>
-
-            {/* Daily Reminder */}
-            <View className={`flex-row items-center justify-between py-3 ${!notificationsEnabled ? 'opacity-50' : ''}`}>
-              <View className="flex-row items-center flex-1">
-                <View className="items-center justify-center w-10 h-10 mr-3 rounded-full bg-blue-50 dark:bg-blue-900/30">
-                  <Clock size={20} color="#3b82f6" strokeWidth={2.5} />
-                </View>
-                <View className="flex-1">
-                  <Text className="text-base font-bold text-gray-900 dark:text-white">
-                    Daily Reminder
-                  </Text>
-                  <Text className="mt-0.5 text-sm text-gray-500 dark:text-gray-400">
-                    {formatReminderTime(dailyReminderTime)}
-                  </Text>
-                </View>
-              </View>
+            }
+          />
+          <SettingsRow
+            icon={Clock}
+            title="Daily reminder"
+            subtitle={formatReminderTime(dailyReminderTime)}
+            disabled={!notificationsEnabled}
+            right={
               <Switch
                 value={!!dailyReminderTime}
                 onValueChange={handleDailyReminderToggle}
                 disabled={!notificationsEnabled}
-                trackColor={{ false: '#d1d5db', true: '#3b82f6' }}
-                thumbColor={dailyReminderTime ? '#ffffff' : '#f3f4f6'}
+                accessibilityLabel="Daily reminder"
+                {...switchColors(!!dailyReminderTime)}
               />
-            </View>
-
-            {/* Random Motivation */}
-            <View className={`flex-row items-center justify-between py-3 ${!notificationsEnabled ? 'opacity-50' : ''}`}>
-              <View className="flex-row items-center flex-1">
-                <View className="items-center justify-center w-10 h-10 mr-3 rounded-full bg-purple-50 dark:bg-purple-900/30">
-                  <Sparkles size={20} color="#a855f7" strokeWidth={2.5} />
-                </View>
-                <View className="flex-1">
-                  <Text className="text-base font-bold text-gray-900 dark:text-white">
-                    Random Motivation
-                  </Text>
-                  <Text className="mt-0.5 text-sm text-gray-500 dark:text-gray-400">
-                    Encouraging messages throughout the day
-                  </Text>
-                </View>
-              </View>
+            }
+          />
+          <SettingsRow
+            icon={Sparkles}
+            title="Random motivation"
+            subtitle="Encouraging messages through the day"
+            disabled={!notificationsEnabled}
+            right={
               <Switch
                 value={randomNotificationsEnabled}
                 onValueChange={handleRandomNotificationsToggle}
                 disabled={!notificationsEnabled}
-                trackColor={{ false: '#d1d5db', true: '#a855f7' }}
-                thumbColor={randomNotificationsEnabled ? '#ffffff' : '#f3f4f6'}
+                accessibilityLabel="Random motivation"
+                {...switchColors(randomNotificationsEnabled)}
               />
-            </View>
-
-            {/* Milestone Alerts */}
-            <View className={`flex-row items-center justify-between py-3 ${!notificationsEnabled ? 'opacity-50' : ''}`}>
-              <View className="flex-row items-center flex-1">
-                <View className="items-center justify-center w-10 h-10 mr-3 rounded-full bg-amber-50 dark:bg-amber-900/30">
-                  <Trophy size={20} color="#f59e0b" strokeWidth={2.5} />
-                </View>
-                <View className="flex-1">
-                  <Text className="text-base font-bold text-gray-900 dark:text-white">
-                    Milestone Alerts
-                  </Text>
-                  <Text className="mt-0.5 text-sm text-gray-500 dark:text-gray-400">
-                    Get notified when you're close to achievements
-                  </Text>
-                </View>
-              </View>
+            }
+          />
+          <SettingsRow
+            icon={Trophy}
+            title="Milestone alerts"
+            subtitle="When you're close to an achievement"
+            disabled={!notificationsEnabled}
+            right={
               <Switch
                 value={milestoneNotificationsEnabled}
                 onValueChange={handleMilestoneNotificationsToggle}
                 disabled={!notificationsEnabled}
-                trackColor={{ false: '#d1d5db', true: '#f59e0b' }}
-                thumbColor={milestoneNotificationsEnabled ? '#ffffff' : '#f3f4f6'}
+                accessibilityLabel="Milestone alerts"
+                {...switchColors(milestoneNotificationsEnabled)}
               />
-            </View>
-          </View>
-        </View>
+            }
+          />
+        </SettingsGroup>
 
-        {/* Security Section */}
-        <View className="px-6 mt-6">
-          <View className="flex-row items-center gap-2 mb-3">
-            <Shield size={18} color={colorScheme === 'dark' ? '#3b82f6' : '#2563eb'} strokeWidth={2.5} />
-            <Text className="text-sm font-bold tracking-wider text-gray-600 uppercase dark:text-gray-400">
-              Security
-            </Text>
-          </View>
-
-          <View className="p-5 bg-white border border-gray-200 dark:bg-gray-900 dark:border-gray-800 rounded-2xl">
-            <View className="flex-row items-center justify-between">
-              <View className="flex-row items-center flex-1">
-                <View className="items-center justify-center w-10 h-10 mr-3 rounded-full bg-blue-50 dark:bg-blue-900/30">
-                  <Lock size={20} color="#3b82f6" strokeWidth={2.5} />
-                </View>
-                <View className="flex-1">
-                  <Text className="text-base font-bold text-gray-900 dark:text-white">
-                    App Lock
-                  </Text>
-                  <Text className="mt-0.5 text-sm text-gray-500 dark:text-gray-400">
-                    {biometricAvailable
-                      ? `Protect with ${authMethodName}`
-                      : 'Not available'}
-                  </Text>
-                </View>
-              </View>
+        <SettingsGroup title="Privacy & data">
+          <SettingsRow
+            first
+            icon={Lock}
+            title="App lock"
+            subtitle={biometricAvailable ? `Protect with ${authMethodName}` : 'Not available on this device'}
+            right={
               <Switch
                 value={appLockEnabled}
                 onValueChange={handleAppLockToggle}
                 disabled={!biometricAvailable}
-                trackColor={{ false: '#d1d5db', true: '#10b981' }}
-                thumbColor={appLockEnabled ? '#ffffff' : '#f3f4f6'}
+                accessibilityLabel="App lock"
+                {...switchColors(appLockEnabled)}
               />
-            </View>
-          </View>
-        </View>
-
-        {/* How to Use Section */}
-        <View className="px-6 mt-6">
-          <View className="flex-row items-center gap-2 mb-3">
-            <BookOpen size={18} color={colorScheme === 'dark' ? '#10b981' : '#059669'} strokeWidth={2.5} />
-            <Text className="text-sm font-bold tracking-wider text-gray-600 uppercase dark:text-gray-400">
-              Guide
-            </Text>
-          </View>
-
-          <Pressable
-            onPress={() => setShowHowToUseModal(true)}
-            className="p-5 bg-white border border-gray-200 dark:bg-gray-900 dark:border-gray-800 rounded-2xl active:opacity-70"
-          >
-            <View className="flex-row items-center justify-between">
-              <View className="flex-row items-center flex-1">
-                <View className="items-center justify-center w-10 h-10 mr-3 rounded-full bg-emerald-50 dark:bg-emerald-900/30">
-                  <BookOpen size={20} color="#10b981" strokeWidth={2.5} />
-                </View>
-                <View className="flex-1">
-                  <Text className="text-base font-bold text-gray-900 dark:text-white">
-                    How to Use This App
-                  </Text>
-                  <Text className="mt-0.5 text-sm text-gray-500 dark:text-gray-400">
-                    Learn about features & tracking
-                  </Text>
-                </View>
-              </View>
-              <Text className="text-xl font-medium text-emerald-600 dark:text-emerald-400">→</Text>
-            </View>
-          </Pressable>
-        </View>
-
-        {/* Education Section */}
-        <View className="px-6 mt-6">
-          <View className="flex-row items-center gap-2 mb-3">
-            <Brain size={18} color={colorScheme === 'dark' ? '#a855f7' : '#9333ea'} strokeWidth={2.5} />
-            <Text className="text-sm font-bold tracking-wider text-gray-600 uppercase dark:text-gray-400">
-              Education
-            </Text>
-          </View>
-
-          <Pressable
-            onPress={() => setShowEducationModal(true)}
-            className="p-5 bg-white border border-gray-200 dark:bg-gray-900 dark:border-gray-800 rounded-2xl active:opacity-70"
-          >
-            <View className="flex-row items-center justify-between">
-              <View className="flex-row items-center flex-1">
-                <View className="items-center justify-center w-10 h-10 mr-3 rounded-full bg-purple-50 dark:bg-purple-900/30">
-                  <Brain size={20} color="#a855f7" strokeWidth={2.5} />
-                </View>
-                <View className="flex-1">
-                  <Text className="text-base font-bold text-gray-900 dark:text-white">
-                    Understanding Recovery
-                  </Text>
-                  <Text className="mt-0.5 text-sm text-gray-500 dark:text-gray-400">
-                    Learn about dopamine science
-                  </Text>
-                </View>
-              </View>
-              <Text className="text-xl font-medium text-purple-600 dark:text-purple-400">→</Text>
-            </View>
-          </Pressable>
-        </View>
-
-
-
-        {/* Export Section */}
-        <View className="px-6 mt-6">
-          <View className="flex-row items-center gap-2 mb-3">
-            <Download size={18} color={colorScheme === 'dark' ? '#3b82f6' : '#2563eb'} strokeWidth={2.5} />
-            <Text className="text-sm font-bold tracking-wider text-gray-600 uppercase dark:text-gray-400">
-              Export Data
-            </Text>
-          </View>
-
-          <Pressable
+            }
+          />
+          <SettingsRow
+            icon={Sheet}
+            title="Export to Excel"
+            subtitle="Journey, badges, charts & insights"
             onPress={handleExportXLSX}
-            className="p-5 bg-white border border-gray-200 dark:bg-gray-900 dark:border-gray-800 rounded-2xl active:opacity-70"
-          >
-            <View className="flex-row items-center justify-between">
-              <View className="flex-row items-center flex-1">
-                <View className="items-center justify-center w-12 h-12 mr-4 rounded-full bg-emerald-50 dark:bg-emerald-900/30">
-                  <Sheet size={24} color="#10b981" strokeWidth={2.5} />
-                </View>
-                <View className="flex-1">
-                  <Text className="text-base font-bold text-gray-900 dark:text-white">
-                    Export to Excel
-                  </Text>
-                  <Text className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                    Complete journey data with badges, analytics, charts & insights
-                  </Text>
-                </View>
-              </View>
-            </View>
-          </Pressable>
-        </View>
+          />
+          <SettingsRow
+            icon={Trash2}
+            title="Reset all data"
+            subtitle="Permanently delete all records"
+            onPress={handleResetData}
+            danger
+          />
+        </SettingsGroup>
 
-        {/* Support Section */}
-        <View className="px-6 mt-6">
-          <View className="flex-row items-center gap-2 mb-3">
-            <Coffee size={18} color={colorScheme === 'dark' ? '#f59e0b' : '#d97706'} strokeWidth={2.5} />
-            <Text className="text-sm font-bold tracking-wider text-gray-600 uppercase dark:text-gray-400">
-              Support
-            </Text>
-          </View>
+        <SettingsGroup title="Learn">
+          <SettingsRow
+            first
+            icon={BookOpen}
+            title="How to use Seeding"
+            subtitle="Features & tracking"
+            onPress={() => setShowHowToUseModal(true)}
+          />
+          <SettingsRow
+            icon={Brain}
+            title="Understanding recovery"
+            subtitle="The dopamine science"
+            onPress={() => setShowEducationModal(true)}
+          />
+        </SettingsGroup>
 
-          <Pressable
-            onPress={handleBuyMeCoffee}
-            className="p-5 bg-white border border-gray-200 dark:bg-gray-900 dark:border-gray-800 rounded-2xl active:opacity-70"
-          >
-            <View className="flex-row items-center justify-between">
-              <View className="flex-row items-center flex-1">
-                <View className="items-center justify-center w-10 h-10 mr-3 rounded-full bg-amber-50 dark:bg-amber-900/30">
-                  <Coffee size={20} color="#f59e0b" strokeWidth={2.5} />
-                </View>
-                <View className="flex-1">
-                  <Text className="text-base font-bold text-gray-900 dark:text-white">
-                    Buy Me a Coffee
-                  </Text>
-                  <Text className="mt-0.5 text-sm text-gray-500 dark:text-gray-400">
-                    Support the development
-                  </Text>
-                </View>
-              </View>
-              <Text className="text-xl font-medium text-amber-600 dark:text-amber-400">→</Text>
-            </View>
-          </Pressable>
-        </View>
-
-        {/* Rate App Section */}
-        <View className="px-6 mt-6">
-          <View className="flex-row items-center gap-2 mb-3">
-            <Star size={18} color={colorScheme === 'dark' ? '#fbbf24' : '#f59e0b'} strokeWidth={2.5} />
-            <Text className="text-sm font-bold tracking-wider text-gray-600 uppercase dark:text-gray-400">
-              Feedback
-            </Text>
-          </View>
-
-          <Pressable
+        <SettingsGroup title="Support">
+          <SettingsRow
+            first
+            icon={Star}
+            title="Rate this app"
+            subtitle={isRatingInProgress ? 'Opening...' : 'Share feedback on the app store'}
             onPress={handleRateApp}
             disabled={isRatingInProgress}
-            className={`p-5 bg-white border border-gray-200 dark:bg-gray-900 dark:border-gray-800 rounded-2xl active:opacity-70 ${isRatingInProgress ? 'opacity-50' : ''}`}
-          >
-            <View className="flex-row items-center justify-between">
-              <View className="flex-row items-center flex-1">
-                <View className="items-center justify-center w-10 h-10 mr-3 rounded-full bg-yellow-50 dark:bg-yellow-900/30">
-                  {isRatingInProgress ? (
-                    <ActivityIndicator size="small" color="#fbbf24" />
-                  ) : (
-                    <Star size={20} color="#fbbf24" strokeWidth={2.5} />
-                  )}
-                </View>
-                <View className="flex-1">
-                  <Text className="text-base font-bold text-gray-900 dark:text-white">
-                    Rate This App
-                  </Text>
-                  <Text className="mt-0.5 text-sm text-gray-500 dark:text-gray-400">
-                    {isRatingInProgress ? 'Opening...' : 'Share your feedback on the app store'}
-                  </Text>
-                </View>
-              </View>
-              {!isRatingInProgress && (
-                <Text className="text-xl font-medium text-yellow-600 dark:text-yellow-400">→</Text>
-              )}
-            </View>
-          </Pressable>
-        </View>
+            right={isRatingInProgress ? <ActivityIndicator size="small" color={colors.primary} /> : undefined}
+          />
+          <SettingsRow
+            icon={Coffee}
+            title="Buy me a coffee"
+            subtitle="Support the development"
+            onPress={handleBuyMeCoffee}
+          />
+        </SettingsGroup>
 
-        {/* Data Section */}
-        <View className="px-6 mt-6">
-          <View className="flex-row items-center gap-2 mb-3">
-            <Database size={18} color={colorScheme === 'dark' ? '#ef4444' : '#dc2626'} strokeWidth={2.5} />
-            <Text className="text-sm font-bold tracking-wider text-gray-600 uppercase dark:text-gray-400">
-              Data Management
-            </Text>
-          </View>
-
-          <Pressable
-            onPress={handleResetData}
-            className="p-5 bg-white border border-gray-200 dark:bg-gray-900 dark:border-gray-800 rounded-2xl active:opacity-70"
-          >
-            <View className="flex-row items-center justify-between">
-              <View className="flex-row items-center flex-1">
-                <View className="items-center justify-center w-10 h-10 mr-3 rounded-full bg-red-50 dark:bg-red-900/30">
-                  <Trash2 size={20} color="#ef4444" strokeWidth={2.5} />
-                </View>
-                <View className="flex-1">
-                  <Text className="text-base font-bold text-red-600 dark:text-red-400">
-                    Reset All Data
-                  </Text>
-                  <Text className="mt-0.5 text-sm text-gray-500 dark:text-gray-400">
-                    Permanently delete all records
-                  </Text>
-                </View>
-              </View>
-              <Text className="text-xl font-medium text-red-600 dark:text-red-400">→</Text>
-            </View>
-          </Pressable>
-        </View>
-
-        {/* App Info */}
-        <View className="px-6 mt-8">
-          <Pressable
-            onPress={() => setShowAboutModal(true)}
-            className="items-center p-6 bg-white border border-gray-200 dark:bg-gray-900 dark:border-gray-800 rounded-2xl active:opacity-70"
-          >
-            <View className="w-16 h-16 overflow-hidden rounded-2xl">
-              <LinearGradient
-                colors={colorScheme === 'dark' ? ['rgba(6, 78, 59, 0.3)', 'rgba(19, 78, 74, 0.3)'] : ['#d1fae5', '#ccfbf1']}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 1 }}
-                className="items-center justify-center flex-1"
-              >
-                <Info size={28} color="#10b981" strokeWidth={2.5} />
-              </LinearGradient>
-            </View>
-            <Text className="text-lg font-bold text-gray-900 dark:text-white">
-              Seeding
-            </Text>
-            <Text className="mt-1 text-sm font-medium text-gray-500 dark:text-gray-400">
-              Version 1.0.0
-            </Text>
-            <Text className="mt-3 text-xs text-center text-gray-400 dark:text-gray-500">
-              Privacy-focused relapse tracking
-            </Text>
-            <Text className="mt-1 text-xs text-center text-emerald-600 dark:text-emerald-400">
-              Tap to learn more & FAQ
-            </Text>
-          </Pressable>
-        </View>
+        {/* App info footer */}
+        <Pressable
+          onPress={() => setShowAboutModal(true)}
+          accessibilityRole="button"
+          accessibilityLabel="About Seeding and FAQ"
+          className="items-center gap-1 px-6 mt-8 active:opacity-70"
+        >
+          <AppIcon size={44} />
+          <Text className="mt-1.5 text-sm font-bold text-muted">
+            Seeding · Version {APP_VERSION}
+          </Text>
+          <Text className="font-regular text-xs text-muted">Privacy-focused relapse tracking</Text>
+          <Text className="mt-1.5 text-sm font-bold text-primary">About & FAQ</Text>
+        </Pressable>
       </ScrollView>
 
       {/* Recovery Education Modal */}
@@ -921,7 +626,9 @@ export default function SettingsScreen() {
         onConfirm={confirmResetData}
         onCancel={() => setShowConfirmDialog(false)}
         isDestructive={true}
-      />      {/* Time Picker for Daily Reminder */}
+      />
+
+      {/* Time Picker for Daily Reminder */}
       {showTimePicker && (
         <DateTimePicker
           value={dailyReminderTime

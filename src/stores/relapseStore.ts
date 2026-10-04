@@ -19,7 +19,8 @@ interface RelapseState {
 
 interface RelapseActions {
   loadRelapses: () => Promise<void>;
-  addRelapse: (input: RelapseInput) => Promise<void>;
+  /** Adds a relapse and resolves with the saved record (used for Undo) */
+  addRelapse: (input: RelapseInput) => Promise<Relapse>;
   deleteRelapse: (id: string) => Promise<void>;
   updateRelapse: (id: string, updates: Partial<RelapseInput>) => Promise<void>;
   resetAllData: () => Promise<void>;
@@ -44,6 +45,13 @@ function calculateLatestTimestamp(relapses: Relapse[]): string | null {
   return maxTimestamp;
 }
 
+// Keep relapses newest first; backdated and edited entries can land anywhere
+function sortNewestFirst(relapses: Relapse[]): Relapse[] {
+  return [...relapses].sort(
+    (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+  );
+}
+
 export const useRelapseStore = create<RelapseStore>((set, get) => ({
   // Initial state
   relapses: [],
@@ -55,8 +63,8 @@ export const useRelapseStore = create<RelapseStore>((set, get) => ({
   loadRelapses: async () => {
     set({ loading: true, error: null });
     try {
-      // Load up to 1000 most recent relapses for performance
-      const relapses = await dbHelpers.getRelapses(1000);
+      // Load every relapse: streak stats (best, days kept, garden) need the full history
+      const relapses = await dbHelpers.getRelapses();
       const latestTimestamp = calculateLatestTimestamp(relapses);
       set({ relapses, latestTimestamp, loading: false });
     } catch (error) {
@@ -81,7 +89,7 @@ export const useRelapseStore = create<RelapseStore>((set, get) => ({
 
     // Optimistic update - add immediately to UI
     set((state) => {
-      const newRelapses = [optimisticRelapse, ...state.relapses];
+      const newRelapses = sortNewestFirst([optimisticRelapse, ...state.relapses]);
       return {
         relapses: newRelapses,
         latestTimestamp: calculateLatestTimestamp(newRelapses),
@@ -107,6 +115,7 @@ export const useRelapseStore = create<RelapseStore>((set, get) => ({
 
       // Check for badge unlocks (e.g., "Comeback" badge after relapse)
       badgeOrchestrator.checkBadgesNow();
+      return newRelapse;
     } catch (error) {
       // Rollback on error - remove optimistic entry
       set((state) => {
@@ -166,8 +175,8 @@ export const useRelapseStore = create<RelapseStore>((set, get) => ({
       const updatedRelapse = await dbHelpers.updateRelapse(id, updates);
       if (updatedRelapse) {
         set((state) => {
-          const updatedRelapses = state.relapses.map((r) =>
-            r.id === id ? updatedRelapse : r
+          const updatedRelapses = sortNewestFirst(
+            state.relapses.map((r) => (r.id === id ? updatedRelapse : r))
           );
           return {
             relapses: updatedRelapses,
@@ -189,6 +198,7 @@ export const useRelapseStore = create<RelapseStore>((set, get) => ({
         error: error instanceof Error ? error.message : 'Failed to update relapse',
         loading: false,
       });
+      throw error; // Let the edit screen tell the user
     }
   },
 

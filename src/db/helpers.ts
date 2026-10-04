@@ -152,22 +152,43 @@ export const updateRelapse = async (
     return null;
   }
 
-  // Prepare updated values
-  const note = updates.note !== undefined ? updates.note : existing.note;
+  // Validate any changed values
+  if (updates.timestamp !== undefined) {
+    const timestampValidation = validateTimestamp(updates.timestamp);
+    if (timestampValidation !== true) {
+      throw new Error(timestampValidation);
+    }
+  }
+  if (updates.note !== undefined) {
+    const noteValidation = validateNote(updates.note);
+    if (noteValidation !== true) {
+      throw new Error(noteValidation);
+    }
+  }
+  if (updates.tags !== undefined) {
+    const tagsValidation = validateTags(updates.tags);
+    if (tagsValidation !== true) {
+      throw new Error(tagsValidation);
+    }
+  }
+
+  // Prepare updated values (an empty note or empty tag list clears the field)
+  const timestamp = updates.timestamp !== undefined ? updates.timestamp : existing.timestamp;
+  const note = updates.note !== undefined ? sanitizeString(updates.note, 5000) || null : existing.note;
   const tags =
     updates.tags !== undefined
-      ? JSON.stringify(updates.tags)
+      ? updates.tags.length > 0 ? JSON.stringify(updates.tags) : null
       : existing.tags;
 
   // Update the record
   await db.runAsync(
-    'UPDATE relapse SET note = ?, tags = ? WHERE id = ?',
-    [note, tags, id]
+    'UPDATE relapse SET timestamp = ?, note = ?, tags = ? WHERE id = ?',
+    [timestamp, note, tags, id]
   );
 
   return {
     id: existing.id,
-    timestamp: existing.timestamp,
+    timestamp,
     note: note || undefined,
     tags: tags ? JSON.parse(tags) : undefined,
   };

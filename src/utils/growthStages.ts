@@ -65,7 +65,7 @@ export const GROWTH_STAGES: GrowthStageConfig[] = [
     label: 'Germinating Seed',
     emoji: '🫘',
     minDays: 0,
-    description: "The seed awakens , the very first spark of life.",
+    description: "The seed awakens, the very first spark of life.",
     color: '#F3F4F6',
     achievementTitle: 'The Beginning',
     achievementDescription: "You planted the seed of growth.",
@@ -76,7 +76,7 @@ export const GROWTH_STAGES: GrowthStageConfig[] = [
     label: 'First Minutes',
     emoji: '🌱',
     minDays: 5 / 1440, // 5 minutes = 0.00347 days
-    description: "The first moments of your journey , every second counts.",
+    description: "The first moments of your journey, every second counts.",
     color: '#E8F5E9',
     achievementTitle: 'First Five Minutes',
     achievementDescription: "You've taken the first step in your recovery.",
@@ -87,7 +87,7 @@ export const GROWTH_STAGES: GrowthStageConfig[] = [
     label: 'First Hour',
     emoji: '🌿',
     minDays: 1 / 24, // 1 hour = 0.04167 days
-    description: "An hour of strength , you're building momentum.",
+    description: "An hour of strength, you're building momentum.",
     color: '#D0F0C0',
     achievementTitle: 'One Hour Strong',
     achievementDescription: "The first hour is complete.",
@@ -98,7 +98,7 @@ export const GROWTH_STAGES: GrowthStageConfig[] = [
     label: 'Six Hours',
     emoji: '☘️',
     minDays: 6 / 24, // 6 hours = 0.25 days
-    description: "Quarter of a day , resilience is taking root.",
+    description: "Quarter of a day, resilience is taking root.",
     color: '#C8E6C9',
     achievementTitle: 'Six Hour Victory',
     achievementDescription: "You're gaining strength with each passing hour.",
@@ -131,7 +131,7 @@ export const GROWTH_STAGES: GrowthStageConfig[] = [
     label: 'One Week',
     emoji: '🌾',
     minDays: 7,
-    description: "Your foundation strengthens , resilience takes hold.",
+    description: "Your foundation strengthens, resilience takes hold.",
     color: '#AED581',
     achievementTitle: 'First Week',
     achievementDescription: "You are growing from within.",
@@ -153,7 +153,7 @@ export const GROWTH_STAGES: GrowthStageConfig[] = [
     label: 'Three Weeks',
     emoji: '🌼',
     minDays: 21,
-    description: "The first buds appear , transformation is near.",
+    description: "The first buds appear, transformation is near.",
     color: '#8BC34A',
     achievementTitle: 'Three Weeks Strong',
     achievementDescription: "You're preparing for your first bloom.",
@@ -164,7 +164,7 @@ export const GROWTH_STAGES: GrowthStageConfig[] = [
     label: 'One Month',
     emoji: '🌷',
     minDays: 30,
-    description: "Your flowers begin to open , you're in full bloom.",
+    description: "Your flowers begin to open, you're in full bloom.",
     color: '#7CB342',
     achievementTitle: 'One Month',
     achievementDescription: "Beauty and strength combine.",
@@ -175,7 +175,7 @@ export const GROWTH_STAGES: GrowthStageConfig[] = [
     label: 'Two Months',
     emoji: '🌻',
     minDays: 60,
-    description: "Vibrant and radiant , you are flourishing.",
+    description: "Vibrant and radiant, you are flourishing.",
     color: '#689F38',
     achievementTitle: 'Two Months',
     achievementDescription: "You've reached sustained vitality.",
@@ -208,7 +208,7 @@ export const GROWTH_STAGES: GrowthStageConfig[] = [
     label: 'One Year',
     emoji: '🌳',
     minDays: 365,
-    description: "A magnificent tree , deeply rooted and thriving after a full year.",
+    description: "A magnificent tree, deeply rooted and thriving after a full year.",
     color: '#1B5E20',
     achievementTitle: 'One Year Strong',
     achievementDescription: "A full cycle of growth completed.",
@@ -242,6 +242,28 @@ export function getGrowthStage(elapsedTime: number): GrowthStageConfig {
 
   // Default to first stage if something goes wrong
   return GROWTH_STAGES[0];
+}
+
+/**
+ * Index of the current growth stage in GROWTH_STAGES for an elapsed time
+ */
+export function getStageIndex(elapsedTime: number): number {
+  const days = millisecondsToDays(elapsedTime);
+  for (let i = GROWTH_STAGES.length - 1; i >= 0; i--) {
+    if (days >= GROWTH_STAGES[i].minDays) return i;
+  }
+  return 0;
+}
+
+/**
+ * Epoch ms when the stage after the current one starts, or null once every stage is reached
+ * @param startMs - When the current streak started
+ * @param now - Current time in ms
+ */
+export function getNextStageTime(startMs: number, now: number): number | null {
+  const elapsed = Math.max(0, now - startMs);
+  const next = GROWTH_STAGES.find((stage) => daysToMilliseconds(stage.minDays) > elapsed);
+  return next ? startMs + daysToMilliseconds(next.minDays) : null;
 }
 
 /**

@@ -1,9 +1,19 @@
 import type { Relapse, Activity } from '../db/schema';
-import { MS_PER_DAY } from '../constants/timeUnits';
+import {
+  computeStreaks,
+  countDaysKept,
+  averageStreakMs,
+  longestStreakMs,
+  toWholeDays,
+} from './streaks';
 
 export interface UserStats {
   currentStreak: number; // Days since last relapse
-  bestStreak: number; // Longest streak ever achieved
+  bestStreak: number; // Longest streak ever achieved, in whole days
+  bestStreakMs: number; // Same, exact (used to pick the stage emoji)
+  averageStreak: number; // Average streak length in whole days
+  averageStreakMs: number; // Same, exact
+  daysKept: number; // Calendar days without a relapse, up to yesterday (never resets)
   totalAttempts: number; // Number of relapses (fresh starts)
   activitiesLogged: number; // Total number of positive activities logged
   resistanceRate: number; // Percentage of activities vs relapses (activities / (activities + relapses) * 100)
@@ -12,14 +22,15 @@ export interface UserStats {
 /**
  * Calculate user statistics from relapse data, activity data, and journey start
  * @param relapses - Array of all relapse records
+ * @param journeyStart - ISO string of when the journey began (not the latest relapse)
  * @param activities - Array of all activity records
- * @param journeyStart - ISO string of when the journey began
- * @returns UserStats object with current streak, best streak, total attempts, activities logged, and engagement rate
+ * @returns UserStats with streak, never-reset and activity numbers
  */
 export function calculateUserStats(
   relapses: Relapse[],
   journeyStart: string | null,
-  activities: Activity[] = []
+  activities: Activity[] = [],
+  now: number = Date.now()
 ): UserStats {
   const totalAttempts = relapses.length;
   const activitiesLogged = activities.length;
@@ -33,79 +44,31 @@ export function calculateUserStats(
     return {
       currentStreak: 0,
       bestStreak: 0,
+      bestStreakMs: 0,
+      averageStreak: 0,
+      averageStreakMs: 0,
+      daysKept: 0,
       totalAttempts: 0,
       activitiesLogged: 0,
       resistanceRate: 0,
     };
   }
 
-  // Sort relapses by timestamp (oldest first for streak calculation)
-  const sortedRelapses = [...relapses].sort(
-    (a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
-  );
-
-  // Calculate current streak
-  const currentStreak = calculateCurrentStreak(sortedRelapses, journeyStart);
-
-  // Calculate best streak
-  const bestStreak = calculateBestStreak(sortedRelapses, journeyStart);
+  const streaks = computeStreaks(relapses, journeyStart, now);
+  const current = streaks[streaks.length - 1];
+  const bestStreakMs = longestStreakMs(streaks);
+  const avgMs = averageStreakMs(streaks);
 
   return {
-    currentStreak,
-    bestStreak,
+    currentStreak: toWholeDays(current.durationMs),
+    bestStreak: toWholeDays(bestStreakMs),
+    bestStreakMs,
+    // Whole days, like bestStreak, so the average never shows above the best
+    averageStreak: toWholeDays(avgMs),
+    averageStreakMs: avgMs,
+    daysKept: countDaysKept(relapses, journeyStart, now),
     totalAttempts,
     activitiesLogged,
     resistanceRate,
   };
-}
-
-/**
- * Calculate the current streak (days since last relapse or journey start)
- */
-function calculateCurrentStreak(sortedRelapses: Relapse[], journeyStart: string): number {
-  const now = Date.now();
-
-  if (sortedRelapses.length === 0) {
-    // No relapses - calculate from journey start
-    const timeDiff = now - new Date(journeyStart).getTime();
-    return Math.floor(timeDiff / MS_PER_DAY);
-  }
-
-  // Has relapses - calculate from last relapse
-  const lastRelapse = sortedRelapses[sortedRelapses.length - 1];
-  const timeDiff = now - new Date(lastRelapse.timestamp).getTime();
-  return Math.floor(timeDiff / MS_PER_DAY);
-}
-
-/**
- * Calculate the best (longest) streak ever achieved
- */
-function calculateBestStreak(sortedRelapses: Relapse[], journeyStart: string): number {
-  if (sortedRelapses.length === 0) {
-    // No relapses - current streak is also the best streak
-    return calculateCurrentStreak(sortedRelapses, journeyStart);
-  }
-
-  const streaks: number[] = [];
-  const journeyStartTime = new Date(journeyStart).getTime();
-
-  // Calculate streak from journey start to first relapse
-  const firstRelapseTime = new Date(sortedRelapses[0].timestamp).getTime();
-  const firstStreak = Math.floor((firstRelapseTime - journeyStartTime) / MS_PER_DAY);
-  streaks.push(firstStreak);
-
-  // Calculate streaks between consecutive relapses
-  for (let i = 0; i < sortedRelapses.length - 1; i++) {
-    const currentRelapseTime = new Date(sortedRelapses[i].timestamp).getTime();
-    const nextRelapseTime = new Date(sortedRelapses[i + 1].timestamp).getTime();
-    const streak = Math.floor((nextRelapseTime - currentRelapseTime) / MS_PER_DAY);
-    streaks.push(streak);
-  }
-
-  // Calculate current streak (from last relapse to now)
-  const currentStreak = calculateCurrentStreak(sortedRelapses, journeyStart);
-  streaks.push(currentStreak);
-
-  // Return the maximum streak
-  return Math.max(...streaks);
 }

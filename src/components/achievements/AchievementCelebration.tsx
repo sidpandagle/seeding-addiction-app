@@ -8,12 +8,15 @@ interface AchievementCelebrationProps {
   achievement: Achievement | null;
   visible: boolean;
   onClose: () => void;
+  /** Replaces the default "Keep growing!" line, e.g. when returning to a stage reached before */
+  note?: string;
 }
 
 export default function AchievementCelebration({
   achievement,
   visible,
   onClose,
+  note,
 }: AchievementCelebrationProps) {
 
   // Achievement celebration mounted
@@ -41,11 +44,11 @@ export default function AchievementCelebration({
           exiting={ZoomOut.duration(200)}
           className="mx-6"
         >
-          <View className="p-8 bg-white rounded-3xl dark:bg-gray-800">
+          <View className="p-8 bg-surface rounded-3xl">
             {/* Content */}
             <View className="items-center">
               {/* Achievement Unlocked Label */}
-              <Text className="mb-4 text-sm font-semibold tracking-wide uppercase text-emerald-600 dark:text-emerald-400">
+              <Text className="mb-4 text-sm font-semibold tracking-wide uppercase text-primary">
                 🎉 Achievement Unlocked 🎉
               </Text>
 
@@ -56,13 +59,13 @@ export default function AchievementCelebration({
                 <View className="relative items-center justify-center">
                   {/* Glow Effect */}
                   {/* <View
-                    className="absolute rounded-full bg-emerald-500/20 dark:bg-emerald-400/20"
+                    className="absolute rounded-full bg-primary/20"
                     style={{ width: 140, height: 140 }}
                   /> */}
 
                   {/* Badge Circle */}
                   <View
-                    className="items-center justify-center bg-white rounded-full dark:bg-gray-800"
+                    className="items-center justify-center bg-surface rounded-full"
                     style={{ width: 120, height: 120 }}
                   >
                     <AnimatedEmoji
@@ -77,14 +80,14 @@ export default function AchievementCelebration({
 
               {/* Achievement Title */}
               <Animated.View entering={SlideInUp.delay(400).duration(400)}>
-                <Text className="mt-6 text-2xl font-bold text-center text-gray-900 dark:text-white">
+                <Text className="mt-6 text-2xl font-bold text-center text-fg">
                   {achievement.title}
                 </Text>
               </Animated.View>
 
               {/* Achievement Description */}
               <Animated.View entering={SlideInUp.delay(500).duration(400)}>
-                <Text className="mt-2 text-sm text-center text-gray-600 dark:text-gray-400">
+                <Text className="font-regular mt-2 text-sm text-center text-muted">
                   {achievement.description}
                 </Text>
               </Animated.View>
@@ -94,9 +97,9 @@ export default function AchievementCelebration({
                 entering={ZoomIn.delay(600).duration(400)}
                 className="mt-6"
               >
-                <View className="px-6 py-3 rounded-full bg-emerald-50 dark:bg-emerald-900/30">
-                  <Text className="text-sm font-medium text-center text-emerald-700 dark:text-emerald-300">
-                    Keep growing! 🌱
+                <View className="px-6 py-3 rounded-full bg-primary-soft">
+                  <Text className="text-sm font-medium text-center text-primary-ink">
+                    {note ?? 'Keep growing! 🌱'}
                   </Text>
                 </View>
               </Animated.View>
@@ -108,9 +111,9 @@ export default function AchievementCelebration({
               >
                 <Pressable
                   onPress={onClose}
-                  className="py-4 rounded-2xl active:opacity-80 bg-emerald-600 dark:bg-emerald-700"
+                  className="py-4 rounded-2xl active:opacity-80 bg-primary"
                 >
-                  <Text className="text-lg font-semibold text-center text-white">
+                  <Text className="text-lg font-semibold text-center text-primary-on">
                     Continue
                   </Text>
                 </Pressable>

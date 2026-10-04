@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import type { ColorValue } from 'react-native';
+import { View, type ColorValue } from 'react-native';
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -7,6 +7,9 @@ import Animated, {
   withSequence,
 } from 'react-native-reanimated';
 import type { LucideIcon } from 'lucide-react-native';
+import { useThemeColors } from '../../hooks/useThemeColors';
+import { useColorScheme } from '../../stores/themeStore';
+import { mixHex } from '../../constants/palette';
 
 interface AnimatedTabBarIconProps {
   Icon: LucideIcon;
@@ -21,6 +24,8 @@ export function AnimatedTabBarIcon({
   focused,
   size = 24,
 }: AnimatedTabBarIconProps) {
+  const colors = useThemeColors();
+  const colorScheme = useColorScheme();
   const scale = useSharedValue(focused ? 1 : 0.9);
 
   useEffect(() => {
@@ -40,13 +45,23 @@ export function AnimatedTabBarIcon({
     transform: [{ scale: scale.value }],
   }));
 
+  // Soft pill behind the active icon
+  const pillColor = focused
+    ? mixHex(colors.primary, colorScheme === 'dark' ? 20 : 14, colors.tab)
+    : 'transparent';
+
   return (
-    <Animated.View style={animatedStyle}>
-      <Icon
-        size={size}
-        color={color}
-        strokeWidth={focused ? 2.5 : 2}
-      />
-    </Animated.View>
+    <View
+      style={{ width: 44, height: 26, borderRadius: 13, backgroundColor: pillColor }}
+      className="items-center justify-center"
+    >
+      <Animated.View style={animatedStyle}>
+        <Icon
+          size={size}
+          color={color}
+          strokeWidth={focused ? 2.5 : 2}
+        />
+      </Animated.View>
+    </View>
   );
 }

@@ -5,8 +5,9 @@ import EmojiPicker from 'rn-emoji-keyboard';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { useActivityStore } from '../../stores/activityStore';
 import { useColorScheme } from '../../stores/themeStore';
+import { useThemeColors, useCardShadow } from '../../hooks/useThemeColors';
 import { useCustomActivityTagsStore, formatActivityTag, SUGGESTED_EMOJIS, CustomActivityTag } from '../../stores/customActivityTagsStore';
-import { Sprout, CheckCircle, Plus, X } from 'lucide-react-native';
+import { Sprout, Star, CheckCircle, Plus, X } from 'lucide-react-native';
 import { getRandomTip, type EducationalTip } from '../../data/educationalContent';
 import { ACTIVITY_CATEGORIES } from '../../constants/tags';
 import CustomAlert from '../common/CustomAlert';
@@ -37,6 +38,8 @@ const getRandomPrompt = (): string => {
 export default function ActivityModal({ onClose, preSelectedCategories = [] }: ActivityModalProps) {
   const { addActivity, activities } = useActivityStore();
   const colorScheme = useColorScheme();
+  const colors = useThemeColors();
+  const cardShadow = useCardShadow();
   const { customTags, loadCustomTags, addCustomTag, removeCustomTag } = useCustomActivityTagsStore();
 
   const [note, setNote] = useState('');
@@ -273,22 +276,22 @@ export default function ActivityModal({ onClose, preSelectedCategories = [] }: A
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      className="flex-1 bg-gray-50 dark:bg-gray-950"
+      className="flex-1 bg-bg"
     >
       <ScrollView className="flex-1">
         {/* Modern Header */}
         <View className="px-6 pt-16 pb-0">
           <View className="flex-row items-center justify-between mb-2">
             <View className="flex">
-              <Text className="text-3xl font-semibold tracking-wide text-gray-900 dark:text-white">
+              <Text className="text-3xl font-semibold tracking-wide text-fg">
                 Log Activity
               </Text>
-              <Text className="mt-0 text-sm font-medium text-emerald-700 dark:text-emerald-400">
+              <Text className="mt-0 text-sm font-medium text-primary-ink">
                 Track positive actions that support your recovery
               </Text>
             </View>
             <View className="items-center justify-center w-16 h-16">
-              <Sprout size={42} color="#10b981" strokeWidth={2} />
+              <Sprout size={42} color={colors.primary} strokeWidth={2} />
             </View>
           </View>
         </View>
@@ -297,36 +300,43 @@ export default function ActivityModal({ onClose, preSelectedCategories = [] }: A
         <View className="px-5 mt-2">
           <View className="flex-row gap-3">
             {/* Weekly Activity Count */}
-            <View className="flex-1 p-4 bg-green-100 border border-green-100 dark:bg-green-950/30 rounded-xl dark:border-green-900/50">
-              <Text className="mb-1 text-xs font-semibold text-green-600 uppercase dark:text-green-300">
-                Your Growth This Week
+            <View style={cardShadow} className="relative flex-1 p-4 overflow-hidden border bg-surface border-border rounded-2xl">
+              {/* Faint corner icon, so the label keeps the full width */}
+              <View className="absolute -bottom-3.5 -right-3.5 opacity-10" pointerEvents="none">
+                <Sprout size={76} color={colors.primary} strokeWidth={1.5} />
+              </View>
+              <Text className="mb-0.5 text-xs font-bold tracking-wide uppercase text-muted">
+                This Week
               </Text>
-              <Text className="text-2xl font-bold text-green-900 dark:text-green-100">
+              <Text className="text-2xl font-bold text-fg">
                 {weeklyCount} {weeklyCount !== 1 ? 'Activities' : 'Activity'}
               </Text>
               {daysInARow >= 3 && (
-                <Text className="mt-1 text-sm text-green-800 dark:text-green-200">
+                <Text className="mt-0.5 text-sm font-semibold text-primary-ink">
                   {daysInARow} days in a row!
                 </Text>
               )}
             </View>
 
             {/* Most Common Activity */}
-            <View className="flex-1 p-4 bg-purple-100 border border-purple-100 dark:bg-purple-950/30 rounded-xl dark:border-purple-900/50">
-              <Text className="mb-1 text-xs font-semibold text-purple-600 uppercase dark:text-purple-300">
+            <View style={cardShadow} className="relative flex-1 p-4 overflow-hidden border bg-surface border-border rounded-2xl">
+              <View className="absolute -bottom-3.5 -right-3.5 opacity-10" pointerEvents="none">
+                <Star size={76} color={colors.plum} strokeWidth={1.5} />
+              </View>
+              <Text className="mb-0.5 text-xs font-bold tracking-wide uppercase text-muted">
                 Most Common
               </Text>
               {mostCommon ? (
                 <>
-                  <Text className="text-lg font-bold text-purple-900 dark:text-purple-100" numberOfLines={1}>
+                  <Text className="text-lg font-bold text-fg" numberOfLines={1}>
                     {mostCommon.category}
                   </Text>
-                  <Text className="mt-1 text-sm text-purple-700 dark:text-purple-200">
+                  <Text className="font-regular mt-0.5 text-sm text-muted">
                     {mostCommon.count}x logged
                   </Text>
                 </>
               ) : (
-                <Text className="text-sm text-purple-600 dark:text-purple-300">
+                <Text className="font-regular text-sm text-muted">
                   Start tracking!
                 </Text>
               )}
@@ -336,20 +346,20 @@ export default function ActivityModal({ onClose, preSelectedCategories = [] }: A
 
         {/* Content Card */}
         <View className="px-4 mt-4">
-          <View className="p-6 bg-white border border-gray-200 dark:bg-gray-900 dark:border-gray-800 rounded-2xl">
+          <View className="p-6 bg-surface border border-border rounded-[20px]">
             {/* Note Input */}
             <View className="mb-6">
-              <Text className="mb-2 text-xs font-semibold tracking-wide text-gray-500 uppercase dark:text-gray-400">
+              <Text className="mb-2 text-xs font-semibold tracking-wide text-muted uppercase">
                 Reflection (Optional)
               </Text>
               <TextInput
                 value={note}
                 onChangeText={setNote}
                 placeholder={reflectionPrompt}
-                placeholderTextColor={colorScheme === 'dark' ? '#9CA3AF' : '#6B7280'}
+                placeholderTextColor={colors.muted}
                 multiline
                 numberOfLines={4}
-                className="bg-gray-50 dark:bg-gray-800 rounded-xl p-4 text-base font-regular text-gray-900 dark:text-white min-h-[100px] border border-gray-200 dark:border-gray-700"
+                className="bg-bg rounded-xl p-4 text-base font-regular text-fg min-h-[100px] border border-border"
                 textAlignVertical="top"
               />
             </View>
@@ -357,18 +367,18 @@ export default function ActivityModal({ onClose, preSelectedCategories = [] }: A
             {/* Category Selection */}
             <View>
               <View className="flex-row items-center justify-between mb-3">
-                <Text className="text-xs font-semibold tracking-wide text-gray-500 uppercase dark:text-gray-400">
+                <Text className="text-xs font-semibold tracking-wide text-muted uppercase">
                   Activity Type (Max 5)
                 </Text>
                 <View className={`px-2 py-1 rounded-full ${
                   selectedCategories.length >= 5
-                    ? 'bg-amber-100 dark:bg-amber-900/30'
-                    : 'bg-blue-100 dark:bg-blue-600/30'
+                    ? 'bg-gold-soft'
+                    : 'bg-info-soft'
                 }`}>
                   <Text className={`text-xs font-semibold ${
                     selectedCategories.length >= 5
-                      ? 'text-amber-700 dark:text-amber-300'
-                      : 'text-blue-700 dark:text-blue-300'
+                      ? 'text-gold-ink'
+                      : 'text-info'
                   }`}>
                     {selectedCategories.length}/5 selected
                   </Text>
@@ -390,23 +400,23 @@ export default function ActivityModal({ onClose, preSelectedCategories = [] }: A
                       disabled={isDisabled}
                       className={`px-4 py-2.5 rounded-full flex-row items-center gap-2 ${
                         isSelected
-                          ? 'bg-blue-200 dark:bg-blue-800/30'
+                          ? 'bg-info/25'
                           : isDisabled
-                          ? 'bg-gray-100/50 dark:bg-gray-800/50 opacity-50'
+                          ? 'bg-subtle/50 opacity-50'
                           : isCustom
-                          ? 'bg-purple-100 dark:bg-purple-900/30'
-                          : 'bg-gray-100 dark:bg-gray-800'
+                          ? 'bg-plum-soft'
+                          : 'bg-subtle'
                       }`}
                     >
                       <Text
                         className={`text-sm font-semibold ${
                           isSelected
-                            ? (colorScheme === 'dark' ? 'text-white' : 'text-blue-800')
+                            ? 'text-info'
                             : isDisabled
-                            ? 'text-gray-400 dark:text-gray-600'
+                            ? 'text-faint'
                             : isCustom
-                            ? 'text-purple-700 dark:text-purple-300'
-                            : 'text-gray-700 dark:text-gray-300'
+                            ? 'text-plum'
+                            : 'text-body'
                         }`}
                       >
                         {category}
@@ -414,7 +424,7 @@ export default function ActivityModal({ onClose, preSelectedCategories = [] }: A
                       {isSelected && (
                         <CheckCircle
                           size={16}
-                          color={colorScheme === 'dark' ? '#FFFFFF' : '#1e40af'}
+                          color={colors.info}
                           strokeWidth={2.5}
                         />
                       )}
@@ -425,10 +435,10 @@ export default function ActivityModal({ onClose, preSelectedCategories = [] }: A
                 {/* Add Custom Tag Button */}
                 <Pressable
                   onPress={() => setShowAddTag(true)}
-                  className="px-4 py-2.5 rounded-full flex-row items-center gap-2 border-2 border-dashed border-gray-300 dark:border-gray-600"
+                  className="px-4 py-2.5 rounded-full flex-row items-center gap-2 border-2 border-dashed border-border-strong"
                 >
-                  <Plus size={16} color={colorScheme === 'dark' ? '#9CA3AF' : '#6B7280'} strokeWidth={2.5} />
-                  <Text className="text-sm font-semibold text-gray-500 dark:text-gray-400">
+                  <Plus size={16} color={colors.muted} strokeWidth={2.5} />
+                  <Text className="text-sm font-semibold text-muted">
                     Add Tag
                   </Text>
                 </Pressable>
@@ -436,7 +446,7 @@ export default function ActivityModal({ onClose, preSelectedCategories = [] }: A
 
               {/* Hint for custom tags */}
               {customTags.length > 0 && (
-                <Text className="mt-3 text-xs text-gray-400 dark:text-gray-500">
+                <Text className="font-regular mt-3 text-xs text-faint">
                   Long press custom tags to remove them
                 </Text>
               )}
@@ -447,7 +457,7 @@ export default function ActivityModal({ onClose, preSelectedCategories = [] }: A
         {/* Date/Time Selection Section */}
         <View className="px-4 mt-6">
           <View className="flex-row items-center justify-between mb-3">
-            <Text className="text-xs font-semibold tracking-wide text-gray-500 uppercase dark:text-gray-400">
+            <Text className="text-xs font-semibold tracking-wide text-muted uppercase">
               When did this happen?
             </Text>
             <Pressable
@@ -461,14 +471,14 @@ export default function ActivityModal({ onClose, preSelectedCategories = [] }: A
               }}
               className={`px-3 py-1.5 rounded-full ${
                 showCustomDateTime
-                  ? 'bg-blue-100 dark:bg-blue-900/30'
-                  : 'bg-gray-100 dark:bg-gray-800'
+                  ? 'bg-info-soft'
+                  : 'bg-subtle'
               }`}
             >
               <Text className={`text-xs font-semibold ${
                 showCustomDateTime
-                  ? 'text-blue-700 dark:text-blue-300'
-                  : 'text-gray-600 dark:text-gray-400'
+                  ? 'text-info'
+                  : 'text-muted'
               }`}>
                 {showCustomDateTime ? 'Custom Time' : 'Now'}
               </Text>
@@ -477,29 +487,29 @@ export default function ActivityModal({ onClose, preSelectedCategories = [] }: A
 
           {/* Custom Date/Time Picker (conditionally shown) */}
           {showCustomDateTime && (
-            <View className="p-4 bg-gray-50 border border-gray-200 dark:bg-gray-800 dark:border-gray-700 rounded-xl">
+            <View className="p-4 bg-bg border border-border rounded-xl">
               {/* Date and Time Display Buttons */}
               <View className="flex-row gap-2 mb-3">
                 <Pressable
                   onPress={() => setShowDatePicker(true)}
-                  className="flex-1 p-3 bg-white border border-gray-300 dark:bg-gray-700 dark:border-gray-600 rounded-lg"
+                  className="flex-1 p-3 bg-surface border border-border-strong rounded-lg"
                 >
-                  <Text className="text-xs font-medium text-gray-500 uppercase dark:text-gray-400">
+                  <Text className="text-xs font-medium text-muted uppercase">
                     Date
                   </Text>
-                  <Text className="mt-1 text-sm font-semibold text-gray-900 dark:text-white">
+                  <Text className="mt-1 text-sm font-semibold text-fg">
                     {customTimestamp.toLocaleDateString()}
                   </Text>
                 </Pressable>
 
                 <Pressable
                   onPress={() => setShowTimePicker(true)}
-                  className="flex-1 p-3 bg-white border border-gray-300 dark:bg-gray-700 dark:border-gray-600 rounded-lg"
+                  className="flex-1 p-3 bg-surface border border-border-strong rounded-lg"
                 >
-                  <Text className="text-xs font-medium text-gray-500 uppercase dark:text-gray-400">
+                  <Text className="text-xs font-medium text-muted uppercase">
                     Time
                   </Text>
-                  <Text className="mt-1 text-sm font-semibold text-gray-900 dark:text-white">
+                  <Text className="mt-1 text-sm font-semibold text-fg">
                     {customTimestamp.toLocaleTimeString([], {
                       hour: '2-digit',
                       minute: '2-digit'
@@ -515,17 +525,17 @@ export default function ActivityModal({ onClose, preSelectedCategories = [] }: A
                   setDateTimeError(null);
                   Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                 }}
-                className="self-start px-3 py-1.5 bg-gray-200 dark:bg-gray-600 rounded-lg"
+                className="self-start px-3 py-1.5 bg-border rounded-lg"
               >
-                <Text className="text-xs font-semibold text-gray-700 dark:text-gray-300">
+                <Text className="text-xs font-semibold text-body">
                   Reset to Now
                 </Text>
               </Pressable>
 
               {/* Validation Error Display */}
               {dateTimeError && (
-                <View className="p-3 mt-3 bg-red-100 border border-red-200 dark:bg-red-900/30 dark:border-red-800 rounded-lg">
-                  <Text className="text-sm font-medium text-red-800 dark:text-red-200">
+                <View className="p-3 mt-3 bg-urge-soft border border-urge/30 rounded-lg">
+                  <Text className="text-sm font-medium text-urge">
                     {dateTimeError}
                   </Text>
                 </View>
@@ -540,14 +550,14 @@ export default function ActivityModal({ onClose, preSelectedCategories = [] }: A
             onPress={handleSave}
             disabled={isSubmitting}
             className={`rounded-2xl py-4 flex-row items-center justify-center gap-2 ${isSubmitting
-              ? 'bg-blue-400 dark:bg-blue-600'
-              : 'bg-blue-300 dark:bg-blue-700 active:bg-blue-400 dark:active:bg-blue-800'
+              ? 'bg-info'
+              : 'bg-info/25 active:bg-info/40'
               }`}
           >
             {isSubmitting && (
-              <ActivityIndicator size="small" color={colorScheme === 'dark' ? '#ffffff' : '#1e40af'} />
+              <ActivityIndicator size="small" color={colors.info} />
             )}
-            <Text className={`text-lg font-bold text-center ${colorScheme === 'dark' ? 'text-white' : 'text-blue-800'}`}>
+            <Text className="text-lg font-bold text-center text-info">
               {isSubmitting ? 'Saving...' : 'Log Activity'}
             </Text>
           </Pressable>
@@ -555,13 +565,13 @@ export default function ActivityModal({ onClose, preSelectedCategories = [] }: A
           <Pressable
             onPress={onClose}
             disabled={isSubmitting}
-            className={`rounded-2xl py-4 border border-gray-200 dark:border-gray-700 ${isSubmitting
-              ? 'bg-gray-100 dark:bg-gray-800'
-              : 'bg-white dark:bg-gray-800 active:bg-gray-50 dark:active:bg-gray-700'
+            className={`rounded-2xl py-4 border border-border ${isSubmitting
+              ? 'bg-subtle'
+              : 'bg-surface active:bg-bg'
               }`}
           >
             <Text
-              className={`text-center font-bold text-lg ${isSubmitting ? 'text-gray-400 dark:text-gray-500' : 'text-gray-700 dark:text-gray-300'
+              className={`text-center font-bold text-lg ${isSubmitting ? 'text-faint' : 'text-body'
                 }`}
             >
               Cancel
@@ -583,38 +593,38 @@ export default function ActivityModal({ onClose, preSelectedCategories = [] }: A
         >
           <Pressable
             onPress={(e) => e.stopPropagation()}
-            className="w-full max-w-[340px] bg-white dark:bg-gray-900 rounded-2xl overflow-hidden"
+            className="w-full max-w-[340px] bg-surface rounded-2xl overflow-hidden"
           >
             {/* Header */}
             <View className="flex-row items-center justify-between px-5 pt-5 pb-3">
-              <Text className="text-lg font-bold tracking-tight text-gray-900 dark:text-white">
+              <Text className="text-lg font-bold tracking-tight text-fg">
                 Add Custom Activity :)
               </Text>
               <Pressable
                 onPress={() => setShowAddTag(false)}
-                className="items-center justify-center w-8 h-8 bg-gray-100 rounded-full dark:bg-gray-800"
+                className="items-center justify-center w-8 h-8 bg-subtle rounded-full"
               >
-                <X size={18} color={colorScheme === 'dark' ? '#9CA3AF' : '#6B7280'} />
+                <X size={18} color={colors.muted} />
               </Pressable>
             </View>
 
             {/* Activity Name with Emoji */}
             <View className="px-5 pb-4">
-              <View className="flex-row items-center gap-2 bg-gray-100 dark:bg-gray-800 rounded-xl">
+              <View className="flex-row items-center gap-2 bg-subtle rounded-xl">
                 {/* Emoji Picker Button */}
                 <Pressable
                   onPress={() => setShowEmojiPicker(true)}
-                  className="items-center justify-center ml-0 bg-white w-14 h-14 dark:bg-gray-700 rounded-xl"
+                  className="items-center justify-center ml-0 bg-surface w-14 h-14 rounded-xl"
                 >
-                  <Text className="text-2xl">{selectedEmoji}</Text>
+                  <Text className="font-regular text-2xl">{selectedEmoji}</Text>
                 </Pressable>
                 {/* Activity Name Input */}
                 <TextInput
                   value={newTagLabel}
                   onChangeText={setNewTagLabel}
                   placeholder="Activity name..."
-                  placeholderTextColor={colorScheme === 'dark' ? '#9CA3AF' : '#6B7280'}
-                  className="flex-1 py-4 pr-4 text-base font-medium text-gray-900 dark:text-white"
+                  placeholderTextColor={colors.muted}
+                  className="flex-1 py-4 pr-4 text-base font-medium text-fg"
                   maxLength={20}
                   autoFocus
                   onSubmitEditing={handleAddCustomTag}
@@ -633,11 +643,11 @@ export default function ActivityModal({ onClose, preSelectedCategories = [] }: A
                       }}
                       className={`w-9 h-9 items-center justify-center rounded-lg ${
                         selectedEmoji === emoji
-                          ? 'bg-blue-100 dark:bg-blue-900/40 border-2 border-blue-500'
-                          : 'bg-gray-200 dark:bg-gray-700'
+                          ? 'bg-info-soft border-2 border-info'
+                          : 'bg-border'
                       }`}
                     >
-                      <Text className="text-lg">{emoji}</Text>
+                      <Text className="font-regular text-lg">{emoji}</Text>
                     </Pressable>
                   ))}
                 </View>
@@ -646,11 +656,11 @@ export default function ActivityModal({ onClose, preSelectedCategories = [] }: A
 
             {/* Preview */}
             <View className="px-5 pb-4">
-              <Text className="mb-2 text-xs font-semibold text-gray-500 uppercase dark:text-gray-400">
+              <Text className="mb-2 text-xs font-semibold text-muted uppercase">
                 Preview
               </Text>
-              <View className="self-start px-4 py-2.5 rounded-full bg-purple-100 dark:bg-purple-900/30">
-                <Text className="text-sm font-semibold text-purple-700 dark:text-purple-300">
+              <View className="self-start px-4 py-2.5 rounded-full bg-plum-soft">
+                <Text className="text-sm font-semibold text-plum">
                   {selectedEmoji} {newTagLabel || 'Your Activity'}
                 </Text>
               </View>
@@ -663,12 +673,12 @@ export default function ActivityModal({ onClose, preSelectedCategories = [] }: A
                 disabled={!newTagLabel.trim()}
                 className={`py-3 rounded-xl ${
                   newTagLabel.trim()
-                    ? 'bg-blue-600 active:bg-blue-700'
-                    : 'bg-gray-300 dark:bg-gray-700'
+                    ? 'bg-info active:bg-info/85'
+                    : 'bg-border-strong'
                 }`}
               >
                 <Text className={`text-center font-bold ${
-                  newTagLabel.trim() ? 'text-white' : 'text-gray-500 dark:text-gray-400'
+                  newTagLabel.trim() ? 'text-primary-on' : 'text-muted'
                 }`}>
                   Add Activity
                 </Text>
@@ -691,15 +701,15 @@ export default function ActivityModal({ onClose, preSelectedCategories = [] }: A
         categoryPosition="top"
         theme={{
           backdrop: colorScheme === 'dark' ? '#00000099' : '#00000066',
-          knob: colorScheme === 'dark' ? '#4B5563' : '#D1D5DB',
-          container: colorScheme === 'dark' ? '#1F2937' : '#FFFFFF',
-          header: colorScheme === 'dark' ? '#F9FAFB' : '#111827',
-          skinTonesContainer: colorScheme === 'dark' ? '#374151' : '#F3F4F6',
+          knob: colors.borderStrong,
+          container: colors.surface,
+          header: colors.fg,
+          skinTonesContainer: colors.subtle,
           category: {
-            icon: colorScheme === 'dark' ? '#9CA3AF' : '#6B7280',
-            iconActive: '#3B82F6',
-            container: colorScheme === 'dark' ? '#111827' : '#F9FAFB',
-            containerActive: colorScheme === 'dark' ? '#1E3A5F' : '#DBEAFE',
+            icon: colors.muted,
+            iconActive: colors.info,
+            container: colors.bg,
+            containerActive: colors.infoSoft,
           },
         }}
       />

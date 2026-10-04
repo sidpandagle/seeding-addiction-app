@@ -37,15 +37,15 @@ export default function BadgeCelebration({
   const getTierColor = (tier?: string) => {
     switch (tier?.toLowerCase()) {
       case 'bronze':
-        return 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300';
+        return 'bg-gold-soft text-gold-ink';
       case 'silver':
-        return 'bg-gray-100 dark:bg-gray-700/30 text-gray-700 dark:text-gray-300';
+        return 'bg-subtle text-body';
       case 'gold':
-        return 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300';
+        return 'bg-gold-soft text-gold-ink';
       case 'platinum':
-        return 'bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300';
+        return 'bg-plum-soft text-plum';
       default:
-        return 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300';
+        return 'bg-primary-soft text-primary-ink';
     }
   };
 
@@ -67,11 +67,11 @@ export default function BadgeCelebration({
           exiting={ZoomOut.duration(200)}
           className="mx-6"
         >
-          <View className="p-8 bg-white rounded-3xl dark:bg-gray-800">
+          <View className="p-8 bg-surface rounded-3xl">
             {/* Content */}
             <View className="items-center">
               {/* Badge Unlocked Label */}
-              <Text className="mb-4 text-sm font-semibold tracking-wide uppercase text-amber-600 dark:text-amber-400">
+              <Text className="mb-4 text-sm font-semibold tracking-wide uppercase text-gold-ink">
                 🎉 Badge Unlocked 🎉
               </Text>
 
@@ -82,13 +82,13 @@ export default function BadgeCelebration({
                 <View className="relative items-center justify-center">
                   {/* Glow Effect */}
                   {/* <View
-                    className="absolute rounded-full bg-amber-500/20 dark:bg-amber-400/20"
+                    className="absolute rounded-full bg-gold/20"
                     style={{ width: 140, height: 140 }}
                   /> */}
 
                   {/* Badge Circle */}
                   <View
-                    className="items-center justify-center bg-white rounded-full dark:bg-gray-800"
+                    className="items-center justify-center bg-surface rounded-full"
                     style={{ width: 120, height: 120 }}
                   >
                     <AnimatedEmoji
@@ -103,14 +103,14 @@ export default function BadgeCelebration({
 
               {/* Badge Title */}
               <Animated.View entering={SlideInUp.delay(400).duration(400)}>
-                <Text className="mt-6 text-2xl font-bold text-center text-gray-900 dark:text-white">
+                <Text className="mt-6 text-2xl font-bold text-center text-fg">
                   {badge.title}
                 </Text>
               </Animated.View>
 
               {/* Badge Description */}
               <Animated.View entering={SlideInUp.delay(500).duration(400)}>
-                <Text className="mt-2 text-sm text-center text-gray-600 dark:text-gray-400">
+                <Text className="font-regular mt-2 text-sm text-center text-muted">
                   {badge.description}
                 </Text>
               </Animated.View>
@@ -134,8 +134,8 @@ export default function BadgeCelebration({
                 entering={ZoomIn.delay(700).duration(400)}
                 className="mt-6"
               >
-                <View className="px-6 py-3 rounded-full bg-amber-50 dark:bg-amber-900/30">
-                  <Text className="text-sm font-medium text-center text-amber-700 dark:text-amber-300">
+                <View className="px-6 py-3 rounded-full bg-gold-soft">
+                  <Text className="text-sm font-medium text-center text-gold-ink">
                     Keep up the amazing work! 💪
                   </Text>
                 </View>
@@ -148,9 +148,9 @@ export default function BadgeCelebration({
               >
                 <Pressable
                   onPress={onClose}
-                  className="py-4 rounded-2xl active:opacity-80 bg-amber-200 dark:bg-amber-300"
+                  className="py-4 rounded-2xl active:opacity-80 bg-gold/25"
                 >
-                  <Text className="text-lg font-semibold text-center text-amber-800">
+                  <Text className="text-lg font-semibold text-center text-gold-ink">
                     🎊 Awesome!
                   </Text>
                 </Pressable>

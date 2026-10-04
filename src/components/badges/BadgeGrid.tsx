@@ -3,7 +3,7 @@ import { useState, useMemo } from 'react';
 import Animated, { FadeIn } from 'react-native-reanimated';
 import { Badge, BadgeCategory, EarnedBadge } from '../../db/schema';
 import { Filter } from 'lucide-react-native';
-import { useColorScheme } from '../../stores/themeStore';
+import { useThemeColors } from '../../hooks/useThemeColors';
 import { useReducedMotion, ANIMATION_PRESETS, getStaggerDelay } from '../../hooks/useReducedMotion';
 import BadgeCard from './BadgeCard';
 import CategoryFilterModal from './CategoryFilterModal';
@@ -33,7 +33,7 @@ export default function BadgeGrid({
   badgeProgress,
   onBadgePress,
 }: Readonly<BadgeGridProps>) {
-  const colorScheme = useColorScheme();
+  const colors = useThemeColors();
   const reducedMotion = useReducedMotion();
   const [selectedCategory, setSelectedCategory] = useState<BadgeCategory | 'all'>('all');
   const [showFilterModal, setShowFilterModal] = useState(false);
@@ -68,21 +68,21 @@ export default function BadgeGrid({
     <View className="flex-1">
       {/* Unified Header: Badges Title + Count + Filter */}
       <View className="px-6 mb-4">
-        <View className="flex-row items-center justify-between p-4 mb-3 bg-white border border-gray-200 rounded-xl dark:bg-gray-900 dark:border-gray-700">
+        <View className="flex-row items-center justify-between p-4 mb-3 bg-surface border border-border rounded-xl">
           <View className="flex-1">
-            <Text className="text-xl font-bold text-gray-900 dark:text-white">
+            <Text className="text-xl font-bold text-fg">
               Your Badges
             </Text>
-            <Text className="mt-0.5 text-sm font-medium text-gray-600 dark:text-gray-400">
+            <Text className="mt-0.5 text-sm font-medium text-muted">
               {sortedBadges.length} {selectedCategory === 'all' ? 'total' : CATEGORY_LABELS[selectedCategory].toLowerCase()} badge{sortedBadges.length !== 1 ? 's' : ''}
             </Text>
           </View>
           <Pressable
             onPress={() => setShowFilterModal(true)}
-            className="flex-row items-center gap-2 px-4 py-2.5 bg-white border border-gray-200 dark:bg-gray-900 dark:border-gray-700 rounded-xl"
+            className="flex-row items-center gap-2 px-4 py-2.5 bg-surface border border-border rounded-2xl"
           >
-            <Filter size={18} color="#f59e0b" strokeWidth={2.5} />
-            <Text className="text-sm font-semibold text-gray-900 dark:text-white">
+            <Filter size={18} color={colors.gold} strokeWidth={2.5} />
+            <Text className="text-sm font-semibold text-fg">
               {selectedCategory === 'all' ? 'Filter' : CATEGORY_LABELS[selectedCategory]}
             </Text>
           </Pressable>
@@ -125,7 +125,7 @@ export default function BadgeGrid({
 
       {sortedBadges.length === 0 && (
         <View className="items-center justify-center flex-1 px-6 py-12">
-          <Text className="text-lg font-semibold text-center text-gray-600 dark:text-gray-400">
+          <Text className="text-lg font-semibold text-center text-muted">
             No badges in this category yet
           </Text>
         </View>

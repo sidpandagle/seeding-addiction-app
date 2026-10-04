@@ -2,13 +2,16 @@ import { View, Text, ScrollView, RefreshControl, ActivityIndicator } from 'react
 import { StatusBar } from 'expo-status-bar';
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { useColorScheme } from '../../src/stores/themeStore';
+import { useThemeColors, useCardShadow } from '../../src/hooks/useThemeColors';
 import AchievementRoadmap from '../../src/components/achievements/AchievementRoadmap';
 import AchievementDetailModal from '../../src/components/achievements/AchievementDetailModal';
 import TabSwitcher from '../../src/components/achievements/TabSwitcher';
 import BadgeGrid from '../../src/components/badges/BadgeGrid';
-import { getAchievements, Achievement } from '../../src/utils/growthStages';
+import { getAchievements, getGrowthStage, Achievement } from '../../src/utils/growthStages';
+import { computeStreaks, longestPastStreakMs } from '../../src/utils/streaks';
+import { formatStreakLength } from '../../src/utils/formatDuration';
 import { useJourneyStats } from '../../src/hooks/useJourneyStats';
-import { useLatestRelapseTimestamp } from '../../src/stores/relapseStore';
+import { useLatestRelapseTimestamp, useRelapses } from '../../src/stores/relapseStore';
 import { getJourneyStart } from '../../src/db/helpers';
 import { useBadgeStore } from '../../src/stores/badgeStore';
 import { BADGE_DEFINITIONS } from '../../src/data/badgeDefinitions';
@@ -20,6 +23,8 @@ type TabId = 'milestones' | 'badges';
 
 export default function AchievementsScreen() {
   const colorScheme = useColorScheme();
+  const colors = useThemeColors();
+  const cardShadow = useCardShadow();
   const [activeTab, setActiveTab] = useState<TabId>('milestones');
   const [selectedAchievement, setSelectedAchievement] = useState<Achievement | null>(null);
   const [selectedBadge, setSelectedBadge] = useState<Badge | null>(null);
@@ -83,42 +88,18 @@ export default function AchievementsScreen() {
     loadJourneyStart();
   }, []);
 
-  // Live achievements state that updates every second
-  const [achievements, setAchievements] = useState<Achievement[]>(() => getAchievements(0));
+  // useJourneyStats re-renders exactly when a new stage is reached, so no polling is needed
+  const elapsedTime = stats.startTime ? Math.max(0, stats.now - new Date(stats.startTime).getTime()) : 0;
+  const achievements = useMemo(() => getAchievements(elapsedTime), [elapsedTime]);
 
-  // Update achievements every second based on elapsed time
-  // Note: getAchievements() is internally memoized (1-minute cache)
-  // This reduces re-renders from 60/min to 1/min when no achievement changes
-  useEffect(() => {
-    if (!stats.startTime) {
-      if (isMountedRef.current) {
-        setAchievements(getAchievements(0));
-      }
-      return;
-    }
-
-    const updateAchievements = () => {
-      if (!isMountedRef.current) return;
-
-      const elapsedTime = Math.max(0, Date.now() - new Date(stats.startTime!).getTime());
-      const newAchievements = getAchievements(elapsedTime);
-
-      // Only update state if achievements actually changed (reference equality check)
-      // getAchievements() returns cached reference if nothing changed
-      setAchievements(prev => {
-        if (prev === newAchievements) return prev;
-        return newAchievements;
-      });
-    };
-
-    // Initial update
-    updateAchievements();
-
-    // Update every second
-    const interval = setInterval(updateAchievements, 1000);
-
-    return () => clearInterval(interval);
-  }, [stats.startTime]);
+  // "Your best" chip: the furthest stage a finished streak reached, shown while the current one is behind it
+  const relapses = useRelapses();
+  const bestMarker = useMemo(() => {
+    if (!journeyStart || relapses.length === 0) return undefined;
+    const bestPastMs = longestPastStreakMs(computeStreaks(relapses, journeyStart));
+    if (bestPastMs <= elapsedTime) return undefined;
+    return { stageId: getGrowthStage(bestPastMs).id, label: formatStreakLength(bestPastMs) };
+  }, [relapses, journeyStart, elapsedTime]);
 
   // Calculate progress based on active tab
   const earnedBadgeIds = useMemo(
@@ -139,10 +120,10 @@ export default function AchievementsScreen() {
   // Show loading screen only on initial load
   if (isInitialLoad && earnedBadges.length === 0 && !hasHydrated) {
     return (
-      <View className="items-center justify-center flex-1 bg-gray-50 dark:bg-gray-950">
+      <View className="items-center justify-center flex-1 bg-bg">
         <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'} />
-        <ActivityIndicator size="large" color="#f59e0b" />
-        <Text className="mt-4 text-base font-medium text-gray-500 dark:text-gray-400">
+        <ActivityIndicator size="large" color={colors.gold} />
+        <Text className="mt-4 text-base font-medium text-muted">
           Loading achievements...
         </Text>
       </View>
@@ -150,7 +131,7 @@ export default function AchievementsScreen() {
   }
 
   return (
-    <View className="flex-1 bg-gray-50 dark:bg-gray-950">
+    <View className="flex-1 bg-bg">
       <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'} />
 
       {/* Elegant Header */}
@@ -158,20 +139,20 @@ export default function AchievementsScreen() {
         <View className="px-6">
           <View className="flex-row items-center justify-between mb-4">
             <View className="flex-1">
-              <Text className="text-3xl font-semibold tracking-wide text-gray-900 dark:text-white">
+              <Text className="text-3xl font-semibold tracking-wide text-fg">
                 Achievements
               </Text>
-              <Text className="mt-0 text-sm font-medium tracking-wide text-amber-700 dark:text-amber-400">
+              <Text className="mt-0 text-sm font-medium tracking-wide text-muted">
                 {activeTab === 'milestones'
                   ? 'Celebrate your journey milestones'
                   : 'Earn badges for your efforts'}
               </Text>
             </View>
-            <View className="items-center justify-center w-14 h-14 bg-amber-100 dark:bg-amber-900/30 rounded-2xl">
+            <View className="items-center justify-center w-14 h-14 bg-gold-soft rounded-2xl">
               {activeTab === 'milestones' ? (
-                <Trophy size={26} color="#f59e0b" strokeWidth={2.5} />
+                <Trophy size={26} color={colors.gold} strokeWidth={2.5} />
               ) : (
-                <Award size={26} color="#f59e0b" strokeWidth={2.5} />
+                <Award size={26} color={colors.gold} strokeWidth={2.5} />
               )}
             </View>
           </View>
@@ -197,20 +178,20 @@ export default function AchievementsScreen() {
           <RefreshControl
             refreshing={refreshing}
             onRefresh={onRefresh}
-            tintColor="#f59e0b"
-            colors={['#f59e0b']}
+            tintColor={colors.gold}
+            colors={[colors.gold]}
           />
         }
       >
         {/* Progress Section Above Achievements */}
         <View className="px-6 mt-0">
-          <View className="p-6 bg-white border border-gray-200 dark:bg-gray-900 dark:border-gray-700 rounded-2xl">
+          <View style={cardShadow} className="p-6 bg-surface border border-border rounded-[20px]">
             <View className="flex-row items-center justify-between mb-4">
-              <Text className="text-lg font-bold text-gray-900 dark:text-white">
+              <Text className="text-lg font-bold text-fg">
                 Your Progress
               </Text>
-              <View className="px-3 py-1.5 bg-amber-50 dark:bg-amber-900/30 rounded-full">
-                <Text className="text-sm font-bold text-amber-700 dark:text-amber-400">
+              <View className="px-3 py-1.5 bg-gold-soft rounded-full">
+                <Text className="text-sm font-bold text-gold-ink">
                   {unlockedCount}/{totalCount}
                 </Text>
               </View>
@@ -219,9 +200,9 @@ export default function AchievementsScreen() {
             
             {/* Progress Bar */}
             <View className="mb-3">
-              <View className="h-3 overflow-hidden bg-gray-100 rounded-full dark:bg-gray-800">
+              <View className="h-3 overflow-hidden bg-subtle rounded-full">
                 <View
-                  className="h-full rounded-full bg-amber-500 dark:bg-amber-600"
+                  className="h-full rounded-full bg-gold"
                   style={{ width: `${progressPercentage}%` }}
                 />
               </View>
@@ -229,10 +210,10 @@ export default function AchievementsScreen() {
             
             {/* Stats Row */}
             <View className="flex-row items-center justify-between">
-              <Text className="text-sm font-medium text-gray-600 dark:text-gray-400">
+              <Text className="text-sm font-medium text-muted">
                 {progressPercentage}% Complete
               </Text>
-              <Text className="text-sm font-semibold text-amber-600 dark:text-amber-400">
+              <Text className="text-sm font-semibold text-gold-ink">
                 {totalCount - unlockedCount} remaining
               </Text>
             </View>
@@ -244,6 +225,7 @@ export default function AchievementsScreen() {
           <View className="px-6 mt-6">
             <AchievementRoadmap
               achievements={achievements}
+              bestMarker={bestMarker}
               onAchievementPress={(achievement) => setSelectedAchievement(achievement)}
               referenceTime={
                 latestRelapseTimestamp

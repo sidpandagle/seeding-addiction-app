@@ -2,7 +2,10 @@ import { View, Text, useWindowDimensions, Pressable } from 'react-native';
 import { useState } from 'react';
 import { LineChart } from 'react-native-gifted-charts';
 import { Info, X } from 'lucide-react-native';
+import { InsightCallout } from './InsightCallout';
 import { useColorScheme } from '../../stores/themeStore';
+import { useThemeColors, useCardShadow } from '../../hooks/useThemeColors';
+import { withAlpha } from '../../constants/palette';
 import { calculateMonthlyTrend } from '../../utils/chartHelpers';
 import type { Relapse } from '../../db/schema';
 
@@ -12,7 +15,8 @@ interface MonthlyTrendChartProps {
 
 export default function MonthlyTrendChart({ relapses }: Readonly<MonthlyTrendChartProps>) {
   const colorScheme = useColorScheme();
-  const isDark = colorScheme === 'dark';
+  const colors = useThemeColors();
+  const cardShadow = useCardShadow();
   const { width: screenWidth } = useWindowDimensions();
   const [showInfo, setShowInfo] = useState(false);
   const monthlyData = calculateMonthlyTrend(relapses, 6);
@@ -27,16 +31,16 @@ export default function MonthlyTrendChart({ relapses }: Readonly<MonthlyTrendCha
     value: data.count,
     label: data.monthShort,
     labelTextStyle: {
-      color: colorScheme === 'dark' ? '#d1d5db' : '#374151',
-      fontSize: 11,
+      color: colors.body,
+      fontSize: 12,
       fontWeight: '600' as const,
     },
     dataPointText: String(data.count),
     dataPointLabelComponent: () => (
       <Text
         style={{
-          color: colorScheme === 'dark' ? '#10b981' : '#059669',
-          fontSize: 10,
+          color: colors.primary,
+          fontSize: 11,
           fontWeight: '600' as const,
           marginTop: -20,
         }}
@@ -67,11 +71,11 @@ export default function MonthlyTrendChart({ relapses }: Readonly<MonthlyTrendCha
   const trendInfo = getTrendInfo();
 
   return (
-    <View className="p-5 mb-4 bg-white border border-gray-200 dark:bg-gray-900 dark:border-gray-700 rounded-2xl">
+    <View style={cardShadow} className="p-5 mb-4 bg-surface border border-border rounded-[20px]">
       <View className="flex-row items-start justify-between mb-1">
         <View className="flex-1">
-          <Text className="text-lg font-bold text-gray-900 dark:text-white">Monthly Trend</Text>
-          <Text className="mt-1 text-sm text-gray-600 dark:text-gray-400">
+          <Text className="text-lg font-bold text-fg">Monthly Trend</Text>
+          <Text className="font-regular mt-1 text-sm text-muted">
             {relapses.length === 0
               ? 'Start tracking to see your progress over time.'
               : 'Your journey over the last 6 months.'}
@@ -79,23 +83,21 @@ export default function MonthlyTrendChart({ relapses }: Readonly<MonthlyTrendCha
         </View>
         <Pressable
           onPress={() => setShowInfo(!showInfo)}
-          className="items-center justify-center w-8 h-8 ml-2 bg-gray-100 rounded-full dark:bg-gray-800 active:bg-gray-200 dark:active:bg-gray-700"
+          className="items-center justify-center w-8 h-8 ml-2 bg-subtle rounded-full active:bg-border"
         >
           {showInfo ? (
-            <X size={16} color={isDark ? '#9CA3AF' : '#6B7280'} />
+            <X size={16} color={colors.muted} />
           ) : (
-            <Info size={16} color={isDark ? '#9ca3af' : '#6b7280'} strokeWidth={2.5} />
+            <Info size={16} color={colors.muted} strokeWidth={2.5} />
           )}
         </Pressable>
       </View>
 
       {/* Info Card */}
       {showInfo && (
-        <View className="p-3 mt-2 mb-2 bg-blue-100 border border-blue-100 rounded-xl dark:bg-blue-900/20 dark:border-blue-800">
-          <Text className="text-xs font-medium leading-4 text-blue-800 dark:text-blue-200">
-            This chart shows your relapse frequency over 6 months. A downward trend means progress! Don't worry about short-term fluctuations , focus on the overall direction.
-          </Text>
-        </View>
+        <InsightCallout icon={Info} className="mt-3 mb-2">
+          This chart shows your relapse frequency over 6 months. A downward trend means progress! Don't worry about short-term fluctuations, focus on the overall direction.
+        </InsightCallout>
       )}
       <View className="h-2" />
 
@@ -106,30 +108,30 @@ export default function MonthlyTrendChart({ relapses }: Readonly<MonthlyTrendCha
           width={chartWidth}
           height={140}
           spacing={spacing}
-          color={colorScheme === 'dark' ? '#10b981' : '#059669'}
+          color={colors.primary}
           thickness={3}
-          startFillColor={colorScheme === 'dark' ? 'rgba(16, 185, 129, 0.3)' : 'rgba(5, 150, 105, 0.2)'}
-          endFillColor={colorScheme === 'dark' ? 'rgba(16, 185, 129, 0.05)' : 'rgba(5, 150, 105, 0.05)'}
+          startFillColor={withAlpha(colors.primary, colorScheme === 'dark' ? 0.3 : 0.2)}
+          endFillColor={withAlpha(colors.primary, 0.05)}
           startOpacity={0.9}
           endOpacity={0.1}
           initialSpacing={10}
           noOfSections={3}
           maxValue={Math.max(...monthlyData.map((d) => d.count), 1) + 1}
-          yAxisColor={colorScheme === 'dark' ? '#374151' : '#e5e7eb'}
-          xAxisColor={colorScheme === 'dark' ? '#374151' : '#e5e7eb'}
+          yAxisColor={colors.border}
+          xAxisColor={colors.border}
           yAxisThickness={0}
           xAxisThickness={0}
-          yAxisTextStyle={{ color: colorScheme === 'dark' ? '#6b7280' : '#9ca3af', fontSize: 10 }}
+          yAxisTextStyle={{ color: colors.faint, fontSize: 11 }}
           hideRules
           hideDataPoints={false}
           dataPointsHeight={8}
           dataPointsWidth={8}
-          dataPointsColor={colorScheme === 'dark' ? '#10b981' : '#059669'}
+          dataPointsColor={colors.primary}
           dataPointsRadius={4}
           textShiftY={-8}
           textShiftX={-5}
           textFontSize={10}
-          textColor={colorScheme === 'dark' ? '#10b981' : '#059669'}
+          textColor={colors.primary}
           areaChart
           isAnimated
           animationDuration={1000}
@@ -143,24 +145,24 @@ export default function MonthlyTrendChart({ relapses }: Readonly<MonthlyTrendCha
         <View
           className={`flex-row items-center justify-between mt-4 p-3 rounded-xl ${
             trendInfo.direction === 'improving'
-              ? 'bg-green-50 dark:bg-green-900/20'
+              ? 'bg-primary-soft'
               : trendInfo.direction === 'declining'
-              ? 'bg-red-50 dark:bg-red-900/20'
-              : 'bg-gray-50 dark:bg-gray-800'
+              ? 'bg-urge-soft'
+              : 'bg-bg'
           }`}
         >
           <Text
             className={`text-xs font-semibold ${
               trendInfo.direction === 'improving'
-                ? 'text-green-700 dark:text-green-400'
+                ? 'text-primary-ink'
                 : trendInfo.direction === 'declining'
-                ? 'text-red-700 dark:text-red-400'
-                : 'text-gray-700 dark:text-gray-400'
+                ? 'text-urge'
+                : 'text-body'
             }`}
           >
             {trendInfo.message}
           </Text>
-          <Text className="text-xs text-gray-500 dark:text-gray-400">
+          <Text className="font-regular text-xs text-muted">
             Total: <Text className="font-bold">{relapses.length}</Text>
           </Text>
         </View>

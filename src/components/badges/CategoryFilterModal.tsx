@@ -1,7 +1,7 @@
 import { View, Text, Modal, Pressable, FlatList } from 'react-native';
 import { Check, X } from 'lucide-react-native';
 import { BadgeCategory } from '../../db/schema';
-import { useColorScheme } from '../../stores/themeStore';
+import { useThemeColors } from '../../hooks/useThemeColors';
 import Animated, { FadeIn, FadeOut, SlideInDown, SlideOutDown } from 'react-native-reanimated';
 import * as Haptics from 'expo-haptics';
 
@@ -40,7 +40,7 @@ export default function CategoryFilterModal({
   onSelectCategory,
   onClose,
 }: Readonly<CategoryFilterModalProps>) {
-  const colorScheme = useColorScheme();
+  const colors = useThemeColors();
 
   const categories: (BadgeCategory | 'all')[] = [
     'all',
@@ -67,28 +67,28 @@ export default function CategoryFilterModal({
         onPress={() => handleSelectCategory(item)}
         className={`flex-row items-center p-4 mb-2 border rounded-2xl ${
           isSelected
-            ? 'bg-amber-100 dark:bg-amber-900/30 border-amber-100 dark:border-amber-600'
-            : 'bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700'
+            ? 'bg-gold-soft border-gold/30'
+            : 'bg-surface border-border'
         }`}
       >
         <View className="flex-1 mr-3">
           <Text
             className={`text-base font-bold mb-1 ${
               isSelected
-                ? 'text-amber-700 dark:text-amber-400'
-                : 'text-gray-900 dark:text-white'
+                ? 'text-gold-ink'
+                : 'text-fg'
             }`}
           >
             {CATEGORY_LABELS[item]}
           </Text>
-          <Text className="text-xs font-medium text-gray-600 dark:text-gray-400">
+          <Text className="text-xs font-medium text-muted">
             {CATEGORY_DESCRIPTIONS[item]}
           </Text>
         </View>
 
         {isSelected && (
-          <View className="p-2 rounded-full bg-amber-500">
-            <Check size={16} color="#fff" strokeWidth={3} />
+          <View className="p-2 rounded-full bg-gold">
+            <Check size={16} color={colors.onPrimary} strokeWidth={3} />
           </View>
         )}
       </Pressable>
@@ -115,19 +115,19 @@ export default function CategoryFilterModal({
       <Animated.View
         entering={SlideInDown.springify()}
         exiting={SlideOutDown.springify()}
-        className="absolute bottom-0 left-0 right-0 bg-gray-50 dark:bg-gray-950 rounded-t-3xl"
+        className="absolute bottom-0 left-0 right-0 bg-bg rounded-t-3xl"
         style={{ maxHeight: '75%' }}
       >
         {/* Header */}
-        <View className="flex-row items-center justify-between p-6 pb-4 border-b border-gray-200 dark:border-gray-800">
-          <Text className="text-xl font-bold text-gray-900 dark:text-white">
+        <View className="flex-row items-center justify-between p-6 pb-4 border-b border-border">
+          <Text className="text-xl font-bold text-fg">
             Filter Badges
           </Text>
           <Pressable
             onPress={onClose}
-            className="p-2 bg-gray-200 rounded-full dark:bg-gray-800"
+            className="p-2 bg-border rounded-full"
           >
-            <X size={20} color={colorScheme === 'dark' ? '#fff' : '#000'} strokeWidth={2.5} />
+            <X size={20} color={colors.fg} strokeWidth={2.5} />
           </Pressable>
         </View>
 

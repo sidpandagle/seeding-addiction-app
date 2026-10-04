@@ -1,11 +1,14 @@
 import { View, Text, Pressable, Modal, ScrollView, InteractionManager } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
-import { useState, useEffect, useRef, memo, useMemo } from 'react';
+import { useState, useEffect, useRef, memo, useMemo, useCallback, type ReactNode } from 'react';
+import Reanimated, { ZoomIn } from 'react-native-reanimated';
+import * as Haptics from 'expo-haptics';
 import { useRelapseStore } from '../../src/stores/relapseStore';
 import { useActivityStore } from '../../src/stores/activityStore';
 import { useColorScheme } from '../../src/stores/themeStore';
 import { useAchievementStore } from '../../src/stores/achievementStore';
 import { useNotificationStore } from '../../src/stores/notificationStore';
+import { useToastStore } from '../../src/stores/toastStore';
 import RelapseModal from '../../src/components/modals/RelapseModal';
 import ActivityModal from '../../src/components/modals/ActivityModal';
 import EmergencyHelpModal from '../../src/components/modals/EmergencyHelpModal';
@@ -13,40 +16,93 @@ import { JourneyTimerCard } from '../../src/components/home/JourneyTimerCard';
 import { QuickActions } from '../../src/components/home/QuickActions';
 import { StoicWisdomCard } from '../../src/components/home/StoicWisdomCard';
 import AchievementCelebration from '../../src/components/achievements/AchievementCelebration';
-import { getNewlyUnlockedAchievements, Achievement } from '../../src/utils/growthStages';
+import { getNewlyUnlockedAchievements, getGrowthStage, GROWTH_STAGES, Achievement } from '../../src/utils/growthStages';
 import { calculateUserStats } from '../../src/utils/statsHelpers';
+import { computeStreaks, longestPastStreakMs } from '../../src/utils/streaks';
+import { MS_PER_DAY } from '../../src/constants/timeUnits';
 // Icon options for Log Activity (current: Sprout)
 // Available alternatives: Heart, HeartHandshake, Zap, Award, Trophy, CheckCircle, Star, SmilePlus
-import { Sprout, AlertCircle, RotateCcw, TrendingUp, Award, Heart, Sparkles } from 'lucide-react-native';
+import { Sprout, AlertCircle, RotateCcw, TrendingUp, Sparkles, CalendarCheck } from 'lucide-react-native';
 import { useJourneyStats } from '../../src/hooks/useJourneyStats';
 import { useJourneyStartLoader } from '../../src/hooks/useJourneyStartLoader';
-import InsightsModal from '../../src/components/history/InsightsModal';
+import { useLocalDay } from '../../src/hooks/useClock';
 import { useReducedMotion } from '../../src/hooks/useReducedMotion';
+import { useThemeColors, useCardShadow } from '../../src/hooks/useThemeColors';
+import { mixHex } from '../../src/constants/palette';
+
+// Milestones under a day get a toast; a day and up get the full celebration
+const SMALL_MILESTONE_MS = MS_PER_DAY;
+// RN can't present a second page sheet while the first is still closing
+const MODAL_HANDOFF_DELAY_MS = 400;
+
+interface StatTileProps {
+  label: string;
+  value: number;
+  unit?: string;
+  /** Stat color: tints the tile background and colors the value */
+  color: string;
+  valueClass: string;
+  unitClass?: string;
+  /** Lucide icon or stage emoji, shown faintly in the bottom-right corner */
+  watermark: ReactNode;
+  chip?: string;
+}
+
+function StatTile({ label, value, unit, color, valueClass, unitClass, watermark, chip }: StatTileProps) {
+  const colors = useThemeColors();
+  const colorScheme = useColorScheme();
+  const cardShadow = useCardShadow();
+  const backgroundColor = mixHex(color, colorScheme === 'dark' ? 10 : 7, colors.surface);
+
+  return (
+    // Shadow on the outer view: iOS clips shadows on overflow-hidden views
+    <View style={[cardShadow, { backgroundColor }]} className="flex-1 rounded-2xl">
+      <View
+        style={{ backgroundColor }}
+        className="relative grow overflow-hidden border border-border rounded-2xl"
+      >
+        <View className="p-4">
+          <Text className="mb-2 text-xs font-medium tracking-wide uppercase text-muted">
+            {label}
+          </Text>
+          <View className="flex-row items-baseline gap-1">
+            <Text className={`text-3xl font-bold ${valueClass}`}>{value}</Text>
+            {unit && <Text className={`text-sm font-medium ${unitClass}`}>{unit}</Text>}
+          </View>
+          {chip && (
+            <Text className="mt-1 text-xs font-bold tracking-wide uppercase text-primary-ink">
+              {chip}
+            </Text>
+          )}
+        </View>
+        {/* Background icon or emoji */}
+        <View className="absolute bottom-[-8px] right-[-8px] opacity-15 dark:opacity-10">{watermark}</View>
+      </View>
+    </View>
+  );
+}
+
+function StageWatermark({ ms }: { ms: number }) {
+  return <Text style={{ fontSize: 56, lineHeight: 66 }}>{getGrowthStage(ms).emoji}</Text>;
+}
 
 function DashboardScreen() {
   const colorScheme = useColorScheme();
+  const colors = useThemeColors();
+  const cardShadow = useCardShadow();
   const reducedMotion = useReducedMotion();
-
-  // Memoize background styles to prevent new object creation on every render
-  const cardBgStyle = useMemo(() => ({
-    backgroundColor: colorScheme === 'dark' ? '#111827' : '#ffffff'
-  }), [colorScheme]);
-
-  const emergencyBtnStyle = useMemo(() => ({
-    backgroundColor: colorScheme === 'dark' ? 'rgba(153, 27, 27, 0.3)' : '#fecaca'
-  }), [colorScheme]);
 
   const [showModal, setShowModal] = useState(false);
   const [showActivityModal, setShowActivityModal] = useState(false);
   const [preSelectedCategories, setPreSelectedCategories] = useState<string[]>([]);
   const [showHelpModal, setShowHelpModal] = useState(false);
-  const [showInsightsModal, setShowInsightsModal] = useState(false);
   const relapses = useRelapseStore((state) => state.relapses);
   const { journeyStart: journeyStartTime } = useJourneyStartLoader();
   const activities = useActivityStore((state) => state.activities);
   const loadActivities = useActivityStore((state) => state.loadActivities);
   const [celebrationAchievement, setCelebrationAchievement] = useState<Achievement | null>(null);
   const [pendingAchievements, setPendingAchievements] = useState<Achievement[]>([]);
+  const showToast = useToastStore((state) => state.showToast);
 
   // Achievement tracking store
   const lastCheckedElapsedTime = useAchievementStore((state) => state.lastCheckedElapsedTime);
@@ -58,11 +114,13 @@ function DashboardScreen() {
   const milestoneNotificationsEnabled = useNotificationStore((state) => state.milestoneNotificationsEnabled);
   const scheduleUpcomingMilestones = useNotificationStore((state) => state.scheduleUpcomingMilestones);
 
-  // Use centralized hook for journey stats (now optimized - no continuous updates)
+  // Re-renders only when the latest relapse changes or a new growth stage is reached
   const stats = useJourneyStats();
+  // Changes at midnight, so "Days kept" and day counts stay current
+  const today = useLocalDay();
 
-  // Track previous elapsed time for achievement detection
-  const previousElapsedRef = useRef<number>(0);
+  // Remember the stage on screen at mount; the header emoji only pops when it changes after that
+  const initialStageIdRef = useRef(stats.growthStage.id);
 
   // Defer activity loading until after screen is fully rendered (performance optimization)
   useEffect(() => {
@@ -78,7 +136,7 @@ function DashboardScreen() {
     if (!journeyStartTime || !notificationsEnabled || !milestoneNotificationsEnabled) return;
 
     const task = InteractionManager.runAfterInteractions(() => {
-      // Get the last relapse time if any relapses exist
+      // Relapses are kept newest first
       const lastRelapseTime = relapses.length > 0
         ? new Date(relapses[0].timestamp).getTime()
         : null;
@@ -92,74 +150,90 @@ function DashboardScreen() {
     return () => task.cancel();
   }, [journeyStartTime, relapses, notificationsEnabled, milestoneNotificationsEnabled, scheduleUpcomingMilestones]);
 
-  // Check for missed achievements on app open (runs once after hydration)
+  // Small milestones become a toast; bigger ones queue the full celebration
+  const celebrate = useCallback((unlocked: Achievement[]) => {
+    const small = unlocked.filter((a) => a.threshold < SMALL_MILESTONE_MS);
+    const big = unlocked.filter((a) => a.threshold >= SMALL_MILESTONE_MS);
+
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+
+    if (small.length > 0 && big.length === 0) {
+      const latest = small[small.length - 1];
+      showToast(`${latest.emoji} ${latest.title} reached`);
+    }
+
+    if (big.length > 0) {
+      setPendingAchievements((prev) => [...prev, ...big]);
+      setCelebrationAchievement((current) => current ?? big[0]);
+    }
+  }, [showToast]);
+
+  // Check for missed achievements on app open (runs once after hydration, and after each relapse)
   useEffect(() => {
     if (!stats.startTime || !achievementStoreHydrated) return;
 
-    const currentElapsed = Math.max(0, Date.now() - new Date(stats.startTime!).getTime());
-
-    // Get achievements that were unlocked since last check
-    const missedAchievements = getNewlyUnlockedAchievements(
-      currentElapsed,
-      lastCheckedElapsedTime
-    );
+    const currentElapsed = Math.max(0, Date.now() - new Date(stats.startTime).getTime());
+    const missedAchievements = getNewlyUnlockedAchievements(currentElapsed, lastCheckedElapsedTime);
 
     if (missedAchievements.length > 0) {
-      // Queue achievements to show sequentially
-      setPendingAchievements(missedAchievements);
-      // Show the first one immediately
-      setCelebrationAchievement(missedAchievements[0]);
+      celebrate(missedAchievements);
     }
 
-    // Update last checked time (only once on mount)
     setLastCheckedElapsedTime(currentElapsed);
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [stats.startTime, achievementStoreHydrated]);
 
-  // Memoize user stats calculation to prevent recalculation on every render
-  const userStats = useMemo(
-    () => calculateUserStats(relapses, stats.startTime, activities),
-    [relapses, stats.startTime, activities]
-  );
-
-  // Achievement detection: monitor elapsed time and trigger celebrations while app is open
+  // While the app is open: useJourneyStats re-renders exactly when a stage is reached
+  const liveCheckRef = useRef<{ startTime: string | null; elapsed: number }>({ startTime: null, elapsed: 0 });
   useEffect(() => {
     if (!stats.startTime) return;
 
-    const checkAchievements = () => {
-      const currentElapsed = Math.max(0, Date.now() - new Date(stats.startTime!).getTime());
-      const previousElapsed = previousElapsedRef.current;
+    const elapsed = Math.max(0, stats.now - new Date(stats.startTime).getTime());
+    const previous = liveCheckRef.current;
 
-      // Check if any new achievements were unlocked
-      const newAchievements = getNewlyUnlockedAchievements(currentElapsed, previousElapsed);
-
-      if (newAchievements.length > 0) {
-        // Queue achievements to show sequentially
-        setPendingAchievements(prev => [...prev, ...newAchievements]);
-
-        // If no achievement is currently showing, show the first one
-        if (!celebrationAchievement) {
-          setCelebrationAchievement(newAchievements[0]);
-        }
-
-        // Update last checked time in store
-        setLastCheckedElapsedTime(currentElapsed);
+    // A new streak (relapse, undo or edit) starts fresh without replaying milestones
+    if (previous.startTime === stats.startTime) {
+      const unlocked = getNewlyUnlockedAchievements(elapsed, previous.elapsed);
+      if (unlocked.length > 0) {
+        celebrate(unlocked);
+        setLastCheckedElapsedTime(elapsed);
       }
+    }
 
-      // Update previous elapsed time
-      previousElapsedRef.current = currentElapsed;
-    };
+    liveCheckRef.current = { startTime: stats.startTime, elapsed };
+  }, [stats.startTime, stats.now, celebrate, setLastCheckedElapsedTime]);
 
-    // Initialize previousElapsedRef on mount to prevent false triggers
-    const initialElapsed = Math.max(0, Date.now() - new Date(stats.startTime!).getTime());
-    previousElapsedRef.current = initialElapsed;
+  // Stats grid. Uses the real journey start (not the latest relapse) so the first streak counts
+  const userStats = useMemo(
+    () => calculateUserStats(relapses, journeyStartTime, activities),
+    // `today` and `stats.now` refresh day counts at midnight and on stage changes
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [relapses, journeyStartTime, activities, today, stats.now]
+  );
 
-    // Check every second for new achievements (no immediate check on mount)
-    const interval = setInterval(checkAchievements, 1000);
+  // Furthest stage reached by any finished streak, for "Back at ..." messages
+  const bestPastStageIndex = useMemo(() => {
+    if (relapses.length === 0) return -1;
+    const bestPastMs = longestPastStreakMs(computeStreaks(relapses, journeyStartTime));
+    return GROWTH_STAGES.indexOf(getGrowthStage(bestPastMs));
+  }, [relapses, journeyStartTime]);
 
-    return () => clearInterval(interval);
-  }, [stats.startTime, celebrationAchievement, setLastCheckedElapsedTime]);
+  const celebrationNote = useMemo(() => {
+    if (!celebrationAchievement || bestPastStageIndex < 0) return undefined;
+    const index = GROWTH_STAGES.findIndex((s) => s.id === celebrationAchievement.id);
+    if (index < 0) return undefined;
+    const stage = GROWTH_STAGES[index];
+    const best = GROWTH_STAGES[bestPastStageIndex];
+    if (bestPastStageIndex > index) {
+      return `Back at ${stage.emoji} ${stage.label}. Your best is ${best.emoji} ${best.label}.`;
+    }
+    if (bestPastStageIndex === index) {
+      const next = GROWTH_STAGES[index + 1];
+      return next ? `You've matched your best. ${next.emoji} ${next.label} would be new ground.` : undefined;
+    }
+    return 'New personal best! 🌱';
+  }, [celebrationAchievement, bestPastStageIndex]);
 
   const handleRelapsePress = () => {
     setShowModal(true);
@@ -172,6 +246,12 @@ function DashboardScreen() {
 
   const handleHelpPress = () => {
     setShowHelpModal(true);
+  };
+
+  // "Not yet" on the relapse check-in: swap to the urge help screen
+  const handleNeedUrgeHelp = () => {
+    setShowModal(false);
+    setTimeout(() => setShowHelpModal(true), MODAL_HANDOFF_DELAY_MS);
   };
 
   const handleActivityModalClose = () => {
@@ -196,8 +276,10 @@ function DashboardScreen() {
     });
   };
 
+  const stageChangedSinceMount = stats.growthStage.id !== initialStageIdRef.current;
+
   return (
-    <View className="flex-1 bg-gray-50 dark:bg-gray-950">
+    <View className="flex-1 bg-bg">
       <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'} />
 
       {/* Elegant Header */}
@@ -205,26 +287,31 @@ function DashboardScreen() {
         <View className="flex-row items-center justify-between px-6">
           <View className="flex-1">
             <View className="flex-row items-center gap-2 mb-0">
-              <Text className="text-2xl font-semibold tracking-wide text-gray-900 dark:text-white">
+              <Text className="text-2xl font-semibold tracking-wide text-fg">
                 {stats.growthStage.achievementTitle}
               </Text>
-              <Text className="text-2xl">{stats.growthStage.emoji}</Text>
+              <Reanimated.Text
+                key={stats.growthStage.id}
+                entering={stageChangedSinceMount && !reducedMotion ? ZoomIn.springify().damping(9) : undefined}
+                style={{ fontSize: 24, lineHeight: 32 }}
+              >
+                {stats.growthStage.emoji}
+              </Reanimated.Text>
             </View>
-            <Text className="pr-2 mt-0 text-sm tracking-wide font-regular text-emerald-700 dark:text-emerald-400">
+            <Text className="pr-2 mt-0 text-sm tracking-wide font-regular text-primary-ink">
               {stats.growthStage.description}
             </Text>
           </View>
 
-          {/* Emergency Help Button */}
+          {/* Emergency Help Button. Icon only; the label tells screen readers what it does */}
           <Pressable
             onPress={handleHelpPress}
-            style={emergencyBtnStyle}
-            className="items-center justify-center bg-red-200 w-14 h-14 rounded-xl active:scale-95"
-            accessibilityLabel="Emergency help"
+            className="items-center justify-center w-14 h-14 rounded-2xl bg-urge-soft active:scale-95"
+            accessibilityLabel="Having an urge? Get help"
             accessibilityHint="Opens crisis resources and coping strategies"
             accessibilityRole="button"
           >
-            <AlertCircle size={28} color="#ef4444" strokeWidth={2.5} />
+            <AlertCircle size={26} color={colors.urge} strokeWidth={2.5} />
           </Pressable>
         </View>
       </View>
@@ -236,36 +323,28 @@ function DashboardScreen() {
       >
         {/* Hero Section - Journey Timer Card */}
         <View className="py-6 -mt-4">
-          {stats.startTime && (
-            <JourneyTimerCard
-              startTime={stats.startTime}
-              growthStage={{
-                emoji: stats.growthStage.emoji,
-                achievementTitle: stats.growthStage.achievementTitle,
-                description: stats.growthStage.description,
-              }}
-              nextCheckpoint={stats.checkpointProgress?.nextCheckpoint}
-            />
-          )}
+          {stats.startTime && <JourneyTimerCard startTime={stats.startTime} />}
         </View>
 
         {/* Quick Actions */}
         <View className="px-6 mb-6">
           <View className="flex-row gap-6">
-            {/* Log Activity - Primary Action */}
+            {/* Log a win - Primary Action */}
             <Pressable
               onPress={() => handleActivityPress()}
-              className="flex-1 border bg-emerald-100 dark:bg-emerald-950/30 border-emerald-100 dark:border-emerald-700 rounded-xl"
+              style={cardShadow}
+              className="flex-1 border bg-primary border-primary rounded-2xl"
+              accessibilityRole="button"
             >
               <View className="items-center px-4 py-6">
                 <View className="items-center justify-center mb-3 rounded-lg w-14 h-14">
-                  <Sprout size={40} color="#10b981" strokeWidth={2} />
+                  <Sprout size={40} color={colors.onPrimary} strokeWidth={2} />
                 </View>
-                <Text className="mb-0 text-base font-bold text-center text-emerald-800 dark:text-emerald-200">
-                  Track Your Growth
+                <Text className="mb-0 text-base font-bold text-center text-primary-on">
+                  Log a win
                 </Text>
-                <Text className="text-xs text-center text-emerald-800 dark:text-emerald-200">
-                  Track healthy actions
+                <Text className="text-xs text-center font-regular text-primary-on/85">
+                  Something healthy you did
                 </Text>
               </View>
             </Pressable>
@@ -273,17 +352,18 @@ function DashboardScreen() {
             {/* Record Relapse - Secondary Action */}
             <Pressable
               onPress={handleRelapsePress}
-              style={cardBgStyle}
-              className="flex-1 border border-gray-200 rounded-xl dark:border-gray-800"
+              style={cardShadow}
+              className="flex-1 border bg-surface border-border rounded-2xl"
+              accessibilityRole="button"
             >
               <View className="items-center px-4 py-6">
-                <View className="items-center justify-center mb-3 w-14 h-14 rounded-xl bg-emerald-50 dark:bg-emerald-950/30">
-                  <RotateCcw size={28} color="#10b981" strokeWidth={2.5} />
+                <View className="items-center justify-center mb-3 w-14 h-14 rounded-xl bg-primary-soft">
+                  <RotateCcw size={28} color={colors.primary} strokeWidth={2.5} />
                 </View>
-                <Text className="mb-1 text-base font-bold text-center text-gray-800 dark:text-gray-200">
+                <Text className="mb-1 text-base font-bold text-center text-fg">
                   Log Relapse
                 </Text>
-                <Text className="text-xs text-center text-gray-500 dark:text-gray-400">
+                <Text className="text-xs text-center text-muted font-regular">
                   Track what happened
                 </Text>
               </View>
@@ -291,109 +371,55 @@ function DashboardScreen() {
           </View>
         </View>
 
-        {/* Stats Grid - Redesigned with Icons */}
+        {/* Stats Grid */}
         <View className="px-6 mb-6">
           <View className="flex-row items-center justify-between mb-6">
             <View className="flex-row items-center gap-3">
-              <TrendingUp size={20} strokeWidth={2.5} color={colorScheme === 'dark' ? '#6ee7b7' : '#10b981'} />
-              <Text className="text-lg font-semibold text-gray-800 dark:text-gray-200">
+              <TrendingUp size={20} strokeWidth={2.5} color={colors.primary} />
+              <Text className="text-lg font-semibold text-fg">
                 Keep growing
               </Text>
             </View>
           </View>
 
-          {/* First Row */}
           <View className="flex-row gap-6 mb-6">
-            {/* Total Attempts */}
-            <View
-              style={cardBgStyle}
-              className="relative flex-1 overflow-hidden border border-gray-200 rounded-xl dark:border-gray-800"
-            >
-              <View className="p-4">
-                <Text className="mb-2 text-xs font-medium tracking-wide text-gray-600 uppercase dark:text-gray-400">
-                  Total Attempts
-                </Text>
-                <Text className="text-3xl font-bold text-emerald-600 dark:text-emerald-400">
-                  {userStats.totalAttempts}
-                </Text>
-              </View>
-              {/* Background Icon */}
-              <View className="absolute bottom-[-8px] right-[-8px] opacity-15">
-                <RotateCcw size={70} color="#10b981" strokeWidth={2} />
-              </View>
-            </View>
-
-            {/* Best Streak */}
-            <View
-              style={cardBgStyle}
-              className="relative flex-1 overflow-hidden border border-gray-200 rounded-xl dark:border-gray-800"
-            >
-              <View className="p-4">
-                <Text className="mb-2 text-xs font-medium tracking-wide text-gray-600 uppercase dark:text-gray-400">
-                  Best Streak
-                </Text>
-                <View className="flex-row items-baseline gap-1">
-                  <Text className="text-3xl font-bold text-amber-600 dark:text-amber-400">
-                    {userStats.bestStreak}
-                  </Text>
-                  <Text className="text-sm font-medium text-amber-500 dark:text-amber-500">
-                    days
-                  </Text>
-                </View>
-              </View>
-              {/* Background Icon */}
-              <View className="absolute bottom-[-8px] right-[-8px] opacity-15 dark:opacity-10">
-                <Award size={70} color="#f59e0b" strokeWidth={2} />
-              </View>
-            </View>
+            <StatTile
+              label="Days kept"
+              value={userStats.daysKept}
+              color={colors.primary}
+              valueClass="text-primary-ink"
+              chip="Never resets"
+              watermark={<CalendarCheck size={70} color={colors.primary} strokeWidth={2} />}
+            />
+            <StatTile
+              label="Best streak"
+              value={userStats.bestStreak}
+              unit={userStats.bestStreak === 1 ? 'day' : 'days'}
+              color={colors.relapse}
+              valueClass="text-relapse"
+              unitClass="text-relapse/80"
+              watermark={<StageWatermark ms={userStats.bestStreakMs} />}
+            />
           </View>
 
-          {/* Second Row */}
           <View className="flex-row gap-6">
-            {/* Activities Logged */}
-            <View
-              style={cardBgStyle}
-              className="relative flex-1 overflow-hidden border border-gray-200 rounded-xl dark:border-gray-800"
-            >
-              <View className="p-4">
-                <Text className="mb-2 text-xs font-medium tracking-wide text-gray-600 uppercase dark:text-gray-400">
-                  Activities Logged
-                </Text>
-                <Text className="text-3xl font-bold text-blue-600 dark:text-blue-400">
-                  {userStats.activitiesLogged}
-                </Text>
-              </View>
-              {/* Background Icon */}
-              <View className="absolute bottom-[-8px] right-[-8px] opacity-15 dark:opacity-10">
-                <Sparkles size={70} color="#3b82f6" strokeWidth={2} />
-              </View>
-            </View>
-
-            {/* Success Rate */}
-            <View
-              style={cardBgStyle}
-              className="relative flex-1 overflow-hidden border border-gray-200 rounded-xl dark:border-gray-800"
-            >
-              <View className="p-4">
-                <Text className="mb-2 text-xs font-medium tracking-wide text-gray-600 uppercase dark:text-gray-400">
-                  Success Rate
-                </Text>
-                <View className="flex-row items-baseline gap-1">
-                  <Text className="text-3xl font-bold text-purple-600 dark:text-purple-400">
-                    {userStats.resistanceRate}
-                  </Text>
-                  <Text className="text-sm font-medium text-purple-500 dark:text-purple-500">
-                    %
-                  </Text>
-                </View>
-              </View>
-              {/* Background Icon */}
-              <View className="absolute bottom-[-8px] right-[-8px] opacity-15 dark:opacity-10">
-                <Heart size={70} color="#a855f7" strokeWidth={2} />
-              </View>
-            </View>
+            <StatTile
+              label="Wins logged"
+              value={userStats.activitiesLogged}
+              color={colors.info}
+              valueClass="text-info"
+              watermark={<Sparkles size={70} color={colors.info} strokeWidth={2} />}
+            />
+            <StatTile
+              label="Avg streak"
+              value={userStats.averageStreak}
+              unit={userStats.averageStreak === 1 ? 'day' : 'days'}
+              color={colors.plum}
+              valueClass="text-plum"
+              unitClass="text-plum/80"
+              watermark={<StageWatermark ms={userStats.averageStreakMs} />}
+            />
           </View>
-
         </View>
 
         {/* Quick Actions */}
@@ -409,7 +435,7 @@ function DashboardScreen() {
           presentationStyle="pageSheet"
           onRequestClose={() => setShowModal(false)}
         >
-          <RelapseModal onClose={() => setShowModal(false)} />
+          <RelapseModal onClose={() => setShowModal(false)} onNeedUrgeHelp={handleNeedUrgeHelp} />
         </Modal>
 
         {/* Activity Modal */}
@@ -435,22 +461,13 @@ function DashboardScreen() {
           <EmergencyHelpModal onClose={() => setShowHelpModal(false)} />
         </Modal>
 
-        {/* Achievement Celebration Modal */}
+        {/* Achievement Celebration Modal (milestones of a day and up) */}
         <AchievementCelebration
           achievement={celebrationAchievement}
           visible={!!celebrationAchievement}
           onClose={handleCelebrationClose}
+          note={celebrationNote}
         />
-
-        {/* Insights Modal */}
-        <Modal
-          visible={showInsightsModal}
-          animationType={reducedMotion ? 'none' : 'slide'}
-          presentationStyle="pageSheet"
-          onRequestClose={() => setShowInsightsModal(false)}
-        >
-          <InsightsModal onClose={() => setShowInsightsModal(false)} />
-        </Modal>
       </ScrollView>
     </View>
   );

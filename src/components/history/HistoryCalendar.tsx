@@ -1,9 +1,28 @@
-import React, { useCallback, useMemo } from 'react';
-import { View } from 'react-native';
+import React, { useCallback, useMemo, useState } from 'react';
+import { Pressable, Text, View } from 'react-native';
 import { Calendar, DateData } from 'react-native-calendars';
+import { ChevronDown } from 'lucide-react-native';
 import { useColorScheme } from '../../stores/themeStore';
+import { useThemeColors, useCardShadow } from '../../hooks/useThemeColors';
+import { mixHex } from '../../constants/palette';
+import MonthYearPicker, { type YearMonth } from './MonthYearPicker';
 import type { HistoryEntry } from '../../types/history';
 import { getLocalDateString, getTodayLocalDateString } from '../../utils/dateHelpers';
+
+const MONTH_NAMES = [
+  'January', 'February', 'March', 'April', 'May', 'June',
+  'July', 'August', 'September', 'October', 'November', 'December',
+];
+
+const toYearMonth = (date: Date): YearMonth => ({ year: date.getFullYear(), month: date.getMonth() });
+
+/** "2026-10-14" -> { year: 2026, month: 9 } */
+const parseYearMonth = (dateString: string): YearMonth => ({
+  year: Number(dateString.slice(0, 4)),
+  month: Number(dateString.slice(5, 7)) - 1,
+});
+
+const toCalendarDate = ({ year, month }: YearMonth) => `${year}-${String(month + 1).padStart(2, '0')}-01`;
 
 interface HistoryCalendarProps {
   entries: HistoryEntry[];
@@ -20,11 +39,22 @@ const HistoryCalendar = React.memo(function HistoryCalendar({
   journeyStart,
 }: HistoryCalendarProps) {
   const colorScheme = useColorScheme();
+  const colors = useThemeColors();
+  const cardShadow = useCardShadow();
   const isDark = colorScheme === 'dark';
 
-  // Create marked dates object for the calendar
+  // Month on screen. The library only reads `current` when it mounts, so jumping to another
+  // month remounts it (jumpCount) while swipes and arrows just keep visibleMonth in sync.
+  const [visibleMonth, setVisibleMonth] = useState<YearMonth>(() => toYearMonth(new Date()));
+  const [jumpCount, setJumpCount] = useState(0);
+  const [pickerOpen, setPickerOpen] = useState(false);
+
+  // Create marked dates object for the calendar.
+  // Relapse days get an amber dot, activity days a green one; days with both show two dots.
   const markedDates = useMemo(() => {
     const marks: { [key: string]: any } = {};
+    const relapseDot = { key: 'relapse', color: colors.relapse };
+    const activityDot = { key: 'activity', color: colors.primary };
 
     // Group entries by date to handle mixed dates (both relapse and activity on same day)
     const dateGroups: { [key: string]: { hasRelapse: boolean; hasActivity: boolean } } = {};
@@ -41,86 +71,49 @@ const HistoryCalendar = React.memo(function HistoryCalendar({
       }
     });
 
-    // Mark dates based on entry types
     Object.entries(dateGroups).forEach(([dateKey, { hasRelapse, hasActivity }]) => {
-      let dotColor: string;
-      let textColor: string;
-
-      if (hasRelapse && hasActivity) {
-        // Both types on same day - use amber/yellow
-        dotColor = '#F59E0B'; // amber-500
-        textColor = isDark ? '#FDE68A' : '#92400E'; // amber-200/amber-800
-      } else if (hasRelapse) {
-        // Only relapse - red
-        dotColor = '#EF4444'; // red-500
-        textColor = isDark ? '#FECACA' : '#991B1B'; // red-200/red-800
-      } else {
-        // Only activity - green
-        dotColor = '#10B981'; // green-500
-        textColor = isDark ? '#A7F3D0' : '#065F46'; // green-200/green-800
-      }
-
-      marks[dateKey] = {
-        marked: true,
-        dotColor,
-        customStyles: {
-          text: {
-            color: textColor,
-            fontWeight: 'bold',
-            fontSize: 18,
-          },
-        },
-      };
+      const dots = [];
+      if (hasRelapse) dots.push(relapseDot);
+      if (hasActivity) dots.push(activityDot);
+      marks[dateKey] = { dots, hasRelapse, hasActivity };
     });
-
-    // Mark selected date
-    if (selectedDate) {
-      const markedDate = marks[selectedDate];
-      let selectedColor: string;
-      let selectedTextColor: string;
-
-      if (markedDate?.marked) {
-        // Use color matching the dot color
-        if (markedDate.dotColor === '#EF4444') {
-          // Red for relapse
-          selectedColor = isDark ? '#7f1d1d' : '#fca5a5'; // red-900/red-300
-          selectedTextColor = isDark ? '#fecaca' : '#7f1d1d'; // red-200/red-900
-        } else if (markedDate.dotColor === '#10B981') {
-          // Green for activity
-          selectedColor = isDark ? '#065F46' : '#86EFAC'; // green-900/green-300
-          selectedTextColor = isDark ? '#A7F3D0' : '#065F46'; // green-200/green-900
-        } else {
-          // Amber for mixed
-          selectedColor = isDark ? '#78350F' : '#FCD34D'; // amber-900/amber-300
-          selectedTextColor = isDark ? '#FDE68A' : '#78350F'; // amber-200/amber-900
-        }
-      } else {
-        // Default blue for non-marked dates
-        selectedColor = isDark ? '#1d4ed8' : '#bfdbfe'; // blue-700/blue-200
-        selectedTextColor = isDark ? '#FFFFFF' : '#111827'; // white/gray-900
-      }
-
-      marks[selectedDate] = {
-        ...marks[selectedDate],
-        selected: true,
-        selectedColor,
-        selectedTextColor,
-        marked: markedDate?.marked,
-        dotColor: markedDate?.dotColor,
-      };
-    }
 
     // Mark today
     const today = getTodayLocalDateString();
     if (!marks[today]) {
       marks[today] = {
-        marked: true,
-        dotColor: isDark ? '#60A5FA' : '#3B82F6', // blue-400/blue-500
+        dots: [{ key: 'today', color: colors.info }],
+      };
+    }
+
+    // Mark selected date, tinted by what happened that day
+    if (selectedDate) {
+      const day = marks[selectedDate];
+      const selectedTint = isDark ? 35 : 28;
+      let selectedColor: string;
+      let selectedTextColor: string;
+
+      if (day?.hasRelapse) {
+        selectedColor = mixHex(colors.relapse, selectedTint, colors.surface);
+        selectedTextColor = colors.relapseInk;
+      } else if (day?.hasActivity) {
+        selectedColor = mixHex(colors.primary, selectedTint, colors.surface);
+        selectedTextColor = colors.primaryInk;
+      } else {
+        selectedColor = mixHex(colors.info, selectedTint, colors.surface);
+        selectedTextColor = colors.fg;
+      }
+
+      marks[selectedDate] = {
+        ...day,
+        selected: true,
+        selectedColor,
+        selectedTextColor,
       };
     }
 
     return marks;
-  }, [entries, selectedDate, isDark]);
+  }, [entries, selectedDate, isDark, colors]);
 
   const handleDayPress = useCallback(
     (day: DateData) => {
@@ -129,45 +122,108 @@ const HistoryCalendar = React.memo(function HistoryCalendar({
     [onDateSelect]
   );
 
+  const handleMonthChange = useCallback((month: DateData) => {
+    setVisibleMonth(parseYearMonth(month.dateString));
+  }, []);
+
+  const jumpTo = useCallback((target: YearMonth) => {
+    setVisibleMonth(target);
+    setJumpCount((count) => count + 1);
+    setPickerOpen(false);
+  }, []);
+
+  // Pickable range: from the journey start (or first entry) to the end of next year
+  const pickerRange = useMemo(() => {
+    const now = new Date();
+    let first = now;
+    if (journeyStart) {
+      first = new Date(journeyStart);
+    } else if (entries.length > 0) {
+      first = new Date(Math.min(...entries.map((entry) => new Date(entry.data.timestamp).getTime())));
+    }
+    const min = toYearMonth(first);
+    const max = { year: now.getFullYear() + 1, month: 11 };
+    return { min, max };
+  }, [journeyStart, entries]);
+
+  // The month title doubles as the "jump to" button
+  const renderHeader = useCallback(
+    (date?: { getFullYear(): number; getMonth(): number }) => {
+      if (!date) return null;
+      const label = `${MONTH_NAMES[date.getMonth()]} ${date.getFullYear()}`;
+      return (
+        <Pressable
+          onPress={() => setPickerOpen(true)}
+          hitSlop={8}
+          accessibilityRole="button"
+          accessibilityLabel={`${label}. Choose month and year`}
+          className="flex-row items-center gap-1 px-3 py-1 rounded-full active:opacity-60"
+        >
+          <Text allowFontScaling={false} className="text-xl font-bold text-fg">
+            {label}
+          </Text>
+          <ChevronDown size={20} color={colors.info} strokeWidth={2.5} />
+        </Pressable>
+      );
+    },
+    [colors.info]
+  );
+
   const theme = useMemo(
     () => ({
-      calendarBackground: isDark ? '#111827' : '#FFFFFF', // gray-800/white
-      textSectionTitleColor: isDark ? '#9CA3AF' : '#6B7280', // gray-400/gray-500
-      selectedDayBackgroundColor: '#3B82F6', // blue-500
-      selectedDayTextColor: '#FFFFFF',
-      todayTextColor: '#3B82F6', // blue-500
-      dayTextColor: isDark ? '#F9FAFB' : '#111827', // gray-50/gray-900
-      textDisabledColor: isDark ? '#4B5563' : '#D1D5DB', // gray-600/gray-300
-      monthTextColor: isDark ? '#F9FAFB' : '#111827', // gray-50/gray-900
+      calendarBackground: colors.surface,
+      textSectionTitleColor: colors.muted,
+      selectedDayBackgroundColor: colors.info,
+      selectedDayTextColor: colors.onPrimary,
+      todayTextColor: colors.info,
+      dayTextColor: colors.fg,
+      textDisabledColor: colors.faint,
+      monthTextColor: colors.fg,
       textMonthFontWeight: 'bold' as const,
       textDayFontSize: 18, // Increased from 14
       textMonthFontSize: 20, // Increased from 16
       textDayHeaderFontSize: 14, // Increased from 12
-      arrowColor: '#3B82F6', // blue-500
+      arrowColor: colors.info,
     }),
-    [isDark]
+    [colors]
   );
 
   return (
     <View className="px-6 py-4">
-      <View className="overflow-hidden bg-white border border-gray-200 dark:border-gray-700 dark:bg-gray-900 rounded-3xl">
-        <Calendar
-          key={colorScheme} // Force re-render when theme changes
-          markingType="custom"
-          markedDates={markedDates}
-          onDayPress={handleDayPress}
-          theme={theme}
-          enableSwipeMonths={true}
-          // Allow future dates - no restrictions
-          maxDate={undefined}
-          // Show calendar from journey start or first relapse
-          minDate={journeyStart || undefined}
-          style={{
-            paddingVertical: 18,
-            paddingHorizontal: 14,
-          }}
-        />
+      {/* Shadow on the outer view: iOS clips shadows on overflow-hidden views */}
+      <View style={cardShadow} className="bg-surface rounded-[20px]">
+        <View className="overflow-hidden bg-surface border border-border rounded-[20px]">
+          <Calendar
+            key={`${colorScheme}-${jumpCount}`} // Remount on theme change or when jumping to a month
+            current={toCalendarDate(visibleMonth)}
+            onMonthChange={handleMonthChange}
+            renderHeader={renderHeader}
+            markingType="multi-dot"
+            markedDates={markedDates}
+            onDayPress={handleDayPress}
+            theme={theme}
+            enableSwipeMonths={true}
+            // Allow future dates - no restrictions
+            maxDate={undefined}
+            // Show calendar from journey start or first relapse
+            minDate={journeyStart || undefined}
+            style={{
+              paddingVertical: 18,
+              paddingHorizontal: 14,
+            }}
+          />
+        </View>
       </View>
+
+      <MonthYearPicker
+        visible={pickerOpen}
+        value={visibleMonth}
+        min={pickerRange.min}
+        max={pickerRange.max}
+        onSelect={jumpTo}
+        onToday={() => jumpTo(toYearMonth(new Date()))}
+        onClose={() => setPickerOpen(false)}
+      />
     </View>
   );
 });

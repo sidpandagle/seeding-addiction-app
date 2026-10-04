@@ -12,13 +12,21 @@ import { ThemeTransitionOverlay } from '../src/components/common/ThemeTransition
 import { ErrorBoundary } from '../src/components/common/ErrorBoundary';
 import { initializeEncryptionKey } from '../src/services/security';
 import { initializeDatabase } from '../src/db/schema';
-import { useFonts, Poppins_400Regular, Poppins_500Medium, Poppins_600SemiBold, Poppins_700Bold } from '@expo-google-fonts/poppins';
+import {
+  useFonts,
+  Nunito_400Regular,
+  Nunito_500Medium,
+  Nunito_600SemiBold,
+  Nunito_700Bold,
+  Nunito_800ExtraBold,
+} from '@expo-google-fonts/nunito';
 import { useColorScheme } from 'nativewind';
 import * as SplashScreen from 'expo-splash-screen';
 import Animated, { FadeIn } from 'react-native-reanimated';
 import { useReducedMotion, ANIMATION_PRESETS } from '../src/hooks/useReducedMotion';
 import BadgeCelebration from '../src/components/badges/BadgeCelebration';
 import { Badge } from '../src/db/schema';
+import { palette } from '../src/constants/palette';
 import "../global.css";
 
 // Suppress deprecation warnings from third-party libraries
@@ -43,7 +51,7 @@ export default function RootLayout() {
   const reducedMotion = useReducedMotion();
 
   // Background color for consistent theming across navigation
-  const backgroundColor = colorScheme === 'dark' ? '#030712' : '#f9fafb';
+  const backgroundColor = palette[colorScheme].bg;
 
   // Memoize screen options for stack navigator
   const screenOptions = useMemo(() => ({
@@ -60,10 +68,11 @@ export default function RootLayout() {
   const [celebratingBadge, setCelebratingBadge] = useState<Badge | null>(null);
 
   const [fontsLoaded] = useFonts({
-    Poppins_400Regular,
-    Poppins_500Medium,
-    Poppins_600SemiBold,
-    Poppins_700Bold,
+    Nunito_400Regular,
+    Nunito_500Medium,
+    Nunito_600SemiBold,
+    Nunito_700Bold,
+    Nunito_800ExtraBold,
   });
 
   // Sync theme with NativeWind asynchronously to reduce blocking during theme changes
@@ -132,16 +141,16 @@ export default function RootLayout() {
 
   if (error) {
     return (
-      <View className="items-center justify-center flex-1 px-6 bg-white dark:bg-gray-900">
+      <View className="items-center justify-center flex-1 px-6 bg-bg">
         <Animated.Text
           entering={FadeIn.duration(150)}
-          className="mb-2 text-2xl font-bold text-red-600 dark:text-red-400"
+          className="mb-2 text-2xl font-bold text-urge"
         >
           Error
         </Animated.Text>
         <Animated.Text
           entering={FadeIn.duration(150).delay(50)}
-          className="text-center text-gray-600 font-regular dark:text-gray-300"
+          className="text-center text-body font-regular"
         >
           {error}
         </Animated.Text>

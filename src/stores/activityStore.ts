@@ -28,8 +28,8 @@ export const useActivityStore = create<ActivityStore>((set, get) => ({
   loadActivities: async () => {
     set({ loading: true, error: null });
     try {
-      // Load up to 1000 most recent activities for performance
-      const activities = await dbHelpers.getActivities(1000);
+      // Load every activity so totals like "Wins logged" are never cut off
+      const activities = await dbHelpers.getActivities();
       set({ activities, loading: false });
     } catch (error) {
       set({

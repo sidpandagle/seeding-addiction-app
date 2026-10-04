@@ -1,35 +1,45 @@
 import { View, Text, ScrollView, Modal, Pressable } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
-import { useState, useEffect, memo, useMemo } from 'react';
+import { useState, useEffect, memo, useMemo, useCallback } from 'react';
 import { History, BarChart3 } from 'lucide-react-native';
 import { useRelapseStore } from '../../src/stores/relapseStore';
 import { useActivityStore } from '../../src/stores/activityStore';
 import { useColorScheme } from '../../src/stores/themeStore';
 import { useReducedMotion } from '../../src/hooks/useReducedMotion';
+import { useThemeColors, useCardShadow } from '../../src/hooks/useThemeColors';
 import { getJourneyStart } from '../../src/db/helpers';
-import ViewToggle from '../../src/components/history/ViewToggle';
+import type { Relapse } from '../../src/db/schema';
+import ViewToggle, { type HistoryViewMode } from '../../src/components/history/ViewToggle';
 import HistoryList from '../../src/components/history/HistoryList';
 import HistoryCalendar from '../../src/components/history/HistoryCalendar';
 import CalendarRelapseDetails from '../../src/components/history/CalendarRelapseDetails';
+import { GardenView } from '../../src/components/history/GardenView';
+import { ActivityHeatmap } from '../../src/components/history/ActivityHeatmap';
 import InsightsModal from '../../src/components/history/InsightsModal';
+import RelapseModal from '../../src/components/modals/RelapseModal';
 import { createRelapseEntry, createActivityEntry, sortHistoryEntries } from '../../src/types/history';
-type ViewMode = 'list' | 'calendar';
+import { computeStreaks } from '../../src/utils/streaks';
+
 function HistoryScreen() {
   const colorScheme = useColorScheme();
+  const colors = useThemeColors();
+  const cardShadow = useCardShadow();
   const reducedMotion = useReducedMotion();
   // Use specific selectors to prevent re-renders when other store values change
   const relapses = useRelapseStore((state) => state.relapses);
   const activities = useActivityStore((state) => state.activities);
   const loadActivities = useActivityStore((state) => state.loadActivities);
   const [journeyStart, setJourneyStart] = useState<string | null>(null);
-  const [viewMode, setViewMode] = useState<ViewMode>('list');
+  const [viewMode, setViewMode] = useState<HistoryViewMode>('list');
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
+  const [heatmapDate, setHeatmapDate] = useState<string | null>(null);
   const [showInsightsModal, setShowInsightsModal] = useState(false);
+  const [editingRelapse, setEditingRelapse] = useState<Relapse | null>(null);
   // Load activities when component mounts
   useEffect(() => {
     loadActivities();
   }, [loadActivities]);
-  // Load journey start timestamp for calendar
+  // Load journey start timestamp for calendar and garden
   useEffect(() => {
     const loadJourneyStart = async () => {
       const start = await getJourneyStart();
@@ -43,24 +53,41 @@ function HistoryScreen() {
     const activityEntries = activities.map(createActivityEntry);
     return sortHistoryEntries([...relapseEntries, ...activityEntries]);
   }, [relapses, activities]);
-  // Calculate user stats for current streak
+
+  // Streaks for the Garden and the "Ended a N-day streak" line on relapse cards.
+  // Recomputed when switching views so the current plant shows its latest length.
+  const streaks = useMemo(
+    () => computeStreaks(relapses, journeyStart),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [relapses, journeyStart, viewMode]
+  );
+  const endedStreakMs = useMemo(() => {
+    const map = new Map<string, number>();
+    streaks.forEach((s) => {
+      if (s.endedBy) map.set(s.endedBy.id, s.durationMs);
+    });
+    return map;
+  }, [streaks]);
+
+  const handleEditRelapse = useCallback((relapse: Relapse) => setEditingRelapse(relapse), []);
+
   return (
-    <View className="flex-1 bg-gray-50 dark:bg-gray-950">
+    <View className="flex-1 bg-bg">
       <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'} />
       {/* Elegant Header */}
       <View className="pt-16 pb-2">
         <View className="px-6">
           <View className="flex-row items-center justify-between mb-4">
             <View className="flex-1">
-              <Text className="text-3xl font-semibold tracking-wide text-gray-900 dark:text-white">
+              <Text className="text-3xl font-semibold tracking-wide text-fg">
                 History
               </Text>
-              <Text className="mt-1 text-sm font-medium tracking-wide text-blue-700 dark:text-blue-400">
+              <Text className="mt-1 text-sm font-medium tracking-wide text-muted">
                 Track your journey
               </Text>
             </View>
-            <View className="items-center justify-center bg-blue-100 rounded-xl w-14 h-14 dark:bg-blue-900/30">
-              <History size={26} color="#3b82f6" strokeWidth={2.5} />
+            <View className="items-center justify-center bg-info-soft rounded-2xl w-14 h-14">
+              <History size={26} color={colors.info} strokeWidth={2.5} />
             </View>
           </View>
         </View>
@@ -71,20 +98,20 @@ function HistoryScreen() {
           onPress={() => {
             setShowInsightsModal(true);
           }}
-          style={{ backgroundColor: colorScheme === 'dark' ? '#111827' : '#ffffff' }}
-          className="flex-row items-center justify-between p-5 border border-gray-200 dark:border-gray-800 rounded-xl"
+          style={cardShadow}
+          className="flex-row items-center justify-between p-5 border bg-surface border-border rounded-[20px]"
         >
           <View className="flex-row items-center flex-1 gap-3">
-            <View className="items-center justify-center w-12 h-12 bg-blue-100 rounded-full dark:bg-blue-900/30">
-              <BarChart3 size={22} color="#3b82f6" strokeWidth={2.5} />
+            <View className="items-center justify-center w-12 h-12 bg-info-soft rounded-full">
+              <BarChart3 size={22} color={colors.info} strokeWidth={2.5} />
             </View>
             <View className="flex-1">
               <View className="flex-row items-center gap-2">
-                <Text className="text-base font-bold text-gray-900 dark:text-white">
+                <Text className="text-base font-bold text-fg">
                   View Advanced Insights
                 </Text>
               </View>
-              <Text className="text-sm text-gray-500 dark:text-gray-400">
+              <Text className="text-sm text-muted font-regular">
                 {historyEntries.length >= 2
                   ? 'Detailed patterns & analytics'
                   : 'Start tracking to see insights'}
@@ -99,9 +126,32 @@ function HistoryScreen() {
       </View>
       {/* Content Views */}
       <View className="flex-1">
-        {viewMode === 'list' ? (
-          <HistoryList entries={historyEntries} />
-        ) : (
+        {viewMode === 'list' && (
+          <HistoryList entries={historyEntries} endedStreakMs={endedStreakMs} onEditRelapse={handleEditRelapse} />
+        )}
+        {viewMode === 'garden' && (
+          <ScrollView className="flex-1" showsVerticalScrollIndicator={false} contentContainerClassName="pt-2 pb-8">
+            <GardenView streaks={streaks} onEditRelapse={handleEditRelapse} />
+            <ActivityHeatmap
+              entries={historyEntries}
+              journeyStart={journeyStart}
+              selectedDate={heatmapDate}
+              onDateSelect={setHeatmapDate}
+            />
+            {/* Same day details as the Calendar, for the tapped square */}
+            {heatmapDate && (
+              <View className="mt-4">
+                <CalendarRelapseDetails
+                  selectedDate={heatmapDate}
+                  entries={historyEntries}
+                  endedStreakMs={endedStreakMs}
+                  onEditRelapse={handleEditRelapse}
+                />
+              </View>
+            )}
+          </ScrollView>
+        )}
+        {viewMode === 'calendar' && (
           <ScrollView
             className="flex-1"
             showsVerticalScrollIndicator={false}
@@ -113,11 +163,16 @@ function HistoryScreen() {
               onDateSelect={setSelectedDate}
               journeyStart={journeyStart}
             />
-            <CalendarRelapseDetails selectedDate={selectedDate} entries={historyEntries} />
+            <CalendarRelapseDetails
+              selectedDate={selectedDate}
+              entries={historyEntries}
+              endedStreakMs={endedStreakMs}
+              onEditRelapse={handleEditRelapse}
+            />
           </ScrollView>
         )}
       </View>
-      
+
       {/* Insights Modal */}
       <Modal
         visible={showInsightsModal}
@@ -126,7 +181,20 @@ function HistoryScreen() {
         onRequestClose={() => setShowInsightsModal(false)}
       >
         <InsightsModal onClose={() => setShowInsightsModal(false)} />
-      </Modal>    </View>
+      </Modal>
+
+      {/* Edit or delete a relapse */}
+      <Modal
+        visible={!!editingRelapse}
+        animationType={reducedMotion ? 'none' : 'slide'}
+        presentationStyle="pageSheet"
+        onRequestClose={() => setEditingRelapse(null)}
+      >
+        {editingRelapse && (
+          <RelapseModal existingRelapse={editingRelapse} onClose={() => setEditingRelapse(null)} />
+        )}
+      </Modal>
+    </View>
   );
 }
 // Memoize to prevent unnecessary re-renders on tab switches

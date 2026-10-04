@@ -2,7 +2,7 @@ import { View, Text, Modal, Pressable, ActivityIndicator } from 'react-native';
 import { useState, useEffect } from 'react';
 import { AlertTriangle } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
-import { useColorScheme } from '../../stores/themeStore';
+import { useThemeColors } from '../../hooks/useThemeColors';
 
 export interface ConfirmationDialogProps {
   visible: boolean;
@@ -25,7 +25,7 @@ export default function ConfirmationDialog({
   onCancel,
   isDestructive = true,
 }: ConfirmationDialogProps) {
-  const colorScheme = useColorScheme();
+  const colors = useThemeColors();
   const [isLoading, setIsLoading] = useState(false);
 
   // Trigger haptic feedback when dialog appears
@@ -63,11 +63,11 @@ export default function ConfirmationDialog({
       onRequestClose={onCancel}
     >
       <View className="flex-1 items-center justify-center bg-black/50 px-6">
-        <View className="w-full max-w-[340px] bg-white dark:bg-gray-900 rounded-2xl overflow-hidden">
+        <View className="w-full max-w-[340px] bg-surface rounded-2xl overflow-hidden">
           {/* Icon Circle */}
           <View className="items-center pt-8 pb-4">
-            <View className="w-16 h-16 rounded-full bg-red-100 dark:bg-red-900/30 items-center justify-center">
-              <AlertTriangle size={32} color="#ef4444" strokeWidth={2.5} />
+            <View className="w-16 h-16 rounded-full bg-urge-soft items-center justify-center">
+              <AlertTriangle size={32} color={colors.urge} strokeWidth={2.5} />
             </View>
           </View>
 
@@ -76,14 +76,14 @@ export default function ConfirmationDialog({
             {/* Title */}
             <Text className={`text-xl font-bold text-center mb-3 ${
               isDestructive
-                ? 'text-red-600 dark:text-red-400'
-                : 'text-gray-900 dark:text-white'
+                ? 'text-urge'
+                : 'text-fg'
             }`}>
               {title}
             </Text>
 
             {/* Message */}
-            <Text className="text-base text-center text-gray-600 dark:text-gray-400 mb-6 font-regular">
+            <Text className="text-base text-center text-muted mb-6 font-regular">
               {message}
             </Text>
 
@@ -93,13 +93,13 @@ export default function ConfirmationDialog({
               <Pressable
                 onPress={handleCancel}
                 disabled={isLoading}
-                className={`flex-1 rounded-2xl py-3.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 ${
+                className={`flex-1 rounded-2xl py-3.5 bg-surface border border-border ${
                   isLoading
                     ? 'opacity-50'
-                    : 'active:bg-gray-50 dark:active:bg-gray-700'
+                    : 'active:bg-bg'
                 }`}
               >
-                <Text className="text-center text-base font-bold text-gray-700 dark:text-gray-300">
+                <Text className="text-center text-base font-bold text-body">
                   {cancelText}
                 </Text>
               </Pressable>
@@ -110,16 +110,16 @@ export default function ConfirmationDialog({
                 disabled={isLoading}
                 className={`flex-1 rounded-2xl py-3.5 ${
                   isLoading
-                    ? 'bg-red-400 dark:bg-red-600'
+                    ? 'bg-urge'
                     : isDestructive
-                    ? 'bg-red-600 dark:bg-red-700 active:bg-red-700 dark:active:bg-red-800'
-                    : 'bg-emerald-600 dark:bg-emerald-700 active:bg-emerald-700 dark:active:bg-emerald-800'
+                    ? 'bg-urge active:bg-urge/85'
+                    : 'bg-primary active:bg-primary-ink'
                 }`}
               >
                 {isLoading ? (
-                  <ActivityIndicator color="#ffffff" />
+                  <ActivityIndicator color={colors.onPrimary} />
                 ) : (
-                  <Text className="text-center text-base font-bold text-white">
+                  <Text className="text-base font-bold text-center text-primary-on">
                     {confirmText}
                   </Text>
                 )}

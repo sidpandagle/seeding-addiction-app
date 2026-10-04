@@ -1,4 +1,5 @@
 import { View, Text, Pressable } from 'react-native';
+import { useCardShadow } from '../../hooks/useThemeColors';
 
 interface TabSwitcherProps {
   tabs: { id: string; label: string }[];
@@ -7,21 +8,22 @@ interface TabSwitcherProps {
 }
 
 export default function TabSwitcher({ tabs, activeTab, onTabChange }: Readonly<TabSwitcherProps>) {
+  const cardShadow = useCardShadow();
   return (
-    <View className="flex-row p-1.5 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-900 rounded-2xl">
+    <View style={cardShadow} className="flex-row p-1.5 bg-surface border border-border rounded-2xl">
       {tabs.map((tab) => (
         <Pressable
           key={tab.id}
           onPress={() => onTabChange(tab.id)}
           className={`flex-1 py-3 px-4 rounded-xl ${
-            activeTab === tab.id ? 'bg-amber-200 dark:bg-amber-950 text-amber-800 dark:text-amber-400' : ''
+            activeTab === tab.id ? 'bg-primary-soft' : ''
           }`}
         >
           <Text
             className={`text-sm font-bold text-center ${
               activeTab === tab.id
-                ? 'dark:text-white'
-                : 'text-gray-600 dark:text-gray-400'
+                ? 'text-primary-ink'
+                : 'text-muted'
             }`}
           >
             {tab.label}

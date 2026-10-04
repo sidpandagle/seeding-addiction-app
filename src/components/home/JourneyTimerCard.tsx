@@ -1,289 +1,182 @@
-import React, { useState, useEffect, memo, useMemo, useRef } from 'react';
-import { View, Text, Animated, ActivityIndicator } from 'react-native';
+import React, { memo } from 'react';
+import { View, Text, ActivityIndicator } from 'react-native';
 import Reanimated, { FadeIn } from 'react-native-reanimated';
-import { useColorScheme } from '../../stores/themeStore';
-import { millisecondsToTimeBreakdown, getCheckpointProgress } from '../../utils/growthStages';
+import { LinearGradient } from 'expo-linear-gradient';
+import { useRouter } from 'expo-router';
+import { useColorScheme, useThemeStore } from '../../stores/themeStore';
+import { useThemeColors, useCardShadow } from '../../hooks/useThemeColors';
+import { mixHex, stageTintColor } from '../../constants/palette';
+import {
+  GROWTH_STAGES,
+  millisecondsToTimeBreakdown,
+  getCheckpointProgress,
+  getStageIndex,
+} from '../../utils/growthStages';
+import { daysToMilliseconds, MS_PER_MINUTE, MS_PER_SECOND } from '../../constants/timeUnits';
+import { formatTimeLeft } from '../../utils/formatDuration';
+import { useElapsedTick } from '../../hooks/useClock';
 import { useReducedMotion, ANIMATION_PRESETS } from '../../hooks/useReducedMotion';
+import { StagePath } from './StagePath';
 
 interface JourneyTimerCardProps {
   startTime: string | null; // ISO timestamp (can be null while loading)
-  growthStage: {
-    emoji: string;
-    achievementTitle: string;
-    description: string;
-  };
-  nextCheckpoint?: {
-    shortLabel: string;
-  } | null;
 }
 
+// Stage tint wash: a 160° gradient, from the stage color mixed into the surface to a faint trace.
+// expo-linear-gradient takes points, so 160° becomes a line from near top-left to near bottom-right.
+const TINT_START = { x: 0.33, y: 0.03 };
+const TINT_END = { x: 0.67, y: 0.97 };
+const TINT_LOCATIONS = [0, 0.7] as const;
+const TINT_PERCENT = { light: [16, 4], dark: [22, 6] } as const;
+
+const DIGIT_CLASS = 'font-extrabold tracking-tight';
+// Every digit takes the same width, so the row doesn't shift as the seconds tick
+const DIGIT_STYLE = { fontVariant: ['tabular-nums' as const] };
+const UNIT_CLASS = 'mt-1 text-xs font-bold tracking-wide uppercase text-muted';
+const SEPARATOR_CLASS = 'pt-2 text-4xl font-extrabold text-muted/60';
+
 /**
- * Progress Indicator Component - Shows checkpoint progress with nodes and edges
- * Optimized for performance with memoization
+ * Seconds digits with their own 1 s tick, so only this text redraws every second.
+ * The tick stops while Home isn't visible or the app is in the background.
  */
-const ProgressIndicator: React.FC<{ progress: number; colorScheme: 'light' | 'dark' }> = memo(({ progress, colorScheme }) => {
-  const pulseAnim = useRef(new Animated.Value(1)).current;
-
-  // Pulse animation for current progress node
-  useEffect(() => {
-    const pulse = Animated.loop(
-      Animated.sequence([
-        Animated.timing(pulseAnim, {
-          toValue: 1.3,
-          duration: 1000,
-          useNativeDriver: true,
-        }),
-        Animated.timing(pulseAnim, {
-          toValue: 1,
-          duration: 1000,
-          useNativeDriver: true,
-        }),
-      ])
-    );
-    pulse.start();
-    return () => pulse.stop();
-  }, [pulseAnim]);
-
-  const nodes = [0, 0.25, 0.5, 0.75, 1]; // 5 nodes: 0%, 25%, 50%, 75%, 100%
-
-  // Memoize calculations to prevent unnecessary recalculations
-  const progressPercent = useMemo(() => Math.round(progress * 100), [progress]);
-
-  // Memoize current node calculation
-  const currentNodeIndex = useMemo(() => {
-    return nodes.findIndex((node, idx) => {
-      if (idx === nodes.length - 1) return progress >= node;
-      return progress >= node && progress < nodes[idx + 1];
-    });
-  }, [progress, nodes]);
-
+const LiveSeconds = memo(function LiveSeconds({ startMs, sizeClass }: { startMs: number; sizeClass: string }) {
+  const now = useElapsedTick(startMs, MS_PER_SECOND);
+  const seconds = Math.floor(Math.max(0, now - startMs) / MS_PER_SECOND) % 60;
   return (
-    <View className="items-center px-4 pb-4">
-      {/* Percentage Display */}
-      <View className="mb-3">
-        <Text className="text-sm font-bold text-emerald-600 dark:text-emerald-400">
-          {progressPercent}% to next milestone
-        </Text>
-      </View>
-
-      {/* Progress Path */}
-      <View className="flex-row items-center justify-center w-full px-4">
-        {nodes.map((nodeValue, index) => {
-          const isCompleted = progress >= nodeValue;
-          const isCurrent = index === currentNodeIndex;
-          const isLastNode = index === nodes.length - 1;
-
-          return (
-            <React.Fragment key={index}>
-              {/* Node */}
-              <View className="items-center justify-center">
-                {isCurrent && progress < 1 ? (
-                  // Pulsing current node
-                  <Animated.View
-                    style={{
-                      transform: [{ scale: pulseAnim }],
-                    }}
-                    className="items-center justify-center w-3 h-3 rounded-full bg-emerald-500 dark:bg-emerald-400"
-                  >
-                    {/* <View className="w-1.5 h-1.5 bg-white rounded-full" /> */}
-                  </Animated.View>
-                ) : (
-                  // Static node
-                  <View
-                    className={`w-2.5 h-2.5 rounded-full ${
-                      isCompleted
-                        ? 'bg-emerald-600 dark:bg-emerald-400'
-                        : 'bg-gray-300 dark:bg-gray-600'
-                    }`}
-                  />
-                )}
-              </View>
-
-              {/* Edge (connecting line) */}
-              {!isLastNode && (
-                <View
-                  className={`h-0.5 flex-1 mx-1 ${
-                    progress > nodeValue + 0.125 // Middle of segment
-                      ? 'bg-emerald-600 dark:bg-emerald-400'
-                      : 'bg-gray-300 dark:bg-gray-600'
-                  }`}
-                  style={{ minWidth: 30, maxWidth: 50 }}
-                />
-              )}
-            </React.Fragment>
-          );
-        })}
-      </View>
-    </View>
+    <Text className={`${DIGIT_CLASS} ${sizeClass} text-fg`} style={DIGIT_STYLE}>
+      {seconds.toString().padStart(2, '0')}
+    </Text>
   );
 });
 
+/** `lead` marks the first unit shown (days, or hours under a day), drawn in the brand ink */
+function TimeUnit({ value, unit, sizeClass, lead = false }: { value: string; unit: string; sizeClass: string; lead?: boolean }) {
+  return (
+    <View className="items-center min-w-[60px]">
+      <Text className={`${DIGIT_CLASS} ${sizeClass} ${lead ? 'text-primary-ink' : 'text-fg'}`} style={DIGIT_STYLE}>
+        {value}
+      </Text>
+      <Text className={UNIT_CLASS}>{unit}</Text>
+    </View>
+  );
+}
+
 /**
- * Journey Timer Card - Displays current streak time in a card layout
- * Styled to match MotivationCard (Daily Inspiration) design
- * Simple, performant, no circular progress complexity
+ * Journey Timer Card - current streak, stage path and time to the next stage.
+ * Re-renders once per elapsed minute; the seconds digits tick on their own.
  */
-const JourneyTimerCardComponent: React.FC<JourneyTimerCardProps> = ({
-  startTime,
-  growthStage,
-  nextCheckpoint,
-}) => {
+const JourneyTimerCardComponent: React.FC<JourneyTimerCardProps> = ({ startTime }) => {
   const colorScheme = useColorScheme();
+  const colors = useThemeColors();
+  const cardShadow = useCardShadow();
+  const stageTint = useThemeStore((state) => state.stageTint);
   const reducedMotion = useReducedMotion();
-  const [time, setTime] = useState(Date.now());
+  const router = useRouter();
 
-  // Memoize card background style to prevent new object creation on every render
-  const cardBgStyle = useMemo(() => ({
-    backgroundColor: colorScheme === 'dark' ? '#111827' : '#ffffff'
-  }), [colorScheme]);
+  const startMs = startTime ? new Date(startTime).getTime() : null;
+  const now = useElapsedTick(startMs, MS_PER_MINUTE);
 
-  // Calculate elapsed time (0 when not started)
-  const elapsed = useMemo(() => {
-    if (!startTime) return 0;
-    return Math.max(0, time - new Date(startTime).getTime());
-  }, [startTime, time]);
-
-  // Calculate time breakdown
-  const timeBreakdown = useMemo(() => 
-    millisecondsToTimeBreakdown(elapsed),
-  [elapsed]);
-
-  // Calculate checkpoint progress for the progress indicator
-  const checkpointProgress = useMemo(() => {
-    return getCheckpointProgress(elapsed);
-  }, [elapsed]);
-
-  // Get progress value (0 to 1)
-  const progressValue = checkpointProgress.progress;
 
   // Entrance animation (respects reduced motion)
   const enteringAnimation = reducedMotion ? undefined : FadeIn.duration(ANIMATION_PRESETS.card.duration);
 
-  useEffect(() => {
-    // Update timer every second
-    const interval = setInterval(() => {
-      setTime(Date.now());
-    }, 1000);
-
-    return () => clearInterval(interval);
-  }, []);
-
   // Show loading state if startTime is not yet available
-  if (!startTime) {
+  if (startMs === null) {
     return (
       <View className="px-6">
         <View
-          style={cardBgStyle}
-          className="relative overflow-hidden border border-gray-200 rounded-2xl dark:border-gray-700"
+          style={cardShadow}
+          className="relative border border-border bg-surface rounded-[20px]"
         >
           <View className="items-center justify-center p-6" style={{ minHeight: 250 }}>
-            <ActivityIndicator size="large" color="#10b981" />
-            <Text className="mt-4 text-sm text-gray-500 dark:text-gray-400">Loading your journey...</Text>
+            <ActivityIndicator size="large" color={colors.primary} />
+            <Text className="font-regular mt-4 text-sm text-muted">Loading your journey...</Text>
           </View>
         </View>
       </View>
     );
   }
 
-  // Destructure time breakdown
-  const { days, hours, minutes, seconds } = timeBreakdown;
+  const elapsed = Math.max(0, now - startMs);
+  const { days, hours, minutes } = millisecondsToTimeBreakdown(elapsed);
+  const stageIndex = getStageIndex(elapsed);
+  const stage = GROWTH_STAGES[stageIndex];
+  // A streak that started this instant is already in the first stage
+  const { progress, nextCheckpoint } = getCheckpointProgress(Math.max(elapsed, 1));
+  const timeLeft = nextCheckpoint ? startMs + daysToMilliseconds(nextCheckpoint.minDays) - now : 0;
+  const sizeClass = days > 0 ? 'text-4xl' : 'text-5xl';
+
+  const [tintFrom, tintTo] = TINT_PERCENT[colorScheme];
+  const stageColor = stageTintColor(stageIndex);
+  const tintColors = [mixHex(stageColor, tintFrom, colors.surface), mixHex(stageColor, tintTo, colors.surface)] as const;
+
+  const timerLabel = `${days > 0 ? `${days} ${days === 1 ? 'day' : 'days'}, ` : ''}${hours} ${hours === 1 ? 'hour' : 'hours'}, ${minutes} ${minutes === 1 ? 'minute' : 'minutes'}`;
 
   return (
     <Reanimated.View entering={enteringAnimation} className="px-6">
-      {/* Card with Background Icon - Same style as Daily Inspiration */}
-      <View
-        style={cardBgStyle}
-        className="relative overflow-hidden border border-gray-200 rounded-2xl dark:border-gray-800"
-      >
-        <View className="p-6">
-          {/* Decorative Background Icon - Bottom Right */}
-          <View className="absolute bottom-[-20px] right-[-20px] opacity-10 dark:opacity-5">
-            <Text className="text-[140px]">{growthStage.emoji}</Text>
-          </View>
+      {/* Shadow on the outer view: iOS clips shadows on overflow-hidden views */}
+      <View style={cardShadow} className="bg-surface rounded-[20px]">
+        <View className="relative overflow-hidden border border-border bg-surface rounded-[20px]">
+          {stageTint && (
+            <LinearGradient
+              colors={tintColors}
+              locations={TINT_LOCATIONS}
+              start={TINT_START}
+              end={TINT_END}
+              style={{ position: 'absolute', top: 0, right: 0, bottom: 0, left: 0 }}
+            />
+          )}
 
-          {/* Content Layer */}
-          <View className="relative">
-            {/* Main Timer Display - Stacked with Units */}
-            <View className="flex-row items-start justify-center gap-3 px-2 py-4 mb-4">
-              {/* Days (only show if > 0) */}
-              {days > 0 && (
-                <>
-                  <View className="items-center min-w-[60px]">
-                    <Text className={`font-extrabold tracking-tight text-emerald-600 dark:text-emerald-400 ${ days > 0 ? 'text-4xl' : 'text-5xl'}`}>
-                      {days}
-                    </Text>
-                    <Text className="mt-1 text-xs font-bold tracking-wide uppercase text-emerald-700/70 dark:text-emerald-300/70">
-                      {days === 1 ? 'Day' : 'Days'}
-                    </Text>
-                  </View>
-                  <Text className="pt-2 text-4xl font-extrabold text-emerald-600/30 dark:text-emerald-400/30">:</Text>
-                </>
-              )}
-
-              {/* Hours */}
-              <View className="items-center min-w-[60px]">
-                <Text className={`font-extrabold tracking-tight text-emerald-600 dark:text-emerald-400 ${ days > 0 ? 'text-4xl' : 'text-5xl'}`}>
-                  {hours.toString().padStart(2, '0')}
-                </Text>
-                <Text className="mt-1 text-xs font-bold tracking-wide uppercase text-emerald-700/70 dark:text-emerald-300/70">
-                  Hours
-                </Text>
-              </View>
-
-              {/* Separator */}
-              <Text className="pt-2 text-4xl font-extrabold text-emerald-600/30 dark:text-emerald-400/30">:</Text>
-
-              {/* Minutes */}
-              <View className="items-center min-w-[60px]">
-                <Text className={`font-extrabold tracking-tight text-emerald-600 dark:text-emerald-400 ${ days > 0 ? 'text-4xl' : 'text-5xl'}`}>
-                  {minutes.toString().padStart(2, '0')}
-                </Text>
-                <Text className="mt-1 text-xs font-bold tracking-wide uppercase text-emerald-700/70 dark:text-emerald-300/70">
-                  Mins
-                </Text>
-              </View>
-
-              {/* Separator */}
-              <Text className="pt-2 text-4xl font-extrabold text-emerald-600/30 dark:text-emerald-400/30">:</Text>
-
-              {/* Seconds */}
-              <View className="items-center min-w-[60px]">
-                <Text className={`font-extrabold tracking-tight text-emerald-600 dark:text-emerald-400 ${ days > 0 ? 'text-4xl' : 'text-5xl'}`}>
-                  {seconds.toString().padStart(2, '0')}
-                </Text>
-                <Text className="mt-1 text-xs font-bold tracking-wide uppercase text-emerald-700/70 dark:text-emerald-300/70">
-                  Secs
-                </Text>
-              </View>
+          <View className="p-6">
+            {/* Decorative Background Icon - Bottom Right */}
+            <View className="absolute bottom-[-20px] right-[-20px] opacity-10 dark:opacity-5">
+              <Text className="font-regular text-[140px]">{stage.emoji}</Text>
             </View>
 
-            {/* Progress Indicator - Only show if there's a next checkpoint */}
-            {nextCheckpoint && (
-              <ProgressIndicator progress={progressValue} colorScheme={colorScheme} />
-            )}
+            <View className="relative">
+              {/* Timer: one label for screen readers instead of reading each digit */}
+              <View
+                accessible
+                accessibilityRole="timer"
+                accessibilityLabel={`Current streak: ${timerLabel}`}
+                className="flex-row items-start justify-center gap-3 px-2 py-2"
+              >
+                {days > 0 && (
+                  <>
+                    <TimeUnit value={String(days)} unit={days === 1 ? 'Day' : 'Days'} sizeClass={sizeClass} lead />
+                    <Text className={SEPARATOR_CLASS}>:</Text>
+                  </>
+                )}
+                <TimeUnit value={hours.toString().padStart(2, '0')} unit="Hours" sizeClass={sizeClass} lead={days === 0} />
+                <Text className={SEPARATOR_CLASS}>:</Text>
+                <TimeUnit value={minutes.toString().padStart(2, '0')} unit="Mins" sizeClass={sizeClass} />
+                <Text className={SEPARATOR_CLASS}>:</Text>
+                <View className="items-center min-w-[60px]">
+                  <LiveSeconds startMs={startMs} sizeClass={sizeClass} />
+                  <Text className={UNIT_CLASS}>Secs</Text>
+                </View>
+              </View>
 
-            {/* Next Goal */}
-            {nextCheckpoint && (
-              <View className="flex-row items-center justify-center gap-2 text-center">
-                <Text className="text-xl">🎯</Text>
-                <Text className="text-sm font-medium text-gray-600 dark:text-gray-400">
-                  Next Goal:{' '}
-                  <Text className="font-semibold text-emerald-600 dark:text-emerald-400">
-                    {nextCheckpoint.shortLabel}
+              <StagePath
+                stageIndex={stageIndex}
+                progress={nextCheckpoint ? progress : 1}
+                onPress={() => router.navigate('/achievements')}
+              />
+
+              {/* Next stage and how long until it */}
+              <View className="flex-row items-center justify-center mt-4">
+                {nextCheckpoint ? (
+                  <Text className="text-sm font-medium text-muted">
+                    Next: {nextCheckpoint.emoji} {nextCheckpoint.label} in{' '}
+                    <Text className="font-semibold text-primary-ink">{formatTimeLeft(timeLeft)}</Text>
                   </Text>
-                </Text>
+                ) : (
+                  <Text className="text-sm font-semibold text-primary-ink">
+                    🏆 All milestones reached
+                  </Text>
+                )}
               </View>
-            )}
-
-            {/* All milestones achieved */}
-            {!nextCheckpoint && (
-              <View className="flex-row items-center gap-2">
-                <Text className="text-xl">🏆</Text>
-                <Text className="text-sm font-semibold text-emerald-600 dark:text-emerald-400">
-                  All milestones achieved!
-                </Text>
-              </View>
-            )}
+            </View>
           </View>
         </View>
       </View>

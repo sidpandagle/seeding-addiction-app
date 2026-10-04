@@ -1,8 +1,10 @@
 import { View, Text, useWindowDimensions, Pressable } from 'react-native';
 import { useState } from 'react';
 import { BarChart } from 'react-native-gifted-charts';
-import { Info, X, Clock } from 'lucide-react-native';
-import { useColorScheme } from '../../stores/themeStore';
+import { Info, X, Clock, TriangleAlert } from 'lucide-react-native';
+import { InsightCallout } from './InsightCallout';
+import { useThemeColors, useCardShadow } from '../../hooks/useThemeColors';
+import { mixHex } from '../../constants/palette';
 import { calculateWeeklyPattern, calculateTimeOfDayPattern } from '../../utils/chartHelpers';
 import type { Relapse } from '../../db/schema';
 
@@ -11,8 +13,8 @@ interface WeeklyPatternChartProps {
 }
 
 export default function WeeklyPatternChart({ relapses }: WeeklyPatternChartProps) {
-  const colorScheme = useColorScheme();
-  const isDark = colorScheme === 'dark';
+  const colors = useThemeColors();
+  const cardShadow = useCardShadow();
   const { width: screenWidth } = useWindowDimensions();
   const [showInfo, setShowInfo] = useState(false);
   const weeklyData = calculateWeeklyPattern(relapses);
@@ -51,20 +53,20 @@ export default function WeeklyPatternChart({ relapses }: WeeklyPatternChartProps
   const chartData = weeklyData.map((data) => ({
     value: data.count,
     label: data.dayShort,
-    frontColor: colorScheme === 'dark' ? '#3b82f6' : '#60a5fa',
-    gradientColor: colorScheme === 'dark' ? '#60a5fa' : '#93c5fd',
+    frontColor: colors.info,
+    gradientColor: mixHex(colors.info, 60, colors.surface),
     spacing: 2,
     labelWidth: 40,
     labelTextStyle: {
-      color: colorScheme === 'dark' ? '#d1d5db' : '#374151',
-      fontSize: 11,
+      color: colors.body,
+      fontSize: 12,
       fontWeight: '600' as const,
     },
     topLabelComponent: () => (
       <Text
         style={{
-          color: colorScheme === 'dark' ? '#9ca3af' : '#6b7280',
-          fontSize: 10,
+          color: colors.muted,
+          fontSize: 11,
           marginBottom: 4,
         }}
       >
@@ -74,11 +76,11 @@ export default function WeeklyPatternChart({ relapses }: WeeklyPatternChartProps
   }));
 
   return (
-    <View className="p-5 mb-4 bg-white border border-gray-200 dark:bg-gray-900 dark:border-gray-700 rounded-2xl">
+    <View style={cardShadow} className="p-5 mb-4 bg-surface border border-border rounded-[20px]">
       <View className="flex-row items-start justify-between mb-1">
         <View className='flex flex-col'>
-          <Text className="text-lg font-bold text-gray-900 dark:text-white">Weekly Pattern</Text>
-          <Text className="mb-4 text-sm text-gray-600 dark:text-gray-400">
+          <Text className="text-lg font-bold text-fg">Weekly Pattern</Text>
+          <Text className="font-regular mb-4 text-sm text-muted">
             {relapses.length === 0
               ? 'No data yet. Keep tracking to see your patterns.'
               : 'Which days are most challenging for you?'}
@@ -86,23 +88,21 @@ export default function WeeklyPatternChart({ relapses }: WeeklyPatternChartProps
         </View>
         <Pressable
           onPress={() => setShowInfo(!showInfo)}
-          className="items-center justify-center w-8 h-8 ml-2 bg-gray-100 rounded-full dark:bg-gray-800 active:bg-gray-200 dark:active:bg-gray-700"
+          className="items-center justify-center w-8 h-8 ml-2 bg-subtle rounded-full active:bg-border"
         >
           {showInfo ? (
-            <X size={16} color={isDark ? '#9CA3AF' : '#6B7280'} />
+            <X size={16} color={colors.muted} />
           ) : (
-            <Info size={16} color={isDark ? '#9ca3af' : '#6b7280'} strokeWidth={2.5} />
+            <Info size={16} color={colors.muted} strokeWidth={2.5} />
           )}
         </Pressable>
       </View>
 
       {/* Info Card */}
       {showInfo && (
-        <View className="p-3 mt-0 mb-2 bg-blue-100 border border-blue-100 rounded-xl dark:bg-blue-900/20 dark:border-blue-800">
-          <Text className="text-xs font-medium leading-4 text-blue-800 dark:text-blue-200">
-            This chart shows which days you're most vulnerable. Weekend spikes often mean less structure; weekday peaks may indicate stress. Plan extra support for your challenging days!
-          </Text>
-        </View>
+        <InsightCallout icon={Info} className="mb-2">
+          This chart shows which days you're most vulnerable. Weekend spikes often mean less structure; weekday peaks may indicate stress. Plan extra support for your challenging days!
+        </InsightCallout>
       )}
 
       {/* Chart */}
@@ -117,7 +117,7 @@ export default function WeeklyPatternChart({ relapses }: WeeklyPatternChartProps
           hideRules
           xAxisThickness={0}
           yAxisThickness={0}
-          yAxisTextStyle={{ color: colorScheme === 'dark' ? '#6b7280' : '#9ca3af' }}
+          yAxisTextStyle={{ color: colors.faint }}
           noOfSections={3}
           maxValue={Math.max(...weeklyData.map((d) => d.count), 1) + 1}
           isAnimated
@@ -125,18 +125,18 @@ export default function WeeklyPatternChart({ relapses }: WeeklyPatternChartProps
           height={140}
           barBorderRadius={6}
           showGradient
-          gradientColor={colorScheme === 'dark' ? '#60a5fa' : '#93c5fd'}
-          frontColor={colorScheme === 'dark' ? '#3b82f6' : '#60a5fa'}
+          gradientColor={mixHex(colors.info, 60, colors.surface)}
+          frontColor={colors.info}
           disableScroll
         />
       </View>
 
       {/* Time of Day Analysis */}
       {relapses.length > 0 && (
-        <View className="pt-5 mt-5 border-t border-gray-200 dark:border-gray-700">
+        <View className="pt-5 mt-5 border-t border-border">
           <View className="flex-row items-center gap-2 mb-4">
-            <Clock size={16} color={isDark ? '#9ca3af' : '#6b7280'} strokeWidth={2} />
-            <Text className="text-sm font-bold text-gray-900 dark:text-white">
+            <Clock size={16} color={colors.muted} strokeWidth={2} />
+            <Text className="text-sm font-bold text-fg">
               Time of Day Vulnerability
             </Text>
           </View>
@@ -153,28 +153,28 @@ export default function WeeklyPatternChart({ relapses }: WeeklyPatternChartProps
                 <View key={period.period} className="flex-row items-center gap-3">
                   {/* Icon and label */}
                   <View className="flex-row items-center w-24 gap-2">
-                    <Text className="text-lg">{period.icon}</Text>
+                    <Text className="font-regular text-lg">{period.icon}</Text>
                     <View>
-                      <Text className={`text-xs font-semibold ${isHighest ? 'text-amber-600 dark:text-amber-400' : 'text-gray-700 dark:text-gray-300'}`}>
+                      <Text className={`text-xs font-semibold ${isHighest ? 'text-relapse-ink' : 'text-body'}`}>
                         {period.period}
                       </Text>
-                      <Text className="text-xs text-gray-400 dark:text-gray-500">
+                      <Text className="font-regular text-xs text-faint">
                         {period.timeRange}
                       </Text>
                     </View>
                   </View>
 
                   {/* Progress bar */}
-                  <View className="flex-1 h-6 overflow-hidden bg-gray-100 rounded-lg dark:bg-gray-800">
+                  <View className="flex-1 h-6 overflow-hidden bg-subtle rounded-lg">
                     <View
-                      className={`h-full rounded-lg ${isHighest ? 'bg-amber-500 dark:bg-amber-600' : 'bg-blue-400 dark:bg-blue-600'}`}
+                      className={`h-full rounded-lg ${isHighest ? 'bg-relapse' : 'bg-info'}`}
                       style={{ width: `${barWidthPercent}%` }}
                     />
                   </View>
 
                   {/* Count */}
                   <View className="items-end w-10">
-                    <Text className={`text-sm font-bold ${isHighest ? 'text-amber-600 dark:text-amber-400' : 'text-gray-600 dark:text-gray-400'}`}>
+                    <Text className={`text-sm font-bold ${isHighest ? 'text-relapse-ink' : 'text-muted'}`}>
                       {period.count}
                     </Text>
                   </View>
@@ -185,14 +185,13 @@ export default function WeeklyPatternChart({ relapses }: WeeklyPatternChartProps
 
           {/* Danger hours insight */}
           {timeOfDayData.mostVulnerable && timeOfDayData.mostVulnerable.count > 0 && (
-            <View className="flex-row items-center gap-2 p-3 mt-4 border rounded-xl bg-amber-100 dark:bg-amber-900/20 border-amber-100 dark:border-amber-800">
-              <Text className="text-base">⚠️</Text>
-              <Text className="flex-1 text-xs font-medium text-amber-800 dark:text-amber-200">
+            <InsightCallout icon={TriangleAlert} variant="warning" className="mt-4">
+              <Text className="text-sm font-medium text-relapse-ink">
                 Your danger hours are{' '}
                 <Text className="font-bold">{timeOfDayData.dangerHours}</Text>
                 {' '}({timeOfDayData.mostVulnerable.percentage}% of relapses) and <Text className="font-bold">{weeklyData.reduce((max, day) => (day.count > max.count ? day : max)).day}</Text> is your most challenging day. Plan extra support during this time.
               </Text>
-            </View>
+            </InsightCallout>
           )}
         </View>
       )}

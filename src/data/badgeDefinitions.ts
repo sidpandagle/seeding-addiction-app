@@ -233,7 +233,7 @@ export const BADGE_DEFINITIONS: Badge[] = [
     id: 'mind_and_body',
     category: 'diversity',
     title: 'Mind & Body',
-    description: 'Log equal amounts of mental and physical activities. Perfect mind-body harmony!',
+    description: 'Log 20+ mindfulness and 20+ physical activities. Perfect mind-body harmony!',
     emoji: '🧘',
     unlockCriteria: {
       type: 'custom',
@@ -316,7 +316,7 @@ export const BADGE_DEFINITIONS: Badge[] = [
     id: 'consistent_tracker',
     category: 'milestone',
     title: 'Steady Tracker',
-    description: 'Log activities consistently every week for a month. Consistency builds character!',
+    description: 'Log activities in at least 11 of the last 13 weeks. Consistency builds character!',
     emoji: '🔥',
     unlockCriteria: {
       type: 'custom',
@@ -377,7 +377,7 @@ export const BADGE_DEFINITIONS: Badge[] = [
     id: 'comeback',
     category: 'special',
     title: 'Comeback',
-    description: 'Return to tracking within 3 days after a break. Resilience is getting back up!',
+    description: 'Log 5 activities within 24 hours of a relapse. Resilience is getting back up!',
     emoji: '🌟',
     isHidden: true,
     unlockCriteria: {

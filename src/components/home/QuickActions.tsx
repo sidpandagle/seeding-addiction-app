@@ -1,10 +1,17 @@
 import React, { memo, useState, useEffect } from 'react';
 import { View, Text, ScrollView, Pressable } from 'react-native';
 import Animated, { FadeInDown, FadeInRight } from 'react-native-reanimated';
-import { Zap } from 'lucide-react-native';
-import { useColorScheme } from '../../stores/themeStore';
+import { Zap, Dumbbell, Wind, Focus, Target, type LucideIcon } from 'lucide-react-native';
+import { useThemeColors, useCardShadow } from '../../hooks/useThemeColors';
 import { useReducedMotion, ANIMATION_PRESETS, getStaggerDelay } from '../../hooks/useReducedMotion';
-import { QUICK_ACTIONS, getActionColorClasses, getRandomBulletPoints, BULLET_POOLS, getQuickActionCategory, type QuickAction } from '../../data/quickActionData';
+import { QUICK_ACTIONS, getRandomBulletPoints, BULLET_POOLS, getQuickActionCategory, type QuickAction } from '../../data/quickActionData';
+
+const ACTION_ICONS: Record<string, LucideIcon> = {
+  'physical-reset': Dumbbell,
+  'breathe': Wind,
+  'mental-distraction': Focus,
+  'remember-why': Target,
+};
 
 interface QuickActionsProps {
   onActionPress?: (categories: string[]) => void;
@@ -25,7 +32,8 @@ function getRandomizedActions(): QuickAction[] {
  * Condensed version of emergency help actions for proactive home screen display
  */
 const QuickActionsComponent: React.FC<QuickActionsProps> = ({ onActionPress }) => {
-  const colorScheme = useColorScheme();
+  const colors = useThemeColors();
+  const cardShadow = useCardShadow();
   const reducedMotion = useReducedMotion();
   const [actions, setActions] = useState<QuickAction[]>(getRandomizedActions);
 
@@ -46,11 +54,11 @@ const QuickActionsComponent: React.FC<QuickActionsProps> = ({ onActionPress }) =
       {/* Header with entrance animation */}
       <Animated.View
         entering={reducedMotion ? undefined : FadeInDown.duration(ANIMATION_PRESETS.card.duration)}
-        className="flex-row items-center justify-between mb-6"
+        className="flex-row items-center justify-between mb-4"
       >
         <View className="flex-row items-center gap-2">
-          <Zap size={20} color="#f59e0b" strokeWidth={2.5} />
-          <Text className="text-lg font-semibold text-gray-800 dark:text-gray-200">
+          <Zap size={20} color={colors.primary} strokeWidth={2.5} />
+          <Text className="text-lg font-semibold text-fg">
             Healthy Distractions
           </Text>
         </View>
@@ -60,36 +68,39 @@ const QuickActionsComponent: React.FC<QuickActionsProps> = ({ onActionPress }) =
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
-        contentContainerClassName="gap-6"
+        contentContainerClassName="gap-4"
       >
-        {actions.map((action, index) => (
-          <Animated.View
-            key={action.id}
-            entering={reducedMotion ? undefined : FadeInRight.duration(ANIMATION_PRESETS.card.duration).delay(getStaggerDelay(index, ANIMATION_PRESETS.card.staggerDelay, ANIMATION_PRESETS.card.maxStaggerDelay))}
-          >
-            <Pressable
-              onPress={() => handleActionPress(action.id)}
-              className={`w-80 h-48 rounded-2xl overflow-hidden ${getActionColorClasses(action.colorScheme)}`}
+        {actions.map((action, index) => {
+          const Icon = ACTION_ICONS[action.id] ?? Zap;
+          return (
+            <Animated.View
+              key={action.id}
+              entering={reducedMotion ? undefined : FadeInRight.duration(ANIMATION_PRESETS.card.duration).delay(getStaggerDelay(index, ANIMATION_PRESETS.card.staggerDelay, ANIMATION_PRESETS.card.maxStaggerDelay))}
+              style={cardShadow}
+              className="rounded-[20px]"
             >
-              <View className="p-5">
-                <View className="flex-row items-center gap-2 mb-0">
-                  <Text className="text-2xl">{action.icon}</Text>
-                  <Text className="flex-1 text-lg font-bold tracking-widest text-gray-900 dark:text-white">{action.title}</Text>
+              <Pressable
+                onPress={() => handleActionPress(action.id)}
+                className="grow p-5 overflow-hidden border w-80 min-h-44 bg-surface border-border rounded-[20px] active:bg-subtle"
+              >
+                <View className="flex-row items-center gap-3 mb-2">
+                  <View className="items-center justify-center w-10 h-10 rounded-full bg-primary-soft">
+                    <Icon size={20} color={colors.primary} strokeWidth={2.25} />
+                  </View>
+                  <Text className="flex-1 text-lg font-bold text-fg">{action.title}</Text>
                 </View>
-                <View className="space-y-2">
+                <View className="gap-1.5">
                   {action.bulletPoints.map((point, pointIndex) => (
-                    <View key={pointIndex} className="flex-row">
-                      <Text className="mr-2 text-sm text-gray-700 dark:text-gray-300">•</Text>
-                      <Text className="flex-1 text-sm leading-5 text-gray-700 dark:text-gray-300">
-                        {point}
-                      </Text>
+                    <View key={pointIndex} className="flex-row items-start gap-2.5">
+                      <View className="w-1.5 h-1.5 mt-2 rounded-full bg-primary" />
+                      <Text className="font-regular flex-1 text-sm text-body">{point}</Text>
                     </View>
                   ))}
                 </View>
-              </View>
-            </Pressable>
-          </Animated.View>
-        ))}
+              </Pressable>
+            </Animated.View>
+          );
+        })}
       </ScrollView>
     </View>
   );

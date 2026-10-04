@@ -6,12 +6,15 @@ export type ColorScheme = 'light' | 'dark';
 
 interface ThemeState {
   colorScheme: ColorScheme;
+  /** Tint the Home timer card with the current growth stage's color */
+  stageTint: boolean;
   _hasHydrated: boolean;
   _isTransitioning: boolean;
   setHasHydrated: (state: boolean) => void;
   setTransitioning: (state: boolean) => void;
   toggleColorScheme: () => void;
   setColorScheme: (scheme: ColorScheme) => void;
+  setStageTint: (enabled: boolean) => void;
 }
 
 // Optimized AsyncStorage wrapper for instant theme switching
@@ -36,6 +39,7 @@ export const useThemeStore = create<ThemeState>()(
   persist(
     (set) => ({
       colorScheme: 'light',
+      stageTint: true,
       _hasHydrated: false,
       _isTransitioning: false,
       setHasHydrated: (state) => set({ _hasHydrated: state }),
@@ -46,6 +50,7 @@ export const useThemeStore = create<ThemeState>()(
           _isTransitioning: true, // Trigger transition overlay
         })),
       setColorScheme: (scheme) => set({ colorScheme: scheme, _isTransitioning: true }),
+      setStageTint: (enabled) => set({ stageTint: enabled }),
     }),
     {
       name: 'theme-storage',
@@ -56,6 +61,7 @@ export const useThemeStore = create<ThemeState>()(
       // Don't persist transition state
       partialize: (state) => ({
         colorScheme: state.colorScheme,
+        stageTint: state.stageTint,
         _hasHydrated: state._hasHydrated,
       }),
     }
