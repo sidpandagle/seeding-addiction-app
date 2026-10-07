@@ -107,6 +107,7 @@ export default function SettingsScreen() {
   // Notification state
   const {
     isInitialized: notificationsInitialized,
+    isLoading: notificationsLoading,
     isEnabled: notificationsEnabled,
     dailyReminderTime,
     randomNotificationsEnabled,
@@ -118,6 +119,8 @@ export default function SettingsScreen() {
     setRandomNotifications,
     setMilestoneNotifications,
   } = useNotificationStore();
+  // Without permission the saved setting can't take effect, so show it as off
+  const notificationsOn = notificationsInitialized && notificationsEnabled;
 
   // Alert state
   const { alertState, showAlert, hideAlert } = useAlert();
@@ -433,14 +436,20 @@ export default function SettingsScreen() {
             first
             icon={Bell}
             title="Notifications"
-            subtitle={notificationsInitialized ? 'Reminders & motivation' : 'Setting up...'}
+            subtitle={
+              notificationsInitialized
+                ? 'Reminders & motivation'
+                : notificationsLoading
+                  ? 'Setting up...'
+                  : 'Allow notifications in phone settings'
+            }
             right={
               <Switch
-                value={notificationsEnabled}
+                value={notificationsOn}
                 onValueChange={handleNotificationsToggle}
                 disabled={!notificationsInitialized}
                 accessibilityLabel="Notifications"
-                {...switchColors(notificationsEnabled)}
+                {...switchColors(notificationsOn)}
               />
             }
           />
@@ -448,12 +457,12 @@ export default function SettingsScreen() {
             icon={Clock}
             title="Daily reminder"
             subtitle={formatReminderTime(dailyReminderTime)}
-            disabled={!notificationsEnabled}
+            disabled={!notificationsOn}
             right={
               <Switch
                 value={!!dailyReminderTime}
                 onValueChange={handleDailyReminderToggle}
-                disabled={!notificationsEnabled}
+                disabled={!notificationsOn}
                 accessibilityLabel="Daily reminder"
                 {...switchColors(!!dailyReminderTime)}
               />
@@ -463,12 +472,12 @@ export default function SettingsScreen() {
             icon={Sparkles}
             title="Random motivation"
             subtitle="Encouraging messages through the day"
-            disabled={!notificationsEnabled}
+            disabled={!notificationsOn}
             right={
               <Switch
                 value={randomNotificationsEnabled}
                 onValueChange={handleRandomNotificationsToggle}
-                disabled={!notificationsEnabled}
+                disabled={!notificationsOn}
                 accessibilityLabel="Random motivation"
                 {...switchColors(randomNotificationsEnabled)}
               />
@@ -478,12 +487,12 @@ export default function SettingsScreen() {
             icon={Trophy}
             title="Milestone alerts"
             subtitle="When you're close to an achievement"
-            disabled={!notificationsEnabled}
+            disabled={!notificationsOn}
             right={
               <Switch
                 value={milestoneNotificationsEnabled}
                 onValueChange={handleMilestoneNotificationsToggle}
-                disabled={!notificationsEnabled}
+                disabled={!notificationsOn}
                 accessibilityLabel="Milestone alerts"
                 {...switchColors(milestoneNotificationsEnabled)}
               />
