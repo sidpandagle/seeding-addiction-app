@@ -1,4 +1,4 @@
-import { View, Text, Pressable, Modal, ScrollView, InteractionManager } from 'react-native';
+import { View, Text, Pressable, ScrollView, InteractionManager } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { useState, useEffect, useRef, memo, useMemo, useCallback, type ReactNode } from 'react';
 import Reanimated, { ZoomIn } from 'react-native-reanimated';
@@ -10,6 +10,7 @@ import { useAchievementStore } from '../../src/stores/achievementStore';
 import { useNotificationStore } from '../../src/stores/notificationStore';
 import { useToastStore } from '../../src/stores/toastStore';
 import RelapseModal from '../../src/components/modals/RelapseModal';
+import { PageSheet } from '../../src/components/common/PageSheet';
 import ActivityModal from '../../src/components/modals/ActivityModal';
 import EmergencyHelpModal from '../../src/components/modals/EmergencyHelpModal';
 import { JourneyTimerCard } from '../../src/components/home/JourneyTimerCard';
@@ -429,37 +430,22 @@ function DashboardScreen() {
         <StoicWisdomCard />
 
         {/* Relapse Modal */}
-        <Modal
-          visible={showModal}
-          animationType={reducedMotion ? 'none' : 'slide'}
-          presentationStyle="pageSheet"
-          onRequestClose={() => setShowModal(false)}
-        >
+        <PageSheet visible={showModal} onClose={() => setShowModal(false)}>
           <RelapseModal onClose={() => setShowModal(false)} onNeedUrgeHelp={handleNeedUrgeHelp} />
-        </Modal>
+        </PageSheet>
 
         {/* Activity Modal */}
-        <Modal
-          visible={showActivityModal}
-          animationType={reducedMotion ? 'none' : 'slide'}
-          presentationStyle="pageSheet"
-          onRequestClose={handleActivityModalClose}
-        >
+        <PageSheet visible={showActivityModal} onClose={handleActivityModalClose}>
           <ActivityModal
             onClose={handleActivityModalClose}
             preSelectedCategories={preSelectedCategories}
           />
-        </Modal>
+        </PageSheet>
 
         {/* Emergency Help Modal */}
-        <Modal
-          visible={showHelpModal}
-          animationType={reducedMotion ? 'none' : 'slide'}
-          presentationStyle="pageSheet"
-          onRequestClose={() => setShowHelpModal(false)}
-        >
+        <PageSheet visible={showHelpModal} onClose={() => setShowHelpModal(false)}>
           <EmergencyHelpModal onClose={() => setShowHelpModal(false)} />
-        </Modal>
+        </PageSheet>
 
         {/* Achievement Celebration Modal (milestones of a day and up) */}
         <AchievementCelebration

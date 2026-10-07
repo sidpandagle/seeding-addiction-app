@@ -1,8 +1,6 @@
 import type { ReactNode } from 'react';
 import { View, Text, Pressable, ScrollView } from 'react-native';
-import { StatusBar } from 'expo-status-bar';
 import { Brain, TrendingUp, Zap, Info, Sprout, Smartphone, type LucideIcon } from 'lucide-react-native';
-import { useColorScheme } from '../../stores/themeStore';
 import { useThemeColors, useCardShadow } from '../../hooks/useThemeColors';
 import { SheetHeader } from '../common/SheetHeader';
 
@@ -45,12 +43,10 @@ function Note({ icon: Icon, children }: { icon: LucideIcon; children: ReactNode 
 export default function RecoveryEducationModal({
   onClose,
 }: Readonly<RecoveryEducationModalProps>) {
-  const colorScheme = useColorScheme();
   const colors = useThemeColors();
 
   return (
     <View className="flex-1 bg-bg">
-      <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'} />
       <SheetHeader title="Understanding recovery" subtitle="Science-based insights for your journey" onClose={onClose} />
 
       <ScrollView className="flex-1" showsVerticalScrollIndicator={false} contentContainerClassName="px-6 pt-2 pb-10">

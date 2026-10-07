@@ -1,4 +1,4 @@
-import { View, Text, Pressable, ScrollView, Switch, Modal, Linking, ActivityIndicator, Platform } from 'react-native';
+import { View, Text, Pressable, ScrollView, Switch, Linking, ActivityIndicator, Platform } from 'react-native';
 import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useState, useEffect, type ReactNode } from 'react';
@@ -13,7 +13,6 @@ import {
 import { useRelapseStore } from '../../src/stores/relapseStore';
 import { useColorScheme, useThemeStore } from '../../src/stores/themeStore';
 import { useNotificationStore } from '../../src/stores/notificationStore';
-import { useReducedMotion } from '../../src/hooks/useReducedMotion';
 import { useThemeColors, useCardShadow } from '../../src/hooks/useThemeColors';
 import { STAGE_TINT_FAMILIES } from '../../src/constants/palette';
 import { Settings2, Lock, Sun, Moon, Trash2, Brain, Coffee, BookOpen, Bell, Clock, Sparkles, Trophy, Sheet, Star, Leaf, ChevronRight, type LucideIcon } from 'lucide-react-native';
@@ -21,6 +20,7 @@ import { exportService } from '../../src/services/exportService';
 import { rateApp } from '../../src/services/rateApp';
 import { APP_VERSION } from '../../src/constants/appInfo';
 import AppIcon from '../../src/components/common/AppIcon';
+import { PageSheet } from '../../src/components/common/PageSheet';
 import RecoveryEducationModal from '../../src/components/modals/RecoveryEducationModal';
 import CustomAlert from '../../src/components/common/CustomAlert';
 import ConfirmationDialog from '../../src/components/common/ConfirmationDialog';
@@ -94,7 +94,6 @@ export default function SettingsScreen() {
   const cardShadow = useCardShadow();
   const stageTint = useThemeStore((state) => state.stageTint);
   const setStageTint = useThemeStore((state) => state.setStageTint);
-  const reducedMotion = useReducedMotion();
   const resetAllData = useRelapseStore((state) => state.resetAllData);
   const [appLockEnabled, setAppLockEnabledState] = useState(false);
   const [biometricAvailable, setBiometricAvailable] = useState(false);
@@ -574,34 +573,19 @@ export default function SettingsScreen() {
       </ScrollView>
 
       {/* Recovery Education Modal */}
-      <Modal
-        visible={showEducationModal}
-        animationType={reducedMotion ? 'none' : 'slide'}
-        presentationStyle="pageSheet"
-        onRequestClose={() => setShowEducationModal(false)}
-      >
+      <PageSheet visible={showEducationModal} onClose={() => setShowEducationModal(false)}>
         <RecoveryEducationModal onClose={() => setShowEducationModal(false)} />
-      </Modal>
+      </PageSheet>
 
       {/* How to Use Modal */}
-      <Modal
-        visible={showHowToUseModal}
-        animationType={reducedMotion ? 'none' : 'slide'}
-        presentationStyle="pageSheet"
-        onRequestClose={() => setShowHowToUseModal(false)}
-      >
+      <PageSheet visible={showHowToUseModal} onClose={() => setShowHowToUseModal(false)}>
         <HowToUseModal onClose={() => setShowHowToUseModal(false)} />
-      </Modal>
+      </PageSheet>
 
       {/* About Modal */}
-      <Modal
-        visible={showAboutModal}
-        animationType={reducedMotion ? 'none' : 'slide'}
-        presentationStyle="pageSheet"
-        onRequestClose={() => setShowAboutModal(false)}
-      >
+      <PageSheet visible={showAboutModal} onClose={() => setShowAboutModal(false)}>
         <AboutModal onClose={() => setShowAboutModal(false)} />
-      </Modal>
+      </PageSheet>
 
       {/* Custom Alert */}
       {alertState && (

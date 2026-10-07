@@ -1,15 +1,15 @@
-import { View, Text, ScrollView, Modal, Pressable } from 'react-native';
+import { View, Text, ScrollView, Pressable } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { useState, useEffect, memo, useMemo, useCallback } from 'react';
 import { History, BarChart3 } from 'lucide-react-native';
 import { useRelapseStore } from '../../src/stores/relapseStore';
 import { useActivityStore } from '../../src/stores/activityStore';
 import { useColorScheme } from '../../src/stores/themeStore';
-import { useReducedMotion } from '../../src/hooks/useReducedMotion';
 import { useThemeColors, useCardShadow } from '../../src/hooks/useThemeColors';
 import { getJourneyStart } from '../../src/db/helpers';
 import type { Relapse } from '../../src/db/schema';
 import ViewToggle, { type HistoryViewMode } from '../../src/components/history/ViewToggle';
+import { PageSheet } from '../../src/components/common/PageSheet';
 import HistoryList from '../../src/components/history/HistoryList';
 import HistoryCalendar from '../../src/components/history/HistoryCalendar';
 import CalendarRelapseDetails from '../../src/components/history/CalendarRelapseDetails';
@@ -24,7 +24,6 @@ function HistoryScreen() {
   const colorScheme = useColorScheme();
   const colors = useThemeColors();
   const cardShadow = useCardShadow();
-  const reducedMotion = useReducedMotion();
   // Use specific selectors to prevent re-renders when other store values change
   const relapses = useRelapseStore((state) => state.relapses);
   const activities = useActivityStore((state) => state.activities);
@@ -174,26 +173,16 @@ function HistoryScreen() {
       </View>
 
       {/* Insights Modal */}
-      <Modal
-        visible={showInsightsModal}
-        animationType={reducedMotion ? 'none' : 'slide'}
-        presentationStyle="pageSheet"
-        onRequestClose={() => setShowInsightsModal(false)}
-      >
+      <PageSheet visible={showInsightsModal} onClose={() => setShowInsightsModal(false)}>
         <InsightsModal onClose={() => setShowInsightsModal(false)} />
-      </Modal>
+      </PageSheet>
 
       {/* Edit or delete a relapse */}
-      <Modal
-        visible={!!editingRelapse}
-        animationType={reducedMotion ? 'none' : 'slide'}
-        presentationStyle="pageSheet"
-        onRequestClose={() => setEditingRelapse(null)}
-      >
+      <PageSheet visible={!!editingRelapse} onClose={() => setEditingRelapse(null)}>
         {editingRelapse && (
           <RelapseModal existingRelapse={editingRelapse} onClose={() => setEditingRelapse(null)} />
         )}
-      </Modal>
+      </PageSheet>
     </View>
   );
 }

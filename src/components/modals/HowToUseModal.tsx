@@ -1,7 +1,5 @@
 import { View, Text, ScrollView, Pressable } from 'react-native';
-import { StatusBar } from 'expo-status-bar';
 import { Sprout, Activity, BarChart3, Settings, Lock, TrendingUp, Info, Lightbulb, type LucideIcon } from 'lucide-react-native';
-import { useColorScheme } from '../../stores/themeStore';
 import { useThemeColors, useCardShadow } from '../../hooks/useThemeColors';
 import { SheetHeader } from '../common/SheetHeader';
 import { ExpandableRow } from '../common/ExpandableRow';
@@ -95,13 +93,11 @@ function GuideItem({ text }: { text: string }) {
 }
 
 export default function HowToUseModal({ onClose }: HowToUseModalProps) {
-  const colorScheme = useColorScheme();
   const colors = useThemeColors();
   const cardShadow = useCardShadow();
 
   return (
     <View className="flex-1 bg-bg">
-      <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'} />
       <SheetHeader title="How to use" subtitle="Get the most out of Seeding in a few minutes" onClose={onClose} />
 
       <ScrollView className="flex-1" showsVerticalScrollIndicator={false} contentContainerClassName="px-6 pb-10">

@@ -1,7 +1,5 @@
 import { View, Text, ScrollView, Pressable } from 'react-native';
-import { StatusBar } from 'expo-status-bar';
 import { Shield, UserX, CloudOff } from 'lucide-react-native';
-import { useColorScheme } from '../../stores/themeStore';
 import { useThemeColors, useCardShadow } from '../../hooks/useThemeColors';
 import { APP_VERSION } from '../../constants/appInfo';
 import AppIcon from '../common/AppIcon';
@@ -15,7 +13,6 @@ interface AboutModalProps {
 export default function AboutModal({
   onClose,
 }: Readonly<AboutModalProps>) {
-  const colorScheme = useColorScheme();
   const colors = useThemeColors();
   const cardShadow = useCardShadow();
 
@@ -70,7 +67,6 @@ export default function AboutModal({
 
   return (
     <View className="flex-1 bg-bg">
-      <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'} />
       <SheetHeader title="About Seeding" subtitle="Private recovery tracking, built for you" onClose={onClose} />
 
       <ScrollView className="flex-1" showsVerticalScrollIndicator={false} contentContainerClassName="px-6 pb-10">
