@@ -107,9 +107,16 @@ export default function EmergencyHelpModal({
 
         {/* SECTION: Reality Check - Power Affirmation */}
         <View className="px-5 pb-5">
-          {/* Inverted card: dark on light mode; a raised card in dark mode, so it isn't a bright block at night */}
-          <View className="relative p-5 bg-fg dark:bg-subtle rounded-xl">
-            <Text className="text-xl font-bold leading-7 text-center text-bg dark:text-fg">
+          {/* Soft sage card with a faint quote mark in the corner */}
+          <View className="relative p-5 overflow-hidden bg-primary-soft rounded-xl">
+            <Text
+              className="absolute font-bold -bottom-12 right-2 opacity-10"
+              style={{ fontSize: 120, lineHeight: 120, color: colors.primary }}
+              accessible={false}
+            >
+              ”
+            </Text>
+            <Text className="text-xl font-bold leading-7 text-center text-primary-ink">
               {randomAffirmation}
             </Text>
           </View>
