@@ -33,9 +33,20 @@ export function DonutRing({ segments, trackColor, size = 150, strokeWidth = 14, 
   // Round caps reach half a stroke past each end, so leave room for them
   const cut = split ? gap + strokeWidth : 0;
 
+  // A slice shorter than the caps would draw as a lone dot; give it a short visible arc,
+  // taken from the slices that can spare it
+  const minLength = split ? cut + strokeWidth / 2 : 0;
+  const raw = parts.map((s) => (s.value / total) * circumference);
+  const needed = raw.reduce((sum, l) => sum + Math.max(minLength - l, 0), 0);
+  const spare = raw.reduce((sum, l) => sum + Math.max(l - minLength, 0), 0);
+  const lengths =
+    needed > 0 && spare > needed
+      ? raw.map((l) => (l < minLength ? minLength : l - (l - minLength) * (needed / spare)))
+      : raw;
+
   let start = 0;
   const arcs = parts.map((s, i) => {
-    const length = (s.value / total) * circumference;
+    const length = lengths[i];
     const arc = (
       <Circle
         key={i}

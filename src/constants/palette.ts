@@ -146,10 +146,17 @@ export function toRgbChannels(hex: string): string {
 }
 
 /**
- * Categorical chart colors, in fixed order. Checked for color-blind separation and
- * contrast against each mode's surface; dark is the same hues stepped for the dark card.
+ * "Garden" categorical chart colors: moss, slate, rose, honey, heather, in fixed order.
+ * One soft lightness so no slice shouts. The order keeps neighbors (including last to
+ * first around a ring) apart for color-blind readers; dark is the same hues stepped for
+ * the dark card. Anything past these five is grouped and drawn in borderStrong.
  */
 export const CHART_SERIES = {
-  light: ['#3F78C4', '#E0763A', '#1F9C8C', '#E3A21A', '#D9668A', '#3E8A2E', '#6B57B8', '#D9534F'],
-  dark: ['#5A93DE', '#CC6630', '#1F9C8C', '#BD861C', '#CC6689', '#4C9A3A', '#9485E0', '#E06664'],
+  light: ['#68AB6B', '#5E9DDC', '#D3798F', '#BB912B', '#AE84CD'],
+  dark: ['#619D64', '#5890CA', '#B46478', '#B28C32', '#A07ABC'],
 } as const;
+
+/** Ordinary bars in a one-color chart: a soft tint of the accent. The peak bar gets the full accent. */
+export function barTint(accent: string, surface: string, scheme: keyof typeof palette): string {
+  return mixHex(accent, scheme === 'dark' ? 45 : 42, surface);
+}

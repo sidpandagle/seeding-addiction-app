@@ -2,6 +2,7 @@ import React, { useMemo, useState, useEffect } from 'react';
 import { View, Text, Pressable, Modal } from 'react-native';
 import { Zap, Clock, Shuffle, TrendingUp, Info, X, ChevronDown } from 'lucide-react-native';
 import { InsightCallout } from './InsightCallout';
+import { TimeOfDayBars } from './TimeOfDayBars';
 import { DonutRing } from './DonutRing';
 import * as Haptics from 'expo-haptics';
 import { useColorScheme } from '../../stores/themeStore';
@@ -49,7 +50,7 @@ const ActivityEffectivenessCard: React.FC<ActivityEffectivenessCardProps> = ({
   const colorScheme = useColorScheme();
   const colors = useThemeColors();
   const cardShadow = useCardShadow();
-  // Slice colors in fixed order; "Others" is gray
+  // Garden colors in fixed order; "Others" is a light neutral
   const chartColors = CHART_SERIES[colorScheme];
   const [showInfo, setShowInfo] = useState(false);
   const [displayLimit, setDisplayLimit] = useState<DisplayLimit>(10);
@@ -91,21 +92,23 @@ const ActivityEffectivenessCard: React.FC<ActivityEffectivenessCardProps> = ({
       });
     });
 
-    // Get top categories sorted by count
+    // Get top categories sorted by count. Colors go by rank so no two slices share one;
+    // past the rows beside the ring everything is neutral and shares one slice
     const topCategories: CategoryStats[] = [];
-    let colorIndex = 0;
     categoryMap.forEach((count, category) => {
       if (count > 0) {
         topCategories.push({
           category,
           count,
           percentage: Math.round((count / activities.length) * 100),
-          color: chartColors[colorIndex % chartColors.length],
+          color: colors.borderStrong,
         });
-        colorIndex++;
       }
     });
     topCategories.sort((a, b) => b.count - a.count);
+    topCategories.slice(0, LEGEND_BESIDE_RING).forEach((stat, i) => {
+      stat.color = chartColors[i];
+    });
 
     // Calculate activity diversity (unique categories used / total categories)
     const uniqueCategoriesUsed = topCategories.length;
@@ -152,7 +155,7 @@ const ActivityEffectivenessCard: React.FC<ActivityEffectivenessCardProps> = ({
         category: `+${otherCategories.length} Others`,
         count: othersCount,
         percentage: Math.round((othersCount / activities.length) * 100),
-        color: colors.faint,
+        color: colors.borderStrong,
       };
     }
 
@@ -168,18 +171,27 @@ const ActivityEffectivenessCard: React.FC<ActivityEffectivenessCardProps> = ({
       weeklyAverage,
       totalActivities: activities.length,
     };
-  }, [activities, relapses, journeyStartTime, customTags, displayLimit, chartColors, colors.faint]);
+  }, [activities, relapses, journeyStartTime, customTags, displayLimit, chartColors, colors.borderStrong]);
 
-  // Ring segments and legend rows: top categories, then "Others" in gray.
+  // Ring segments and legend rows: top categories, then "Others" in neutral.
   // Must stay above the early returns so the hook order never changes.
   const legend = useMemo(() => {
     if (!insights) return [];
     const rows = insights.topCategories.map((stat) => ({ label: stat.category, count: stat.count, color: stat.color }));
     if (insights.othersData) {
-      rows.push({ label: insights.othersData.category, count: insights.othersData.count, color: colors.faint });
+      rows.push({ label: insights.othersData.category, count: insights.othersData.count, color: colors.borderStrong });
     }
     return rows;
-  }, [insights, colors.faint]);
+  }, [insights, colors.borderStrong]);
+
+  // One slice per colored row, then a single neutral slice for everything below the ring
+  const ringSegments = useMemo(() => {
+    const rest = legend.slice(LEGEND_BESIDE_RING).reduce((sum, row) => sum + row.count, 0);
+    return [
+      ...legend.slice(0, LEGEND_BESIDE_RING).map((row) => ({ value: row.count, color: row.color })),
+      { value: rest, color: colors.borderStrong },
+    ];
+  }, [legend, colors.borderStrong]);
 
   if (activities.length === 0) {
     return (
@@ -286,7 +298,7 @@ const ActivityEffectivenessCard: React.FC<ActivityEffectivenessCardProps> = ({
         <View className="flex-row items-center justify-between py-2 pl-1 pr-2">
           <DonutRing
             trackColor={colors.subtle}
-            segments={legend.map((row) => ({ value: row.count, color: row.color }))}
+            segments={ringSegments}
             size={140}
             gap={5}
           >
@@ -327,45 +339,11 @@ const ActivityEffectivenessCard: React.FC<ActivityEffectivenessCardProps> = ({
         <Text className="mb-3 text-xs font-bold tracking-wide text-muted uppercase">
           Time Distribution
         </Text>
-        <View className="gap-3">
-          {insights.timePatterns.map((pattern) => {
-            const isPeak = insights.peakTime?.period === pattern.period && pattern.count > 0;
-            const maxCount = Math.max(...insights.timePatterns.map(p => p.count), 1);
-            const barWidthPercent = Math.max((pattern.count / maxCount) * 100, 0);
-
-            return (
-              <View key={pattern.period} className="flex-row items-center gap-3">
-                {/* Icon and label */}
-                <View className="flex-row items-center w-24 gap-2">
-                  <Text className="font-regular text-lg">{pattern.icon}</Text>
-                  <View>
-                    <Text className={`text-xs font-semibold ${isPeak ? 'text-primary' : 'text-body'}`}>
-                      {pattern.period}
-                    </Text>
-                    <Text className="font-regular text-xs text-faint">
-                      {pattern.timeRange}
-                    </Text>
-                  </View>
-                </View>
-
-                {/* Progress bar */}
-                <View className="flex-1 h-6 overflow-hidden bg-subtle rounded-lg">
-                  <View
-                    className={`h-full rounded-lg ${isPeak ? 'bg-primary' : 'bg-info'}`}
-                    style={{ width: `${barWidthPercent}%` }}
-                  />
-                </View>
-
-                {/* Count */}
-                <View className="items-end w-10">
-                  <Text className={`text-sm font-bold ${isPeak ? 'text-primary' : 'text-muted'}`}>
-                    {pattern.count}
-                  </Text>
-                </View>
-              </View>
-            );
-          })}
-        </View>
+        <TimeOfDayBars
+          rows={insights.timePatterns}
+          highlight={insights.peakTime?.period}
+          accent="primary"
+        />
       </View>
 
       {/* Peak Time */}
