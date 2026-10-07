@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Seeding Play Store frames B</title>
+<!--
+  Set B "Spotlight": a phone with real UI pieces lifted off the screen, plus a feature wall.
+  Open frames-b.html#1 ... #8 or #feature. Pieces come from crops.js.
+-->
+<link rel="stylesheet" href="base.css">
+<script src="kit.js"></script>
+<script src="crops.js"></script>
+</head>
+<body>
+<script>
+  // Phone used in this set: 640 wide, screen at 0.57 scale
+  const ph = (shot, left = 220, top = 520) => phone(shot, `width:640px;left:${left}px;top:${top}px`, 'small');
+
+  mount({
+    1: { dark: true, html: `
+      ${leaf('width:760px;height:760px;right:-260px;top:-150px;transform:rotate(12deg)')}
+      ${head('Grow past<br>the <em>habit.</em>', '', brand(),
+        `<div class="pills">${pill('i-gift', '100% free', 'solid')}${pill('i-heart', 'No ads')}${pill('i-user-x', 'No account')}</div>`)}
+      ${ph('home-top', 220, 690)}
+      ${cut('timer', 0.95, 'left:79px;top:880px;transform:rotate(-1.5deg)')}
+      ${cut('tiles', 0.88, 'left:113px;top:1490px;transform:rotate(1.5deg)')}` },
+    2: { html: `
+      ${leaf('width:700px;height:700px;left:-250px;top:420px;transform:rotate(-14deg)')}
+      ${head('Every streak<br>grows a <em>plant</em>', 'Your whole journey as a garden, and every day at a glance.')}
+      ${ph('garden-top')}
+      ${cut('heatmap', 0.95, 'left:80px;top:1380px;transform:rotate(1.5deg)')}` },
+    3: { html: `
+      ${leaf('width:640px;height:640px;right:-230px;top:480px;transform:rotate(16deg)')}
+      ${head('Know your<br><em>patterns</em>', 'Danger hours, weekly rhythm and what keeps you strong.')}
+      ${ph('ins-top')}
+      ${cut('danger', 0.95, 'left:58px;top:1120px;transform:rotate(-1.5deg)')}
+      ${cut('donut', 0.74, 'right:40px;top:1430px;transform:rotate(2deg)')}` },
+    4: { html: `
+      ${leaf('width:700px;height:700px;left:-260px;top:440px;transform:rotate(-10deg)')}
+      ${head('Urge hits?<br><em>Ride the wave.</em>', 'A calming breath timer and quick resets that break the craving.')}
+      ${ph('sos-idle')}
+      ${cut('quote', 0.8, 'left:46px;top:1130px;transform:rotate(-2deg)')}
+      ${cut('shockTiles', 0.8, 'right:40px;top:1430px;transform:rotate(1.5deg)')}` },
+    5: { html: `
+      ${leaf('width:640px;height:640px;right:-230px;top:460px;transform:rotate(12deg)')}
+      ${head('<em>31 badges</em><br>to collect', 'Plus 14 milestones from seed to tree. Every win gets celebrated.')}
+      ${ph('badges-top', 90)}
+      ${cut('badgePop', 0.62, 'right:44px;top:860px;transform:rotate(4deg)')}` },
+    6: { html: `
+      ${leaf('width:700px;height:700px;left:-250px;top:430px;transform:rotate(-16deg)')}
+      ${head('Count the <em>wins</em>,<br>not just the slips', 'Log a run, a book, a walk outside. See what keeps you strong.')}
+      ${ph('win')}
+      ${cut('tiles', 0.82, 'left:142px;top:1420px;transform:rotate(-1.5deg)')}` },
+    7: { html: `
+      ${leaf('width:640px;height:640px;right:-230px;top:470px;transform:rotate(14deg)')}
+      ${head('Your data <em>never</em><br>leaves your phone', 'No sign-up, no cloud, no analytics. Export to Excel whenever you like.')}
+      ${ph('about')}
+      ${cut('privacy', 0.95, 'left:80px;top:1250px;transform:rotate(-1deg)')}` },
+    8: { dark: true, html: `
+      ${leaf('width:700px;height:700px;right:-280px;top:-180px;transform:rotate(12deg)')}
+      ${head(`Feature-rich.<br><em>100% free.</em>`)}
+      ${featureWall(400)}
+      <div class="free-band">${icon('i-gift')}${featureCount} features · no ads · no subscriptions</div>` },
+    feature: { dark: true, cls: 'feature', html: `
+      ${leaf('width:520px;height:520px;left:-170px;bottom:-200px;transform:rotate(-14deg)')}
+      <div class="fg-text">
+        ${brand()}
+        <h1>Feature-rich.<br><em>100% free.</em></h1>
+        <div class="pills">${pill('i-gift', 'Free', 'solid')}${pill('i-heart', 'No ads')}${pill('i-user-x', 'No account')}</div>
+      </div>
+      ${cut('timer', 0.4, 'left:596px;top:40px;transform:rotate(-3deg)')}
+      ${cut('donut', 0.35, 'left:640px;top:300px;transform:rotate(2.5deg)')}` },
+  }, '1');
+</script>
+</body>
+</html>

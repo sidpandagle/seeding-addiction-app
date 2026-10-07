@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Seeding Play Store frames C</title>
+<!--
+  Set C "Bento": no phones, real UI pieces laid out as a grid, plus a feature wall.
+  Open frames-c.html#1 ... #8 or #feature. Pieces come from crops.js.
+-->
+<link rel="stylesheet" href="base.css">
+<script src="kit.js"></script>
+<script src="crops.js"></script>
+</head>
+<body>
+<script>
+  // Width a crop must be scaled to so it spans `w` pixels
+  const fit = (name, w) => w / CROPS[name][3];
+  const at = (name, w, left, top, extra = '') => cut(name, fit(name, w), `left:${left}px;top:${top}px;${extra}`);
+
+  mount({
+    1: { dark: true, html: `
+      ${leaf('width:760px;height:760px;right:-260px;top:-150px;transform:rotate(12deg)')}
+      ${head('Break the habit.<br><em>Free.</em>', '', brand(),
+        `<div class="pills">${pill('i-gift', '100% free', 'solid')}${pill('i-heart', 'No ads')}${pill('i-user-x', 'No account')}</div>`)}
+      ${at('timer', 920, 80, 600)}
+      ${at('winTile', 448, 80, 1206)}
+      ${at('relapseTile', 448, 552, 1206)}
+      <div class="free-band" style="bottom:120px">${icon('i-check')}${featureCount} features, free forever</div>` },
+    2: { html: `
+      ${leaf('width:700px;height:700px;right:-280px;top:-180px;transform:rotate(12deg)')}
+      ${head(`Feature-rich.<br><em>100% free.</em>`)}
+      ${featureWall(400)}
+      <div class="free-band">${icon('i-gift')}No ads · no subscriptions · no sign-up</div>` },
+    3: { html: `
+      ${leaf('width:700px;height:700px;left:-260px;bottom:-140px;transform:rotate(-10deg)')}
+      ${head('Watch your<br>progress <em>grow</em>', 'A garden of every streak, and 25 weeks of wins at a glance.')}
+      ${at('garden', 920, 80, 480)}
+      ${at('heatmap', 920, 80, 1296)}` },
+    4: { html: `
+      ${leaf('width:640px;height:640px;right:-230px;bottom:-80px;transform:rotate(16deg)')}
+      ${head('Know your<br><em>patterns</em>', 'See when urges hit and which habits help most.')}
+      ${at('donut', 884, 98, 480)}
+      ${at('timeOfDay', 884, 98, 1094)}` },
+    5: { html: `
+      ${leaf('width:700px;height:700px;left:-260px;bottom:-100px;transform:rotate(-10deg)')}
+      ${head('Urges pass.<br><em>Ride the wave.</em>', 'A breathing timer and quick resets for the hardest minutes.')}
+      ${at('rideRunning', 888, 96, 480)}
+      ${at('shockTiles', 888, 96, 1230)}` },
+    6: { html: `
+      ${leaf('width:640px;height:640px;right:-230px;bottom:-70px;transform:rotate(12deg)')}
+      ${head('<em>31 badges</em> and<br>14 milestones', 'Every win gets celebrated, from your first step to a full year.')}
+      ${at('badgeProgress', 920, 80, 480)}
+      ${at('badgeGrid', 920, 80, 812)}
+      ${cut('badgePop', 0.5, 'right:46px;top:1230px;transform:rotate(4deg)')}` },
+    7: { html: `
+      ${leaf('width:700px;height:700px;left:-250px;bottom:-120px;transform:rotate(-14deg)')}
+      ${head('Nothing leaves<br><em>your phone</em>', 'No sign-up, no cloud, no tracking. Export to Excel any time.')}
+      ${at('privacy', 920, 80, 480)}
+      <div class="zeros" style="left:80px;right:80px;top:1040px">
+        <div class="zero"><b>0</b><span>accounts</span></div>
+        <div class="zero"><b>0</b><span>ads</span></div>
+        <div class="zero"><b>0</b><span>trackers</span></div>
+      </div>
+      ${at('aboutCard', 860, 110, 1310)}` },
+    8: { dark: true, html: `
+      ${leaf('width:700px;height:700px;left:-260px;top:-160px;transform:rotate(-12deg)')}
+      ${head('Beautiful in<br>the <em>dark</em>', 'A calm dark theme for late nights, on every screen.')}
+      ${at('dTimer', 880, 100, 470)}
+      ${at('dDonut', 880, 100, 1051)}
+      ${at('dDanger', 880, 100, 1654)}` },
+    feature: { cls: 'feature', html: `
+      ${leaf('width:520px;height:520px;left:-170px;bottom:-200px;transform:rotate(-14deg)')}
+      <div class="fg-text">
+        ${brand()}
+        <h1>Break the habit.<br><em>Free.</em></h1>
+        <div class="pills">${pill('i-gift', 'Free', 'solid')}${pill('i-heart', 'No ads')}${pill('i-user-x', 'No account')}</div>
+      </div>
+      ${at('timer', 380, 600, 40)}
+      ${at('winTile', 184, 600, 300)}
+      ${at('relapseTile', 184, 796, 300)}` },
+  }, '1');
+</script>
+</body>
+</html>

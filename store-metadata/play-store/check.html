@@ -1,0 +1,11 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>Crop check</title>
+<style>
+  body { margin: 0; padding: 20px; background: #8a8f88; font: 600 22px sans-serif; display: flex; flex-wrap: wrap; gap: 20px; align-items: flex-start; }
+  figure { margin: 0; } figcaption { color: #fff; margin-bottom: 6px; }
+  .cut { background-repeat: no-repeat; outline: 2px solid #f0f; }
+</style>
+<script src="crops.js"></script></head>
+<body><script>
+  for (const name of Object.keys(CROPS)) document.write(`<figure><figcaption>${name}</figcaption>${cut(name, 0.4)}</figure>`);
+</script></body></html>

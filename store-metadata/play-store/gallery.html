@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Seeding store sets</title>
+<!-- Side-by-side view of the rendered sets in out/. Open in a browser after `bash render.sh`. ?set=B shows one set. -->
+<style>
+  body { margin: 0; padding: 28px; background: #2a2f2a; color: #eef2ea; font: 600 18px Nunito, system-ui, sans-serif; }
+  h2 { margin: 0 0 12px; font-size: 26px; }
+  h2 small { font-weight: 600; color: #a9b5a5; font-size: 18px; margin-left: 10px; }
+  section { margin-bottom: 36px; }
+  .row { display: flex; gap: 12px; align-items: flex-start; }
+  .row img { width: 240px; border-radius: 10px; display: block; }
+  .row img.fg { width: 492px; }
+</style>
+</head>
+<body>
+<script>
+  const SETS = {
+    Mix: 'Mix: one design per frame (picked in render.sh)',
+    A: 'Classic: headline + one phone',
+    B: 'Spotlight: phone + UI pieces popping out',
+    C: 'Bento: real UI pieces, no phones',
+  };
+  const only = new URLSearchParams(location.search).get('set');
+  for (const [set, label] of Object.entries(SETS)) {
+    if (only && only !== set) continue;
+    const shots = [1, 2, 3, 4, 5, 6, 7, 8].map((i) => `<img src="out/${set}/0${i}.png">`).join('');
+    document.write(`<section><h2>Set ${set}<small>${label}</small></h2>
+      <div class="row">${shots}</div>
+      <div class="row" style="margin-top:12px"><img class="fg" src="out/${set}/feature-graphic.png"></div></section>`);
+  }
+</script>
+</body>
+</html>

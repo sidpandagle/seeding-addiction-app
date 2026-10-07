@@ -42,3 +42,12 @@ apk.bat
 aab/
 *.aab
 *.apk
+
+# Shell crash dumps
+*.stackdump
+
+# Generated Play Store renders (rebuild with store-metadata/play-store/render.sh)
+store-metadata/play-store/out/
+
+# Local design references
+Seeding Color Themes.html

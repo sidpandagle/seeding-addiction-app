@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Seeding Play Store frames A</title>
+<!--
+  Set A "Classic": headline + one phone per frame.
+  Open frames.html#1 ... #8 (1080x1920) or #feature (1024x500); render.sh screenshots each one.
+  Raw app captures live in shots/ (Pixel 8 emulator, 1080x2400).
+-->
+<link rel="stylesheet" href="base.css">
+<script src="kit.js"></script>
+</head>
+<body>
+<script>
+  mount({
+    1: { dark: true, html: `
+      ${leaf('width:760px;height:760px;right:-260px;top:-150px;transform:rotate(12deg)')}
+      ${head('Grow past<br>the <em>habit.</em>', '', brand(),
+        `<div class="pills">${pill('i-lock', 'Private by design')}${pill('i-user-x', 'No account')}${pill('i-heart', 'Free, no ads')}</div>`)}
+      ${phone('home', 'top:690px')}` },
+    2: { html: `
+      ${leaf('width:700px;height:700px;left:-250px;bottom:-120px;transform:rotate(-14deg)')}
+      ${head('Your data <em>never</em><br>leaves your phone', 'No sign-up, no cloud, no analytics. Export to Excel whenever you like.')}
+      ${phone('about')}` },
+    3: { html: `
+      ${leaf('width:640px;height:640px;right:-220px;bottom:-60px;transform:rotate(18deg)')}
+      ${head('Urge hits?<br><em>Ride the wave.</em>', 'A calming breath timer and quick resets that break the craving.')}
+      ${phone('wave')}` },
+    4: { html: `
+      ${leaf('width:700px;height:700px;left:-260px;bottom:-100px;transform:rotate(-10deg)')}
+      ${head('Every streak<br>grows a <em>plant</em>', 'Your whole journey as a garden, and every day at a glance.')}
+      ${phone('garden')}` },
+    5: { html: `
+      ${leaf('width:640px;height:640px;right:-230px;bottom:-80px;transform:rotate(16deg)')}
+      ${head('Know your<br><em>danger hours</em>', 'See which days and times urges hit, so you can plan ahead.')}
+      ${phone('insights')}` },
+    6: { html: `
+      ${leaf('width:700px;height:700px;left:-250px;bottom:-110px;transform:rotate(-16deg)')}
+      ${head('Count the <em>wins</em>,<br>not just the slips', 'Log a run, a book, a walk outside. See what keeps you strong.')}
+      ${phone('win')}` },
+    7: { html: `
+      ${leaf('width:640px;height:640px;right:-230px;bottom:-70px;transform:rotate(12deg)')}
+      ${head('Milestones from<br><em>5 minutes</em> to a year', '14 stages from seed to tree, each one worth celebrating.')}
+      ${phone('achievements')}` },
+    8: { dark: true, html: `
+      ${leaf('width:700px;height:700px;left:-260px;top:-160px;transform:rotate(-12deg)')}
+      ${head('Easy on the eyes,<br><em>day and night</em>', 'Light and dark themes, with your growth stage tinting the timer.')}
+      ${phone('home', 'width:600px;left:56px;top:640px', 'small')}
+      ${phone('home-dark', 'width:600px;left:424px;top:560px', 'small')}` },
+    feature: { dark: true, cls: 'feature', html: `
+      ${leaf('width:520px;height:520px;left:-170px;bottom:-200px;transform:rotate(-14deg)')}
+      <div class="fg-text">
+        ${brand()}
+        <h1>Grow past<br>the <em>habit.</em></h1>
+        <div class="pills">${pill('i-lock', 'Private')}${pill('i-user-x', 'No account')}${pill('i-heart', 'Free, no ads')}</div>
+      </div>
+      ${phone('home')}` },
+  }, '1');
+</script>
+</body>
+</html>
