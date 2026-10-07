@@ -60,11 +60,19 @@ const ComparativeStatsCard: React.FC<ComparativeStatsCardProps> = ({
     thisWeekStart.setHours(0, 0, 0, 0);
     const lastWeekStart = new Date(thisWeekStart);
     lastWeekStart.setDate(lastWeekStart.getDate() - 7);
-    const lastWeekEnd = new Date(thisWeekStart);
 
     const thisMonthStart = new Date(now.getFullYear(), now.getMonth(), 1);
     const lastMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-    const lastMonthEnd = new Date(now.getFullYear(), now.getMonth(), 1);
+
+    // Compare like with like: the previous week or month only up to the same point,
+    // otherwise a few days into a new month always reads as a drop
+    const samePointIn = (previousStart: Date, currentStart: Date) =>
+      new Date(Math.min(
+        previousStart.getTime() + (now.getTime() - currentStart.getTime()),
+        currentStart.getTime(),
+      ));
+    const lastWeekEnd = samePointIn(lastWeekStart, thisWeekStart);
+    const lastMonthEnd = samePointIn(lastMonthStart, thisMonthStart);
 
     const last30DaysStart = new Date(now);
     last30DaysStart.setDate(now.getDate() - 30);
@@ -78,14 +86,14 @@ const ComparativeStatsCard: React.FC<ComparativeStatsCardProps> = ({
         label: 'Weekly',
         current: getStats(thisWeekStart, now),
         previous: getStats(lastWeekStart, lastWeekEnd),
-        periodLabel: { current: 'This week', previous: 'Last week' },
+        periodLabel: { current: 'This week', previous: 'Same point last week' },
       },
       {
         id: 'monthly',
         label: 'Monthly',
         current: getStats(thisMonthStart, now),
         previous: getStats(lastMonthStart, lastMonthEnd),
-        periodLabel: { current: 'This month', previous: 'Last month' },
+        periodLabel: { current: 'This month', previous: 'Same point last month' },
       },
       {
         id: 'last30days',
@@ -187,7 +195,7 @@ const ComparativeStatsCard: React.FC<ComparativeStatsCardProps> = ({
       {/* Info Card */}
       {showInfo && (
         <InsightCallout icon={Info} className="mb-4">
-          Compare your progress across different time periods. Green arrows mean improvement (fewer relapses or more activities). Track weekly and monthly trends to see your growth!
+          Compare your progress across different time periods. Green arrows mean improvement (fewer relapses or more activities). Weekly and monthly compare against the same point in the previous week or month.
         </InsightCallout>
       )}
 
